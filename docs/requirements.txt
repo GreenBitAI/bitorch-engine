@@ -1,0 +1,6 @@
+autodocsumm
+nbsphinx
+pandoc
+sphinx_rtd_theme
+sphinx_gallery
+sphinx_toolbox

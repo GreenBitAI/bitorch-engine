@@ -1,0 +1,2 @@
+bitorch
+py-cpuinfo>=9.0.0
