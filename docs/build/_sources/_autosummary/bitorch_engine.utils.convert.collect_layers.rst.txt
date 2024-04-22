@@ -1,0 +1,6 @@
+bitorch\_engine.utils.convert.collect\_layers
+=============================================
+
+.. currentmodule:: bitorch_engine.utils.convert
+
+.. autofunction:: collect_layers

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dForward" href="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dForward.html" />
+    <link rel="prev" title="bitorch_engine.layers.qconv.binary.cpp.layer" href="bitorch_engine.layers.qconv.binary.cpp.layer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build_options.html">Build options</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../documentation.html">Full Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bitorch_engine.html">bitorch_engine</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.functions.html">bitorch_engine.functions</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bitorch_engine.layers.html">bitorch_engine.layers</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qembedding.html">bitorch_engine.layers.qembedding</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qmha.html">bitorch_engine.layers.qmha</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.optim.html">bitorch_engine.optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.utils.html">bitorch_engine.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../documentation.html">Full Documentation</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.html">bitorch_engine</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.html">bitorch_engine.layers</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qconv.binary.html">bitorch_engine.layers.qconv.binary</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qconv.binary.cpp.html">bitorch_engine.layers.qconv.binary.cpp</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qconv.binary.cpp.layer.html">bitorch_engine.layers.qconv.binary.cpp.layer</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bitorch-engine-layers-qconv-binary-cpp-layer-binaryconv2dcpp">
+<h1>bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP<a class="headerlink" href="#bitorch-engine-layers-qconv-binary-cpp-layer-binaryconv2dcpp" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qconv.binary.cpp.layer.</span></span><span class="sig-name descname"><span class="pre">BinaryConv2dCPP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/cpp/layer.html#BinaryConv2dCPP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP" title="Link to this definition"></a></dt>
+<dd><p>This class implements a binary convolutional layer in PyTorch, specifically optimized with C++ extensions.
+It inherits from BinaryConv2dBase to leverage common binary convolution functionalities with added
+optimizations for efficient computation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.bits_binary_word">
+<span class="sig-name descname"><span class="pre">bits_binary_word</span></span><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.bits_binary_word" title="Link to this definition"></a></dt>
+<dd><p>Defines the size of the binary word, defaulting to 8 bits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.__init__" title="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a></p></td>
+<td><p>Initializes the BinaryConv2dCPP layer with the given arguments, which are forwarded to the base class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.forward" title="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a></p></td>
+<td><p>Defines the forward pass for the binary convolution operation using the quantized weights.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.generate_quantized_weight" title="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.generate_quantized_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_quantized_weight</span></code></a></p></td>
+<td><p>Generates and stores quantized weights based on the current weights of the layer, utilizing a binary quantization method.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.prepare_params" title="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.prepare_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_params</span></code></a></p></td>
+<td><p>Prepares and initializes the model parameters for training.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">training</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/cpp/layer.html#BinaryConv2dCPP.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initializes the BinaryConv2dCPP layer with the given arguments, which are forwarded to the base class.
+Additionally, it sets up the binary word size for quantization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – Variable length argument list to be passed to the BinaryConv2dBase class.</p></li>
+<li><p><strong>**kwargs</strong> – Arbitrary keyword arguments to be passed to the BinaryConv2dBase class.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/cpp/layer.html#BinaryConv2dCPP.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.forward" title="Link to this definition"></a></dt>
+<dd><p>Defines the forward pass for the binary convolution operation using the quantized weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor for the convolution operation with shape (N, C_in, H, W),
+where N is the batch size, C_in is the number of channels, and H, W are the height
+and width of the input tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The output tensor of the convolution operation with shape determined by the layer’s</dt><dd><p>attributes and the input dimensions.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.generate_quantized_weight">
+<span class="sig-name descname"><span class="pre">generate_quantized_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qweight_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/cpp/layer.html#BinaryConv2dCPP.generate_quantized_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.generate_quantized_weight" title="Link to this definition"></a></dt>
+<dd><p>Generates and stores quantized weights based on the current weights of the layer, utilizing a binary
+quantization method. Quantized weights are stored as a torch.nn.Parameter but are not set to require gradients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qweight_only</strong> (<em>bool</em>) – If True, the original weights are discarded to save memory. Defaults to False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.prepare_params">
+<span class="sig-name descname"><span class="pre">prepare_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/cpp/layer.html#BinaryConv2dCPP.prepare_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP.prepare_params" title="Link to this definition"></a></dt>
+<dd><p>Prepares and initializes the model parameters for training.
+One can use “prepare_bie_layers” method from project_root.utils.model_helper to call this function.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bitorch_engine.layers.qconv.binary.cpp.layer.html" class="btn btn-neutral float-left" title="bitorch_engine.layers.qconv.binary.cpp.layer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dForward.html" class="btn btn-neutral float-right" title="bitorch_engine.layers.qconv.binary.cpp.layer.BinaryConv2dForward" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

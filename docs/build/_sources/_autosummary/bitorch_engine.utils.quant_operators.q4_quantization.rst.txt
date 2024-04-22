@@ -1,0 +1,6 @@
+bitorch\_engine.utils.quant\_operators.q4\_quantization
+=======================================================
+
+.. currentmodule:: bitorch_engine.utils.quant_operators
+
+.. autofunction:: q4_quantization

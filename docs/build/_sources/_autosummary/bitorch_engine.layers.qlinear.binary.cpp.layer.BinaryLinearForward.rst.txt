@@ -1,0 +1,29 @@
+bitorch\_engine.layers.qlinear.binary.cpp.layer.BinaryLinearForward
+===================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary.cpp.layer
+
+.. autoclass:: BinaryLinearForward
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryLinearForward.forward
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

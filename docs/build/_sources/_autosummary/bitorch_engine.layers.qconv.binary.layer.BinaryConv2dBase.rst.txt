@@ -1,0 +1,37 @@
+bitorch\_engine.layers.qconv.binary.layer.BinaryConv2dBase
+==========================================================
+
+.. currentmodule:: bitorch_engine.layers.qconv.binary.layer
+
+.. autoclass:: BinaryConv2dBase
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryConv2dBase.__init__
+        ~BinaryConv2dBase.generate_quantized_weight
+        ~BinaryConv2dBase.prepare_params
+        ~BinaryConv2dBase.reset_parameters
+        ~BinaryConv2dBase.set_bits_binary_word
+        ~BinaryConv2dBase.set_quantized_weight_data
+        ~BinaryConv2dBase.set_weight_data
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~BinaryConv2dBase.opt_weight
+        ~BinaryConv2dBase.training
+   
+   

@@ -1,0 +1,30 @@
+bitorch\_engine.layers.qlinear.nbit.mps.mpq\_layer.MPQLinearMlxFunction
+=======================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.mps.mpq_layer
+
+.. autoclass:: MPQLinearMlxFunction
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~MPQLinearMlxFunction.backward
+        ~MPQLinearMlxFunction.forward
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

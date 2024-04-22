@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qconv.nbit.layer
+=======================================
+
+.. automodule:: bitorch_engine.layers.qconv.nbit.layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      nBitConv2dBase
+      nBitConvParameter
+   
+   
+
+   
+   
+   
+
+
+

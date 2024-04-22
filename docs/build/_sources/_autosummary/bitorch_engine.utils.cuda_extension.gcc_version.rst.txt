@@ -1,0 +1,6 @@
+bitorch\_engine.utils.cuda\_extension.gcc\_version
+==================================================
+
+.. currentmodule:: bitorch_engine.utils.cuda_extension
+
+.. autofunction:: gcc_version

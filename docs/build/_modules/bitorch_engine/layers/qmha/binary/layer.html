@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qmha.binary.layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qmha.binary.layer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qmha.binary.layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.binary.cutlass</span> <span class="kn">import</span> <span class="n">BinaryLinearCutlass</span><span class="p">,</span> <span class="n">BinaryMatMul</span>
+
+<div class="viewcode-block" id="LearnableBias">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qmha.binary.layer.LearnableBias.html#bitorch_engine.layers.qmha.binary.layer.LearnableBias">[docs]</a>
+<span class="k">class</span> <span class="nc">LearnableBias</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A module that introduces a learnable bias term to the input tensor.</span>
+
+<span class="sd">    This module adds a learnable bias parameter to the input tensor along the channel dimension.</span>
+<span class="sd">    The bias parameter is learnable and can be optimized during the training process.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bias (nn.Parameter): The learnable bias parameter initialized with zeros.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        out_chn (int): The number of output channels. This should match the channel dimension</span>
+<span class="sd">                       of the input tensor to which the bias will be added.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="LearnableBias.__init__">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qmha.binary.layer.LearnableBias.html#bitorch_engine.layers.qmha.binary.layer.LearnableBias.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_chn</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the LearnableBias module.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            out_chn (int): The number of output channels for the bias parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LearnableBias</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">out_chn</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LearnableBias.forward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qmha.binary.layer.LearnableBias.html#bitorch_engine.layers.qmha.binary.layer.LearnableBias.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass of the LearnableBias module.</span>
+
+<span class="sd">        Adds the learnable bias to the input tensor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (Tensor): The input tensor to which the learnable bias will be added.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: The output tensor after adding the learnable bias to the input.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BMHA">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qmha.binary.layer.BMHA.html#bitorch_engine.layers.qmha.binary.layer.BMHA">[docs]</a>
+<span class="k">class</span> <span class="nc">BMHA</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Implements a binary version of multi-head attention (MHA) where the linear transformations</span>
+<span class="sd">    are executed using binary operations to improve efficiency. This class is designed to work</span>
+<span class="sd">    with binary weights and can be particularly useful for deployments in resource-constrained</span>
+<span class="sd">    environments or for models where computational efficiency is crucial.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        dtype (torch.dtype): Data type for the computations, typically float or binary.</span>
+<span class="sd">        num_heads (int): Number of attention heads.</span>
+<span class="sd">        head_dim (int): Dimension of each attention head.</span>
+<span class="sd">        hidden_dim (int): Dimension of the hidden layer.</span>
+<span class="sd">        input_dim (int): Dimension of the input layer.</span>
+<span class="sd">        q_linear (BinaryLinearCutlass): Linear transformation for the query vector using binary operations.</span>
+<span class="sd">        v_linear (BinaryLinearCutlass): Linear transformation for the value vector using binary operations.</span>
+<span class="sd">        k_linear (BinaryLinearCutlass): Linear transformation for the key vector using binary operations.</span>
+<span class="sd">        dropout (nn.Dropout): Dropout layer to prevent overfitting.</span>
+<span class="sd">        out (BinaryLinearCutlass): Final linear layer to project the attention output back to input dimensionality.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the hidden size is not a multiple of the number of attention heads.</span>
+
+<span class="sd">    Note: The implementation of this class is still in the EXPERIMENTAL STAGE!</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+<div class="viewcode-block" id="BMHA.__init__">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qmha.binary.layer.BMHA.html#bitorch_engine.layers.qmha.binary.layer.BMHA.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_heads</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the BMHA module with the specified parameters. It sets up the binary linear layers for</span>
+<span class="sd">        the queries, keys, and values, along with the output projection layer. It also validates that the</span>
+<span class="sd">        hidden dimension is evenly divisible by the number of heads to ensure that the dimensions align</span>
+<span class="sd">        properly for multi-head attention.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_dim (int): The size of each input vector.</span>
+<span class="sd">            hidden_dim (int): The size of the hidden dimension. Must be divisible by num_heads.</span>
+<span class="sd">            num_heads (int): The number of attention heads.</span>
+<span class="sd">            dtype (torch.dtype, optional): The data type for computations. Defaults to torch.float.</span>
+<span class="sd">            *args: Variable length argument list for the parent class.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments for the parent class.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If hidden_dim is not divisible by num_heads, an error is raised to alert the user.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BMHA</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hidden_dim</span> <span class="o">%</span> <span class="n">num_heads</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The hidden size (</span><span class="si">%d</span><span class="s2">) is not a multiple of the number of attention &quot;</span>
+                <span class="s2">&quot;heads (</span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">num_heads</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span> <span class="o">=</span> <span class="n">num_heads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">head_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hidden_dim</span> <span class="o">/</span> <span class="n">num_heads</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span> <span class="o">=</span> <span class="n">hidden_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span> <span class="o">=</span> <span class="n">input_dim</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_linear</span> <span class="o">=</span> <span class="n">BinaryLinearCutlass</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_linear</span> <span class="o">=</span> <span class="n">BinaryLinearCutlass</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_linear</span> <span class="o">=</span> <span class="n">BinaryLinearCutlass</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">BinaryLinearCutlass</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span></div>
+
+
+        <span class="c1">## uncomment the following two lines, if you want to try binary matmul.</span>
+        <span class="c1">##</span>
+        <span class="c1"># self.cutlass_matmul_1 = BinaryMatMul(dtype=dtype)</span>
+        <span class="c1"># self.cutlass_matmul_2 = BinaryMatMul(dtype=dtype)</span>
+
+<div class="viewcode-block" id="BMHA.forward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qmha.binary.layer.BMHA.html#bitorch_engine.layers.qmha.binary.layer.BMHA.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_states</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for the binary multi-head attention layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hidden_states (torch.Tensor): Input tensor of shape (batch_size, sequence_length, input_dim).</span>
+<span class="sd">            mask (torch.Tensor, optional): Optional mask tensor to exclude certain positions from</span>
+<span class="sd">                                           the attention mechanism. Shape (batch_size, sequence_length).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[torch.Tensor, torch.Tensor]: A tuple containing:</span>
+<span class="sd">                - Output tensor of shape (batch_size, sequence_length, input_dim).</span>
+<span class="sd">                - Attention scores tensor of shape (batch_size, num_heads, sequence_length, sequence_length).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get batch size</span>
+        <span class="n">bs</span> <span class="o">=</span> <span class="n">hidden_states</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Linear projections -&gt; (bs, num_head, seq_length, head_dim)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_linear</span><span class="p">(</span><span class="n">hidden_states</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_dim</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_linear</span><span class="p">(</span><span class="n">hidden_states</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_dim</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_linear</span><span class="p">(</span><span class="n">hidden_states</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_dim</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Scaled Dot-Product Attention</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">head_dim</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e9</span><span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+
+        <span class="c1"># Attention output</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="n">attention</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+
+        <span class="c1"># Final linear layer</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">attention</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="n">scores</span></div>
+</div>
+
+
+
+        <span class="c1"># ======================================================================================================= #</span>
+        <span class="c1"># The version using binary matmul. NOTE THAT the batched_gemm of cutlass is not very efficient, we didn&#39;t #</span>
+        <span class="c1"># observe speedup for smaller matrices. More efficient CUDA implementation for binary matmul is required  #</span>
+        <span class="c1"># ======================================================================================================= #</span>
+        <span class="c1"># # get batch size</span>
+        <span class="c1"># bs = hidden_states.size(0)</span>
+        <span class="c1"># # Linear projections -&gt; (bs, num_head, seq_length, head_dim)</span>
+        <span class="c1"># q = self.q_linear(hidden_states).view(bs, -1, self.num_heads, self.head_dim).transpose(1,2)</span>
+        <span class="c1"># k = self.k_linear(hidden_states).view(bs, -1, self.num_heads, self.head_dim).transpose(1,2)</span>
+        <span class="c1"># v = self.v_linear(hidden_states).view(bs, -1, self.num_heads, self.head_dim).transpose(1,2)</span>
+        <span class="c1">#</span>
+        <span class="c1"># # shifting with learnable bias</span>
+        <span class="c1"># q = self.move_q(q)</span>
+        <span class="c1"># k = self.move_k(k)</span>
+        <span class="c1"># v = self.move_v(v)</span>
+        <span class="c1">#</span>
+        <span class="c1"># # Scaled Dot-Product Attention</span>
+        <span class="c1"># # this matmul accepts x_shape:(..., m, k), y_shape(..., n, k), the function will transpose the second input</span>
+        <span class="c1"># scores = self.cutlass_matmul_1(q, k) / math.sqrt(self.head_dim)</span>
+        <span class="c1"># if mask is not None:</span>
+        <span class="c1">#     mask = mask.unsqueeze(1)</span>
+        <span class="c1">#     scores = scores.masked_fill(mask == 0, -1e9)</span>
+        <span class="c1"># scores = nn.functional.softmax(scores, dim=-1)</span>
+        <span class="c1"># scores = self.dropout(scores)</span>
+        <span class="c1">#</span>
+        <span class="c1"># # Attention output</span>
+        <span class="c1"># attention = self.cutlass_matmul_2(v.transpose(-1, -2), scores)</span>
+        <span class="c1"># attention = attention.transpose(1, 2).contiguous().view(bs, -1, self.hidden_dim)</span>
+        <span class="c1">#</span>
+        <span class="c1"># # Final linear layer</span>
+        <span class="c1"># output = self.out(attention)</span>
+        <span class="c1"># return output, scores</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

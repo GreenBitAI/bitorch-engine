@@ -1,0 +1,41 @@
+bitorch\_engine.utils.model\_helper
+===================================
+
+.. automodule:: bitorch_engine.utils.model_helper
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      binary_matmul_forward_post_processing
+      flatten_x
+      init_weight
+      load_checkpoint
+      pack_bie_layers
+      pad_embedding_dim
+      pad_last_2_dims_to_multiple_of_128
+      prepare_bie_layers
+      qweight_update_fn
+      save_checkpoint
+      unflatten_x
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

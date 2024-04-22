@@ -1,0 +1,44 @@
+bitorch\_engine.layers.qlinear.binary
+=====================================
+
+.. automodule:: bitorch_engine.layers.qlinear.binary
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      get_best_binary_implementation
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: module.rst
+   :recursive:
+
+   bitorch_engine.layers.qlinear.binary.binary_implementation
+   bitorch_engine.layers.qlinear.binary.cpp
+   bitorch_engine.layers.qlinear.binary.cuda
+   bitorch_engine.layers.qlinear.binary.cutlass
+   bitorch_engine.layers.qlinear.binary.layer
+

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.nbit.cuda.utils &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.nbit.cuda.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qlinear.nbit.cuda.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.nbit</span> <span class="kn">import</span> <span class="n">MPQWeightParameter</span>
+
+
+<div class="viewcode-block" id="unpack_qweight">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cuda.utils.unpack_qweight.html#bitorch_engine.layers.qlinear.nbit.cuda.utils.unpack_qweight">[docs]</a>
+<span class="k">def</span> <span class="nf">unpack_qweight</span><span class="p">(</span><span class="n">qweight</span><span class="p">:</span> <span class="n">MPQWeightParameter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reconstructs the fp16 weight tensor from the input quantized weight parameter.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        qweight (MPQWeightParameter): The quantized weight parameter object containing all necessary quantization information.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: The reconstructed weight tensor in fp16 format.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If essential attributes are missing in the input qweight parameter.</span>
+<span class="sd">        NotImplementedError: For quantization types that are not yet supported.</span>
+
+<span class="sd">    Supported quantization styles:</span>
+<span class="sd">        1. GPTQ style with g_index.</span>
+<span class="sd">        2. GPTQ style without g_index.</span>
+<span class="sd">        3. Mixed-bit quantization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">layer_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="s1">&#39;layer_type&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">layer_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: invalid attribute of qweight in &#39;unpack_qweight&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Process based on layer type</span>
+    <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">layer_type</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># GPTQ style (with or without g_index)</span>
+        <span class="n">wf</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">w_bit</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">qweight</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bitwise_right_shift</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">32</span> <span class="o">//</span> <span class="n">qweight</span><span class="o">.</span><span class="n">w_bit</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                       <span class="n">wf</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int16</span> <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">w_bit</span> <span class="o">==</span> <span class="mi">8</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">qweight</span><span class="o">.</span><span class="n">w_bit</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">asym</span><span class="p">:</span>
+            <span class="n">zeros_unpack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bitwise_right_shift</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">qweight</span><span class="o">.</span><span class="n">zeros</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">32</span> <span class="o">//</span> <span class="n">qweight</span><span class="o">.</span><span class="n">w_bit</span><span class="p">),</span>
+                                 <span class="n">wf</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int16</span> <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">w_bit</span> <span class="o">==</span> <span class="mi">8</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">zeros_unpack</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">qweight</span><span class="o">.</span><span class="n">w_bit</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">zeros_unpack</span><span class="p">)</span>
+            <span class="n">zeros_unpack</span> <span class="o">=</span> <span class="n">zeros_unpack</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">zeros</span> <span class="o">=</span> <span class="n">zeros_unpack</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="p">[</span><span class="n">qweight</span><span class="o">.</span><span class="n">g_idx</span><span class="o">.</span><span class="n">long</span><span class="p">()]</span> <span class="o">*</span> <span class="p">(</span><span class="n">weight</span> <span class="o">-</span> <span class="n">zeros</span><span class="p">[</span><span class="n">qweight</span><span class="o">.</span><span class="n">g_idx</span><span class="o">.</span><span class="n">long</span><span class="p">()])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 2. GPTQ style without g_index.</span>
+            <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">g_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scales</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">//</span><span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">zeros</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">zeros</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">//</span> <span class="n">qweight</span><span class="o">.</span><span class="n">zeros</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">zeros</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span> <span class="o">-</span> <span class="n">zeros</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="p">[</span><span class="n">qweight</span><span class="o">.</span><span class="n">g_idx</span><span class="o">.</span><span class="n">long</span><span class="p">()]</span> <span class="o">-</span> <span class="n">qweight</span><span class="o">.</span><span class="n">zeros</span><span class="p">[</span><span class="n">qweight</span><span class="o">.</span><span class="n">g_idx</span><span class="o">.</span><span class="n">long</span><span class="p">()]</span>
+
+    <span class="k">elif</span> <span class="n">qweight</span><span class="o">.</span><span class="n">layer_type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span> <span class="c1"># MBWQLinear layer</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.nbit.cuda</span> <span class="kn">import</span> <span class="n">MBWQLinearCuda</span>
+            <span class="n">use_mbwq</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">q_group_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">use_mbwq</span><span class="p">:</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">MBWQLinearCuda</span><span class="o">.</span><span class="n">q42fp_weight</span><span class="p">(</span><span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">zeros</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">group_size</span><span class="p">,</span>
+                                                      <span class="n">qweight</span><span class="o">.</span><span class="n">w_bit</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">q_perm</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">MBWQLinearCuda</span><span class="o">.</span><span class="n">exl2fp_weight</span><span class="p">(</span><span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">zeros</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">q_perm</span><span class="p">,</span>
+                                                       <span class="n">qweight</span><span class="o">.</span><span class="n">q_group_map</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Module not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Error: &#39;layer_type&#39; not yet supported!&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">weights</span></div>
+
+
+
+<div class="viewcode-block" id="pack_fp_weight">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cuda.utils.pack_fp_weight.html#bitorch_engine.layers.qlinear.nbit.cuda.utils.pack_fp_weight">[docs]</a>
+<span class="k">def</span> <span class="nf">pack_fp_weight</span><span class="p">(</span><span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">qweight</span><span class="p">:</span> <span class="n">MPQWeightParameter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Packs the fp16 weight into a quantized weight format using the attributes defined in the QweightParameter.</span>
+
+<span class="sd">    This function handles three main scenarios:</span>
+<span class="sd">        1. GPTQ style quantization with group index (g_index).</span>
+<span class="sd">        2. GPTQ style quantization without g_index.</span>
+<span class="sd">        3. Mixed-bit quantization (currently not implemented).</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        weight (torch.Tensor): The floating-point weights to be quantized and packed.</span>
+<span class="sd">        qweight (MPQWeightParameter): An object containing quantization parameters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: The packed integer tensor representing the quantized weights.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If &#39;layer_type&#39; attribute is invalid or not present.</span>
+<span class="sd">        NotImplementedError: For unimplemented quantization methods, like mixed-bit quantization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">layer_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="s1">&#39;layer_type&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">scales</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="s1">&#39;scales&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">zeros</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="s1">&#39;zeros&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">w_bit</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="s1">&#39;w_bit&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">asym</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="s1">&#39;asym&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">g_idx</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="s1">&#39;g_idx&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">layer_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: invalid &#39;layer_type&#39; attribute in &#39;unpack_qweight&#39; method.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Process based on layer_type and existence of q_perm for quantization</span>
+    <span class="k">if</span> <span class="n">layer_type</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="p">(</span><span class="n">layer_type</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">qweight</span><span class="o">.</span><span class="n">q_group_map</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span> <span class="c1"># MPQLinear or MBWQLinear-q4</span>
+        <span class="k">if</span> <span class="n">asym</span><span class="p">:</span>
+            <span class="n">intweight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">weight</span> <span class="o">/</span> <span class="n">scales</span><span class="p">[</span><span class="n">g_idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">zeros</span><span class="p">[</span><span class="n">g_idx</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="n">w_bit</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">g_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Adjust scales and zeros for symmetric quantization without group index</span>
+                <span class="n">scales</span> <span class="o">=</span> <span class="n">scales</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">//</span><span class="n">scales</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">scales</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">zeros</span> <span class="o">=</span> <span class="n">zeros</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">//</span> <span class="n">zeros</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">zeros</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">q_perm</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">q_perm</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+                <span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">q_perm</span><span class="p">)</span>
+
+                <span class="n">intweight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">weight</span> <span class="o">+</span> <span class="n">zeros</span><span class="p">)</span> <span class="o">/</span> <span class="n">scales</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">w_bit</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Calculate integer weights for symmetric quantization with group index</span>
+                <span class="c1"># TODO: recalculate scales and zeros?</span>
+                <span class="n">intweight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">weight</span> <span class="o">+</span> <span class="n">zeros</span><span class="p">[</span><span class="n">g_idx</span><span class="p">])</span> <span class="o">/</span> <span class="n">scales</span><span class="p">[</span><span class="n">g_idx</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="n">w_bit</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Perform parallel bitpacking</span>
+        <span class="n">wf</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">w_bit</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">qweight</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">intweight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">bitwise_left_shift</span><span class="p">(</span>
+                <span class="n">intweight</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">32</span> <span class="o">//</span> <span class="n">w_bit</span><span class="p">,</span> <span class="n">intweight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+                <span class="n">wf</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># TODO: Placeholder for mixed-bit-width quantization method</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Error: pack_fp_weight for MBWQLinear using mixed-bit-width not supported yet.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">intweight</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="make_group_map">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cuda.utils.make_group_map.html#bitorch_engine.layers.qlinear.nbit.cuda.utils.make_group_map">[docs]</a>
+<span class="k">def</span> <span class="nf">make_group_map</span><span class="p">(</span><span class="n">q_groups</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">num_qrows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a mapping of quantization groups for handling irregular group sizes in quantized models.</span>
+
+<span class="sd">    This function generates a tensor representing the mapping of groups, where each group might have</span>
+<span class="sd">    a different size due to the quantization process. The mapping is used to organize or access quantized</span>
+<span class="sd">    weights or parameters based on their group assignment.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        q_groups (torch.Tensor): A tensor containing information about the quantization groups. It is expected</span>
+<span class="sd">         to hold pairs of values, where each pair consists of &#39;bits&#39; and &#39;start index&#39; for each group.</span>
+<span class="sd">        num_qrows (int): The total number of quantization rows, representing the overall size of the quantization</span>
+<span class="sd">         dimension.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: A tensor of short integers representing the group mapping. Each group is represented by</span>
+<span class="sd">        its index followed by the inverse row index within the group.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Given q_groups tensor indicating group sizes and num_qrows indicating the total quantization rows,</span>
+<span class="sd">        this function calculates the group mapping required for accessing or organizing the quantized parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_groups</span> <span class="o">=</span> <span class="n">q_groups</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">group_map</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_groups</span><span class="p">):</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="n">q_groups</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_groups</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">qrows</span> <span class="o">=</span> <span class="n">q_groups</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">q_groups</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">qrows</span> <span class="o">=</span> <span class="n">num_qrows</span> <span class="o">-</span> <span class="n">q_groups</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">qrows</span> <span class="o">*</span> <span class="mi">32</span> <span class="o">//</span> <span class="n">bits</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+            <span class="n">group_map</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">group_map</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rows</span> <span class="o">-</span> <span class="n">j</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">group_map</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">short</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">q_groups</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

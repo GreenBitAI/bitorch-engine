@@ -1,0 +1,29 @@
+bitorch\_engine.layers.qlinear.binary.layer.BinaryLinearParameter
+=================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary.layer
+
+.. autoclass:: BinaryLinearParameter
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryLinearParameter.update
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

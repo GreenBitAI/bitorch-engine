@@ -1,0 +1,34 @@
+bitorch\_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda
+==================================================================
+
+.. currentmodule:: bitorch_engine.layers.qembedding.binary.layer
+
+.. autoclass:: BinaryEmbeddingCuda
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryEmbeddingCuda.__init__
+        ~BinaryEmbeddingCuda.forward
+        ~BinaryEmbeddingCuda.init_weight
+        ~BinaryEmbeddingCuda.prepare_params
+        ~BinaryEmbeddingCuda.reset_parameters
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~BinaryEmbeddingCuda.training
+   
+   

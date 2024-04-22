@@ -1,0 +1,38 @@
+bitorch\_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda
+=================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary.cuda.layer
+
+.. autoclass:: BinaryLinearCuda
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryLinearCuda.__init__
+        ~BinaryLinearCuda.create_clone_from
+        ~BinaryLinearCuda.forward
+        ~BinaryLinearCuda.generate_quantized_weight
+        ~BinaryLinearCuda.prepare_params
+        ~BinaryLinearCuda.set_activation
+        ~BinaryLinearCuda.set_weight_data
+        ~BinaryLinearCuda.w_pack
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~BinaryLinearCuda.device_id
+        ~BinaryLinearCuda.training
+   
+   

@@ -1,0 +1,34 @@
+bitorch\_engine.layers.qlinear.nbit.cutlass.q4\_layer
+=====================================================
+
+.. automodule:: bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      Q4LinearCutlass
+      Q4LinearFunction
+      Q4MatMul
+      Q4MatMulFunction
+   
+   
+
+   
+   
+   
+
+
+

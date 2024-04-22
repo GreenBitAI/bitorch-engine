@@ -1,0 +1,35 @@
+bitorch\_engine.layers.qlinear
+==============================
+
+.. automodule:: bitorch_engine.layers.qlinear
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: module.rst
+   :recursive:
+
+   bitorch_engine.layers.qlinear.binary
+   bitorch_engine.layers.qlinear.layer
+   bitorch_engine.layers.qlinear.nbit
+   bitorch_engine.layers.qlinear.qlinear_implementation
+

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearParameter" href="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearParameter.html" />
+    <link rel="prev" title="bitorch_engine.layers.qlinear.binary.layer" href="bitorch_engine.layers.qlinear.binary.layer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build_options.html">Build options</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../documentation.html">Full Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bitorch_engine.html">bitorch_engine</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.functions.html">bitorch_engine.functions</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bitorch_engine.layers.html">bitorch_engine.layers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qembedding.html">bitorch_engine.layers.qembedding</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qmha.html">bitorch_engine.layers.qmha</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.optim.html">bitorch_engine.optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.utils.html">bitorch_engine.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../documentation.html">Full Documentation</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.html">bitorch_engine</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.html">bitorch_engine.layers</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.binary.html">bitorch_engine.layers.qlinear.binary</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.binary.layer.html">bitorch_engine.layers.qlinear.binary.layer</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bitorch-engine-layers-qlinear-binary-layer-binarylinearbase">
+<h1>bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase<a class="headerlink" href="#bitorch-engine-layers-qlinear-binary-layer-binarylinearbase" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qlinear.binary.layer.</span></span><span class="sig-name descname"><span class="pre">BinaryLinearBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">device</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtype</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">torch.float32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase" title="Link to this definition"></a></dt>
+<dd><p>Base class for binary linear layers, supporting both floating-point and quantized weights.</p>
+<p>This class is designed to facilitate the creation of binary linear layers,
+where weights can be represented in a quantized format for efficient computation,
+especially on hardware that supports binary operations. It provides a foundation
+for implementing various types of binary linear operations, including fully connected
+layers and convolutional layers with binary weights.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.bits_binary_word">
+<span class="sig-name descname"><span class="pre">bits_binary_word</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.bits_binary_word" title="Link to this definition"></a></dt>
+<dd><p>Number of bits in a binary word, default is 8.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.input_features">
+<span class="sig-name descname"><span class="pre">input_features</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.input_features" title="Link to this definition"></a></dt>
+<dd><p>Dimension of input features after bit-packing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.output_features">
+<span class="sig-name descname"><span class="pre">output_features</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.output_features" title="Link to this definition"></a></dt>
+<dd><p>Dimension of output features or hidden states.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.weight">
+<span class="sig-name descname"><span class="pre">weight</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.weight" title="Link to this definition"></a></dt>
+<dd><p>Floating-point weights, used for training and initialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.qweight">
+<span class="sig-name descname"><span class="pre">qweight</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.qweight" title="Link to this definition"></a></dt>
+<dd><p>Quantized weights, used for inference when training is False.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.device">
+<span class="sig-name descname"><span class="pre">device</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.device" title="Link to this definition"></a></dt>
+<dd><p>Device on which the layer’s tensors will be allocated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.device</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.dtype">
+<span class="sig-name descname"><span class="pre">dtype</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.dtype" title="Link to this definition"></a></dt>
+<dd><p>Data type of the layer’s floating-point weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.symmetric">
+<span class="sig-name descname"><span class="pre">symmetric</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.symmetric" title="Link to this definition"></a></dt>
+<dd><p>Indicates if the quantization should be symmetric around 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.reset_parameters">
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.reset_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.reset_parameters" title="Link to this definition"></a></dt>
+<dd><p>Initializes or resets the layer’s parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_weight_data">
+<span class="sig-name descname"><span class="pre">set_weight_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.set_weight_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_weight_data" title="Link to this definition"></a></dt>
+<dd><p>Sets the layer’s floating-point weights from an external tensor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_quantized_weight_data">
+<span class="sig-name descname"><span class="pre">set_quantized_weight_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.set_quantized_weight_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_quantized_weight_data" title="Link to this definition"></a></dt>
+<dd><p>Sets the layer’s quantized weights from an external tensor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.generate_quantized_weight">
+<span class="sig-name descname"><span class="pre">generate_quantized_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.generate_quantized_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.generate_quantized_weight" title="Link to this definition"></a></dt>
+<dd><p>Converts the floating-point weights to quantized format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase._check_forward">
+<span class="sig-name descname"><span class="pre">_check_forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase._check_forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase._check_forward" title="Link to this definition"></a></dt>
+<dd><p>Validates the compatibility of input tensor and weights before forward pass.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.opt_weight">
+<span class="sig-name descname"><span class="pre">opt_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">property</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.opt_weight" title="Link to this definition"></a></dt>
+<dd><p>Returns the optimal weights for the current mode (training or inference).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_bits_binary_word">
+<span class="sig-name descname"><span class="pre">set_bits_binary_word</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.set_bits_binary_word"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_bits_binary_word" title="Link to this definition"></a></dt>
+<dd><p>Sets the number of bits used in a binary word for quantization.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.__init__" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a></p></td>
+<td><p>Initializes the BinaryLinearBase class with specified configurations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.generate_quantized_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_quantized_weight</span></code></a></p></td>
+<td><p>Converts the floating-point weights to a quantized format through bit-packing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.prepare_params" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.prepare_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_params</span></code></a></p></td>
+<td><p>Prepares and initializes the model parameters for training.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id2" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.reset_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_parameters</span></code></a></p></td>
+<td><p>Initializes or resets the floating-point weight parameters using Kaiming uniform initialization.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id3" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_bits_binary_word"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_bits_binary_word</span></code></a></p></td>
+<td><p>Sets the number of bits used in a binary word for the purpose of quantization.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id4" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_quantized_weight_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_quantized_weight_data</span></code></a></p></td>
+<td><p>Sets the quantized weight parameter from an external tensor, disabling gradient computation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id5" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_weight_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_weight_data</span></code></a></p></td>
+<td><p>Sets the floating-point weight parameter from an external tensor.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id1" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.opt_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">opt_weight</span></code></a></p></td>
+<td><p>Returns the optimal weight parameter for the current mode (training or inference).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">training</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">device</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtype</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">torch.float32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initializes the BinaryLinearBase class with specified configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_features</strong> (<em>int</em>) – Dimension of input features after bit-packing.</p></li>
+<li><p><strong>out_features</strong> (<em>int</em>) – Dimension of output features or hidden states.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em><em>, </em><em>optional</em>) – Device on which to allocate tensors. Defaults to None.</p></li>
+<li><p><strong>dtype</strong> (<em>torch.dtype</em><em>, </em><em>optional</em>) – Data type for floating-point weights. Defaults to torch.float.</p></li>
+<li><p><strong>symmetric</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, quantization is symmetric around 0. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">generate_quantized_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qweight_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.generate_quantized_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Converts the floating-point weights to a quantized format through bit-packing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qweight_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, only updates the qweight without modifying the floating-point weight. Defaults to False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">opt_weight</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Parameter</span></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Returns the optimal weight parameter for the current mode (training or inference).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The floating-point weights during training or the quantized weights during inference.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.prepare_params">
+<span class="sig-name descname"><span class="pre">prepare_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.prepare_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.prepare_params" title="Link to this definition"></a></dt>
+<dd><p>Prepares and initializes the model parameters for training.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method MUST be called after model initialization and before training starts to ensure the weights are
+properly prepared for efficient computation.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.reset_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>Initializes or resets the floating-point weight parameters using Kaiming uniform initialization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">set_bits_binary_word</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.set_bits_binary_word"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>Sets the number of bits used in a binary word for the purpose of quantization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num_bit</strong> (<em>int</em>) – The number of bits to use in a binary word.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">set_quantized_weight_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.set_quantized_weight_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>Sets the quantized weight parameter from an external tensor, disabling gradient computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – A tensor containing the new quantized weight data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">set_weight_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/layer.html#BinaryLinearBase.set_weight_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd><p>Sets the floating-point weight parameter from an external tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – A tensor containing the new weight data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bitorch_engine.layers.qlinear.binary.layer.html" class="btn btn-neutral float-left" title="bitorch_engine.layers.qlinear.binary.layer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearParameter.html" class="btn btn-neutral float-right" title="bitorch_engine.layers.qlinear.binary.layer.BinaryLinearParameter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+bitorch\_engine.utils.model\_helper.pad\_last\_2\_dims\_to\_multiple\_of\_128
+=============================================================================
+
+.. currentmodule:: bitorch_engine.utils.model_helper
+
+.. autofunction:: pad_last_2_dims_to_multiple_of_128

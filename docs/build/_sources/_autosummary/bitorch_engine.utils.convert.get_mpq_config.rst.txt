@@ -1,0 +1,6 @@
+bitorch\_engine.utils.convert.get\_mpq\_config
+==============================================
+
+.. currentmodule:: bitorch_engine.utils.convert
+
+.. autofunction:: get_mpq_config

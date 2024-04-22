@@ -1,0 +1,6 @@
+bitorch\_engine.layers.qlinear.nbit.cuda.utils.make\_group\_map
+===============================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.cuda.utils
+
+.. autofunction:: make_group_map

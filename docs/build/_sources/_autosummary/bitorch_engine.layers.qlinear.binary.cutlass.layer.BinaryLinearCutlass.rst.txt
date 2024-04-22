@@ -1,0 +1,36 @@
+bitorch\_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearCutlass
+=======================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary.cutlass.layer
+
+.. autoclass:: BinaryLinearCutlass
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryLinearCutlass.__init__
+        ~BinaryLinearCutlass.forward
+        ~BinaryLinearCutlass.generate_quantized_weight
+        ~BinaryLinearCutlass.prepare_params
+        ~BinaryLinearCutlass.select_gemm_kernel
+        ~BinaryLinearCutlass.set_activation
+        ~BinaryLinearCutlass.set_weight_data
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~BinaryLinearCutlass.training
+   
+   

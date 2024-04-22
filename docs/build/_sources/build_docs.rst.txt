@@ -1,0 +1,12 @@
+
+Build Docs
+===================================
+
+The docs for :code:`bitorch_engine` are generated using the `sphinx <https://www.sphinx-doc.org/en/master/>`_ package.
+To build the docs, `cd` into the repository root and execute.
+
+.. code-block:: bash
+
+    sphinx-build -b html docs/source/ docs/build/ -a
+
+The generated :code:`HTML` files will be put into :code:`docs/build`.

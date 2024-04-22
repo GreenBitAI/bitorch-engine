@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">..layer</span> <span class="kn">import</span> <span class="n">nBitLinearBase</span><span class="p">,</span> <span class="n">nBitLinearParameter</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.model_helper</span> <span class="kn">import</span> <span class="n">init_weight</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Function</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.quant_operators</span> <span class="kn">import</span> <span class="n">q8_quantization</span><span class="p">,</span> <span class="n">nv_tensor_quant</span>
+
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.safe_import</span> <span class="kn">import</span> <span class="n">import_extension</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.model_helper</span> <span class="kn">import</span> <span class="n">flatten_x</span><span class="p">,</span> <span class="n">unflatten_x</span>
+
+<span class="n">q_linear_cutlass</span> <span class="o">=</span> <span class="n">import_extension</span><span class="p">(</span><span class="s2">&quot;q_linear_cutlass&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Q8LinearFunction">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearFunction.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearFunction">[docs]</a>
+<span class="k">class</span> <span class="nc">Q8LinearFunction</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implements a quantized linear function using 8-bit quantization for both activations and weights.</span>
+
+<span class="sd">    This class is designed to perform forward and backward passes of a linear layer with quantization,</span>
+<span class="sd">    leveraging CUTLASS kernels for efficient computation. The quantization scheme is based on fixed-point</span>
+<span class="sd">    representation, where &#39;scale_a&#39; and &#39;scale_w&#39; are scaling factors for activations and weights, respectively.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Note taht both forward and  backward are @staticmethods</span>
+<div class="viewcode-block" id="Q8LinearFunction.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearFunction.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearFunction.forward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">eps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">is_train</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Forward pass of the quantized linear function.</span>
+
+<span class="sd">         Args:</span>
+<span class="sd">             ctx: Context object to save variables for backward computation.</span>
+<span class="sd">             x (torch.Tensor): Input tensor.</span>
+<span class="sd">             weight (torch.Tensor): Weight tensor.</span>
+<span class="sd">             scale_a (torch.Tensor): Scaling factor for the activations.</span>
+<span class="sd">             scale_w (torch.Tensor): Scaling factor for the weights.</span>
+<span class="sd">             eps (torch.Tensor): Epsilon tensor for quantization to avoid division by zero.</span>
+<span class="sd">             is_train (bool): Flag indicating whether the forward pass is for training or inference.</span>
+
+<span class="sd">         Returns:</span>
+<span class="sd">             torch.Tensor: The output tensor of the quantized linear operation.</span>
+<span class="sd">         &quot;&quot;&quot;</span>
+        <span class="n">q_a</span> <span class="o">=</span> <span class="n">q8_quantization</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span> <span class="k">else</span> <span class="n">x</span>
+        <span class="n">q_a</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">flatten_x</span><span class="p">(</span><span class="n">q_a</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weight</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">:</span>
+            <span class="n">q_w</span><span class="p">,</span> <span class="n">scale_w</span> <span class="o">=</span> <span class="n">q8_quantization</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+            <span class="n">q_w</span> <span class="o">=</span> <span class="n">q_w</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">q_w</span> <span class="o">=</span> <span class="n">weight</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">q_linear_cutlass</span><span class="o">.</span><span class="n">q8_forward</span><span class="p">(</span><span class="n">q_a</span><span class="p">,</span> <span class="n">q_w</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">q_a</span><span class="p">,</span> <span class="n">q_w</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">unflatten_x</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="Q8LinearFunction.backward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearFunction.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearFunction.backward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">BackwardCFunction</span><span class="p">,</span>
+                 <span class="n">output_gradient</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backward pass of the quantized linear function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx: Context object containing saved tensors from the forward pass.</span>
+<span class="sd">            output_gradient (torch.Tensor): Gradient of the loss with respect to the output of this layer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple containing gradients with respect to the input, weight, scale_a, and None placeholders</span>
+<span class="sd">            for scale_w, eps, and is_train which do not require gradients.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output_gradient</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">flatten_x</span><span class="p">(</span><span class="n">output_gradient</span><span class="p">)</span>
+
+        <span class="nb">input</span><span class="p">,</span> <span class="n">q8_activation</span><span class="p">,</span> <span class="n">q8_weight</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">,</span> <span class="n">scale_w</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+
+        <span class="n">grad_a</span> <span class="o">=</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">q8_weight</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_w</span><span class="p">)</span>
+        <span class="n">grad_weight</span> <span class="o">=</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">q8_activation</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_a</span><span class="p">)</span>  <span class="c1"># (n, k)</span>
+
+        <span class="c1"># grad clip range input</span>
+        <span class="n">q_w</span> <span class="o">=</span> <span class="nb">input</span> <span class="o">/</span> <span class="n">scale_a</span>
+        <span class="n">indicate_small</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">128</span>
+        <span class="n">indicate_large</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&gt;</span> <span class="mi">127</span>
+        <span class="n">indicate_middle</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">indicate_small</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">indicate_large</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="n">grad_a</span> <span class="o">*</span> <span class="n">indicate_middle</span>
+        <span class="n">grad_input</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">scale_a</span><span class="p">)</span>
+
+        <span class="c1">## grad of the scaling factor for activation</span>
+        <span class="n">grad_scale_a</span> <span class="o">=</span> \
+            <span class="p">((</span><span class="n">indicate_small</span> <span class="o">*</span> <span class="o">-</span><span class="mf">128.0</span> <span class="o">+</span> <span class="n">indicate_large</span> <span class="o">*</span> <span class="mf">127.0</span> <span class="o">+</span> <span class="n">indicate_middle</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="o">-</span><span class="n">q_w</span> <span class="o">+</span> <span class="n">q_w</span><span class="o">.</span><span class="n">round</span><span class="p">()))</span> <span class="o">*</span> <span class="n">grad_input</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span><span class="o">*</span><span class="mf">127.0</span><span class="p">)))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="n">unflatten_x</span><span class="p">(</span><span class="n">grad_input</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">grad_input</span><span class="p">,</span> <span class="n">grad_weight</span><span class="p">,</span> <span class="n">grad_scale_a</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Q8LinearCutlass">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass">[docs]</a>
+<span class="k">class</span> <span class="nc">Q8LinearCutlass</span><span class="p">(</span><span class="n">nBitLinearBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implements an 8-bit quantized linear layer using CUTLASS for efficient computation.</span>
+
+<span class="sd">    This class inherits from `nBitLinearBase` and adds specific functionality for handling 8-bit quantized weights</span>
+<span class="sd">    and activations, aiming at reducing memory footprint and accelerating computation on compatible hardware. It</span>
+<span class="sd">    introduces parameters for scaling and bias adjustment of activations to maintain accuracy with quantized values.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bias_a (torch.nn.Parameter): Bias for the activation function, ensuring the quantized model&#39;s accuracy.</span>
+<span class="sd">        scale_a (torch.nn.Parameter): Scale factor for activations, used in quantization to maintain numerical stability.</span>
+<span class="sd">        scale_w (torch.nn.Parameter): Scale factor for weights, adjusting the quantized weights&#39; magnitude.</span>
+<span class="sd">        eps (torch.Tensor): A small epsilon value to prevent division by zero in computations, set to 0.00001 by default.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        prepare_params: Prepares and initializes the model parameters for training, converting weights to int8 format.</span>
+<span class="sd">        generate_quantized_weight: Quantizes the weights, preparing them for efficient storage or computation.</span>
+<span class="sd">        _check_forward: Verifies the input dimensions match the weight dimensions.</span>
+<span class="sd">        set_activation: Quantizes activation to 8-bit using the scale factor `scale_a` and adjusts with `bias_a`.</span>
+<span class="sd">        forward: Defines the forward pass for the quantized linear layer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Q8LinearCutlass.__init__">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the Q8LinearCutlass layer, setting up parameters for activation scaling, weight scaling,</span>
+<span class="sd">        and a small epsilon value for numerical stability.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Q8LinearCutlass</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;scale_w&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;eps&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.00001</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Q8LinearCutlass.prepare_params">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.prepare_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares and initializes the model parameters for training.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method MUST be called after model initialization and before training starts to ensure the weights are</span>
+<span class="sd">            properly prepared for efficient computation.</span>
+
+<span class="sd">            One can use &quot;prepare_bie_layers&quot; method from project_root.utils.model_helper to call this function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Q8LinearCutlass.generate_quantized_weight">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.generate_quantized_weight">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_quantized_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs weight quantization, preparing them for efficient computation or storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight_only (bool): If True, only quantizes the weights without altering other parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">qw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">q8_quantization</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">qw</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">qweight_only</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Q8LinearCutlass._check_forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass._check_forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">_check_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Verifies that the input tensor&#39;s dimension matches that of the weights.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input tensor for the forward pass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;Error: input and weights&#39; dim mismatch.&quot;</span></div>
+
+
+<div class="viewcode-block" id="Q8LinearCutlass.set_activation">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.set_activation">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_activation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Quantizes activation to 8-bit and applies a learnable bias adjustment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The activation tensor before quantization and bias adjustment.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The adjusted activation tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># alpha = 2 * tensor.abs().mean() / math.sqrt(Qp) where Qp=127 for 8-bit</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="o">.</span><span class="n">is_nonzero</span><span class="p">():</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mf">11.269</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># learnable shift input</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_a</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Q8LinearCutlass.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.Q8LinearCutlass.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the forward pass for the quantized linear layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Input tensor with shape (batch size, number of features).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The output of the quantized linear layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_activation</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Q8LinearFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

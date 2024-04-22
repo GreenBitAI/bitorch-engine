@@ -1,0 +1,6 @@
+bitorch\_engine.layers.qlinear.binary.cuda.extension.get\_ext
+=============================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary.cuda.extension
+
+.. autofunction:: get_ext

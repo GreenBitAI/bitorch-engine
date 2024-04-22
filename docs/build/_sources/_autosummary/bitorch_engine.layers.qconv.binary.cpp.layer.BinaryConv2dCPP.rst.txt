@@ -1,0 +1,33 @@
+bitorch\_engine.layers.qconv.binary.cpp.layer.BinaryConv2dCPP
+=============================================================
+
+.. currentmodule:: bitorch_engine.layers.qconv.binary.cpp.layer
+
+.. autoclass:: BinaryConv2dCPP
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryConv2dCPP.__init__
+        ~BinaryConv2dCPP.forward
+        ~BinaryConv2dCPP.generate_quantized_weight
+        ~BinaryConv2dCPP.prepare_params
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~BinaryConv2dCPP.training
+   
+   

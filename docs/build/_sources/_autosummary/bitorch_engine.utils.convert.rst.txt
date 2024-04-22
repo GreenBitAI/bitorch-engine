@@ -1,0 +1,36 @@
+bitorch\_engine.utils.convert
+=============================
+
+.. automodule:: bitorch_engine.utils.convert
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      collect_layers
+      get_mpq_config
+      quantize_linear_with_binary_linear_cuda
+      quantize_linear_with_mpq_linear_cuda
+      quantize_linear_with_q4_linear_cutlass
+      replace_layers
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

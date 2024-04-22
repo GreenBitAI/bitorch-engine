@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bitorch_engine.layers.qconv.binary.layer.BinaryConvParameter" href="bitorch_engine.layers.qconv.binary.layer.BinaryConvParameter.html" />
+    <link rel="prev" title="bitorch_engine.layers.qconv.binary.layer" href="bitorch_engine.layers.qconv.binary.layer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build_options.html">Build options</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../documentation.html">Full Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bitorch_engine.html">bitorch_engine</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.functions.html">bitorch_engine.functions</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bitorch_engine.layers.html">bitorch_engine.layers</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qembedding.html">bitorch_engine.layers.qembedding</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qmha.html">bitorch_engine.layers.qmha</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.optim.html">bitorch_engine.optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.utils.html">bitorch_engine.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../documentation.html">Full Documentation</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.html">bitorch_engine</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.html">bitorch_engine.layers</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qconv.binary.html">bitorch_engine.layers.qconv.binary</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qconv.binary.layer.html">bitorch_engine.layers.qconv.binary.layer</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bitorch-engine-layers-qconv-binary-layer-binaryconv2dbase">
+<h1>bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase<a class="headerlink" href="#bitorch-engine-layers-qconv-binary-layer-binaryconv2dbase" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qconv.binary.layer.</span></span><span class="sig-name descname"><span class="pre">BinaryConv2dBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtype</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">torch.float32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/layer.html#BinaryConv2dBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase" title="Link to this definition"></a></dt>
+<dd><p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.__init__" title="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a></p></td>
+<td><p>Initializes a base class for binary convolution layers.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.generate_quantized_weight" title="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.generate_quantized_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_quantized_weight</span></code></a></p></td>
+<td><p>Generates quantized weights from the current weights.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.prepare_params" title="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.prepare_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_params</span></code></a></p></td>
+<td><p>Prepares and initializes the model parameters for training.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.reset_parameters" title="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.reset_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_parameters</span></code></a></p></td>
+<td><p>Resets the layer's parameters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_bits_binary_word" title="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_bits_binary_word"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_bits_binary_word</span></code></a></p></td>
+<td><p>Sets the number of bits for binary quantization.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_quantized_weight_data" title="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_quantized_weight_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_quantized_weight_data</span></code></a></p></td>
+<td><p>Sets the quantized weight data for the convolution layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_weight_data" title="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_weight_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_weight_data</span></code></a></p></td>
+<td><p>Sets the weight data for the convolution layer.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.opt_weight" title="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.opt_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">opt_weight</span></code></a></p></td>
+<td><p>Returns the weight for the layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">training</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtype</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">torch.float32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/layer.html#BinaryConv2dBase.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initializes a base class for binary convolution layers.</p>
+<p>This class is designed to serve as a base for binary convolution operations,
+where the convolution weights are quantized to binary values. It initializes
+the layer’s parameters and sets up the necessary configurations for binary
+convolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>int</em>) – The number of channels in the input image.</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – The number of channels produced by the convolution.</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em>) – The size of the convolving kernel.</p></li>
+<li><p><strong>stride</strong> (<em>int</em>) – The stride of the convolution. Defaults to 1.</p></li>
+<li><p><strong>padding</strong> (<em>int</em>) – Zero-padding added to both sides of the input. Defaults to 0.</p></li>
+<li><p><strong>dilation</strong> (<em>int</em>) – The spacing between kernel elements. Defaults to 1.</p></li>
+<li><p><strong>device</strong> – The device on which to allocate tensors. Defaults to None.</p></li>
+<li><p><strong>dtype</strong> (<em>torch.dtype</em>) – The desired data type of the parameters. Defaults to torch.float.</p></li>
+<li><p><strong>symmetric</strong> (<em>bool</em>) – Indicates whether to use symmetric quantization. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.generate_quantized_weight">
+<span class="sig-name descname"><span class="pre">generate_quantized_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qweight_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/layer.html#BinaryConv2dBase.generate_quantized_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.generate_quantized_weight" title="Link to this definition"></a></dt>
+<dd><p>Generates quantized weights from the current weights.</p>
+<p>This method should implement the logic to convert the layer’s weights
+to their quantized form. This is an abstract method and must be implemented
+by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qweight_only</strong> (<em>bool</em>) – If True, the original weight tensor is discarded to save memory.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.opt_weight">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">opt_weight</span></span><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.opt_weight" title="Link to this definition"></a></dt>
+<dd><p>Returns the weight for the layer.</p>
+<p>This property checks if the layer is in training mode and returns
+the appropriate weight tensor (original or quantized) for use in
+computations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The optimized weight tensor.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.prepare_params">
+<span class="sig-name descname"><span class="pre">prepare_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/layer.html#BinaryConv2dBase.prepare_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.prepare_params" title="Link to this definition"></a></dt>
+<dd><p>Prepares and initializes the model parameters for training.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method MUST be called after model initialization and before training starts to ensure the weights are
+properly prepared for efficient computation.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.reset_parameters">
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/layer.html#BinaryConv2dBase.reset_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.reset_parameters" title="Link to this definition"></a></dt>
+<dd><p>Resets the layer’s parameters.</p>
+<p>This method reinitializes the weight parameter of the convolution layer,
+typically with a new random value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_bits_binary_word">
+<span class="sig-name descname"><span class="pre">set_bits_binary_word</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/layer.html#BinaryConv2dBase.set_bits_binary_word"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_bits_binary_word" title="Link to this definition"></a></dt>
+<dd><p>Sets the number of bits for binary quantization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num_bit</strong> (<em>int</em>) – The number of bits to use for binary quantization.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_quantized_weight_data">
+<span class="sig-name descname"><span class="pre">set_quantized_weight_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/layer.html#BinaryConv2dBase.set_quantized_weight_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_quantized_weight_data" title="Link to this definition"></a></dt>
+<dd><p>Sets the quantized weight data for the convolution layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – A tensor containing the quantized weights for the convolution layer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_weight_data">
+<span class="sig-name descname"><span class="pre">set_weight_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qconv/binary/layer.html#BinaryConv2dBase.set_weight_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qconv.binary.layer.BinaryConv2dBase.set_weight_data" title="Link to this definition"></a></dt>
+<dd><p>Sets the weight data for the convolution layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – A tensor containing the weights for the convolution layer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bitorch_engine.layers.qconv.binary.layer.html" class="btn btn-neutral float-left" title="bitorch_engine.layers.qconv.binary.layer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bitorch_engine.layers.qconv.binary.layer.BinaryConvParameter.html" class="btn btn-neutral float-right" title="bitorch_engine.layers.qconv.binary.layer.BinaryConvParameter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

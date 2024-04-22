@@ -1,0 +1,30 @@
+bitorch\_engine.layers.qlinear.nbit.cuda.mbwq\_layer.MBWQLinearCudaFunction
+===========================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.cuda.mbwq_layer
+
+.. autoclass:: MBWQLinearCudaFunction
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~MBWQLinearCudaFunction.backward
+        ~MBWQLinearCudaFunction.forward
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

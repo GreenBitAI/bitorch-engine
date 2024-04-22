@@ -1,0 +1,30 @@
+bitorch\_engine.layers.qembedding.binary.layer.BinaryEmbeddingForward
+=====================================================================
+
+.. currentmodule:: bitorch_engine.layers.qembedding.binary.layer
+
+.. autoclass:: BinaryEmbeddingForward
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryEmbeddingForward.backward
+        ~BinaryEmbeddingForward.forward
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

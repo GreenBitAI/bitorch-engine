@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer" href="bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.html" />
+    <link rel="prev" title="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul" href="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build_options.html">Build options</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../documentation.html">Full Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bitorch_engine.html">bitorch_engine</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.functions.html">bitorch_engine.functions</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bitorch_engine.layers.html">bitorch_engine.layers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qembedding.html">bitorch_engine.layers.qembedding</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qmha.html">bitorch_engine.layers.qmha</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.optim.html">bitorch_engine.optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.utils.html">bitorch_engine.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../documentation.html">Full Documentation</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.html">bitorch_engine</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.html">bitorch_engine.layers</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.nbit.html">bitorch_engine.layers.qlinear.nbit</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.nbit.cutlass.html">bitorch_engine.layers.qlinear.nbit.cutlass</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.html">bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bitorch-engine-layers-qlinear-nbit-cutlass-q4-layer-q4matmulfunction">
+<h1>bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction<a class="headerlink" href="#bitorch-engine-layers-qlinear-nbit-cutlass-q4-layer-q4matmulfunction" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.</span></span><span class="sig-name descname"><span class="pre">Q4MatMulFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/cutlass/q4_layer.html#Q4MatMulFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction" title="Link to this definition"></a></dt>
+<dd><p>This class implements a custom autograd function for quantized matrix multiplication (MatMul)
+using 4-bit quantization. It quantizes the inputs to 4 bits, performs the MatMul operation,
+and then dequantizes the result. This operation is designed to work with low-precision arithmetic
+to improve computational efficiency while maintaining reasonable accuracy.</p>
+<p>Both the forward and backward methods are implemented as static methods, allowing this class
+to be used directly without instantiation.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.backward" title="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.backward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">backward</span></code></a></p></td>
+<td><p>Backward pass of the Q4MatMulFunction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.forward" title="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a></p></td>
+<td><p>Forward pass of the Q4MatMulFunction.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.backward">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackwardCFunction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_gradient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/cutlass/q4_layer.html#Q4MatMulFunction.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.backward" title="Link to this definition"></a></dt>
+<dd><p>Backward pass of the Q4MatMulFunction. Computes gradients for the input tensors based on the output gradient.</p>
+<p>This method calculates the gradients for both input tensors and their clipping values,
+taking into account the quantization performed during the forward pass. It uses a custom backward
+operation defined in <cite>q_linear_cutlass</cite> to compute these gradients efficiently.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ctx</strong> – Context object containing saved tensors from the forward pass.</p></li>
+<li><p><strong>output_gradient</strong> (<em>torch.Tensor</em>) – Gradient of the loss with respect to the output of this function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing gradients for x, y, x_clip, y_clip, and None placeholders</dt><dd><p>for eps and is_train, as these do not require gradients.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, …]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.forward">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_train</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/cutlass/q4_layer.html#Q4MatMulFunction.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass of the Q4MatMulFunction. Quantizes inputs, performs MatMul, and dequantizes the output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ctx</strong> – Context object to save tensors for backward computation.</p></li>
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor 1.</p></li>
+<li><p><strong>y</strong> (<em>torch.Tensor</em>) – Input tensor 2.</p></li>
+<li><p><strong>x_clip</strong> (<em>torch.Tensor</em>) – Clipping value for input tensor x, used for quantization range.</p></li>
+<li><p><strong>y_clip</strong> (<em>torch.Tensor</em>) – Clipping value for input tensor y, used for quantization range.</p></li>
+<li><p><strong>eps</strong> (<em>torch.Tensor</em>) – Epsilon value to avoid division by zero during quantization.</p></li>
+<li><p><strong>is_train</strong> (<em>bool</em>) – Flag indicating if the model is in training mode.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The result of the quantized MatMul operation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul.html" class="btn btn-neutral float-left" title="bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer.html" class="btn btn-neutral float-right" title="bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

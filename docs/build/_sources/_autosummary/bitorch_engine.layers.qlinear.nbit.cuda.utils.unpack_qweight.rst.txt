@@ -1,0 +1,6 @@
+bitorch\_engine.layers.qlinear.nbit.cuda.utils.unpack\_qweight
+==============================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.cuda.utils
+
+.. autofunction:: unpack_qweight

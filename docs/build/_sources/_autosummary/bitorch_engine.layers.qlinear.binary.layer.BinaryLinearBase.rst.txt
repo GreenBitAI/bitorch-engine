@@ -1,0 +1,37 @@
+bitorch\_engine.layers.qlinear.binary.layer.BinaryLinearBase
+============================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary.layer
+
+.. autoclass:: BinaryLinearBase
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryLinearBase.__init__
+        ~BinaryLinearBase.generate_quantized_weight
+        ~BinaryLinearBase.prepare_params
+        ~BinaryLinearBase.reset_parameters
+        ~BinaryLinearBase.set_bits_binary_word
+        ~BinaryLinearBase.set_quantized_weight_data
+        ~BinaryLinearBase.set_weight_data
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~BinaryLinearBase.opt_weight
+        ~BinaryLinearBase.training
+   
+   

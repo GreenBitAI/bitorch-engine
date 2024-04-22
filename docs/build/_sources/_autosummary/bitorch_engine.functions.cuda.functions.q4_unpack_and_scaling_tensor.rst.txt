@@ -1,0 +1,6 @@
+bitorch\_engine.functions.cuda.functions.q4\_unpack\_and\_scaling\_tensor
+=========================================================================
+
+.. currentmodule:: bitorch_engine.functions.cuda.functions
+
+.. autofunction:: q4_unpack_and_scaling_tensor

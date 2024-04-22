@@ -1,0 +1,29 @@
+bitorch\_engine.layers.qconv.nbit.layer.nBitConvParameter
+=========================================================
+
+.. currentmodule:: bitorch_engine.layers.qconv.nbit.layer
+
+.. autoclass:: nBitConvParameter
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~nBitConvParameter.update
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

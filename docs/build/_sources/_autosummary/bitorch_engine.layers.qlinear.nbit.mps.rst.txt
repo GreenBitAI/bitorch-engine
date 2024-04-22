@@ -1,0 +1,33 @@
+bitorch\_engine.layers.qlinear.nbit.mps
+=======================================
+
+.. automodule:: bitorch_engine.layers.qlinear.nbit.mps
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: module.rst
+   :recursive:
+
+   bitorch_engine.layers.qlinear.nbit.mps.extension
+   bitorch_engine.layers.qlinear.nbit.mps.mpq_layer
+

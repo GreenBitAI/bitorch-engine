@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.utils.model_helper &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.utils.model_helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.utils.model_helper</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.quant_operators</span> <span class="kn">import</span> <span class="n">nv_tensor_quant</span><span class="p">,</span> <span class="n">gptq_stype_unpacking</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.functions.cuda</span> <span class="kn">import</span> <span class="n">tensor_to_packed_uint8</span><span class="p">,</span> <span class="n">unpack_uint8_tensor</span>
+
+
+<div class="viewcode-block" id="flatten_x">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.flatten_x.html#bitorch_engine.utils.model_helper.flatten_x">[docs]</a>
+<span class="k">def</span> <span class="nf">flatten_x</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flattens a 3D tensor into a 2D tensor by combining the first two dimensions.</span>
+
+<span class="sd">    This is particularly useful for processing sequences in models like BERT/Transformers,</span>
+<span class="sd">    where you might need to apply operations that expect 2D inputs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (torch.Tensor): A 3D tensor with shape [batch_size, seq_length, hidden_size].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple[torch.Tensor, list]: A tuple containing the flattened 2D tensor with shape</span>
+<span class="sd">        [batch_size * seq_length, hidden_size] and the original shape as a list</span>
+<span class="sd">        [batch_size, seq_length] for later unflattening.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># shape of x in BERT/Transformer：[batch_size, seq_length, hidden_size]</span>
+    <span class="c1"># flatten x to 2D tensor : [batch_size * seq_length, hidden_size]</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">shape</span></div>
+
+
+
+<div class="viewcode-block" id="unflatten_x">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.unflatten_x.html#bitorch_engine.utils.model_helper.unflatten_x">[docs]</a>
+<span class="k">def</span> <span class="nf">unflatten_x</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unflattens a 2D tensor back into a 3D tensor using the original shape, reversing the operation</span>
+<span class="sd">    performed by `flatten_x`.</span>
+
+<span class="sd">    This function is useful for reconstructing the original 3D structure of sequence data</span>
+<span class="sd">    after performing operations that require 2D input tensors.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (torch.Tensor): A 2D tensor with shape [batch_size * seq_length, output_size].</span>
+<span class="sd">        shape (list): The original shape of the tensor before flattening,</span>
+<span class="sd">        as a list [batch_size, seq_length].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: The unflattened 3D tensor with shape [batch_size, seq_length, output_size].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># from [batch_size * seq_length, output_size] to [batch_size, seq_length, output_size]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">shape</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+<span class="c1">## binary embedding layer helper functions</span>
+<div class="viewcode-block" id="pad_embedding_dim">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.pad_embedding_dim.html#bitorch_engine.utils.model_helper.pad_embedding_dim">[docs]</a>
+<span class="k">def</span> <span class="nf">pad_embedding_dim</span><span class="p">(</span><span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function takes as input a PyTorch tensor &quot;weight&quot; representing the embedding matrix,</span>
+<span class="sd">    and pads its embedding dimension to the smallest multiple of 8 that is greater than or</span>
+<span class="sd">    equal to the current embedding dimension. It does so by calculating the remainder of the</span>
+<span class="sd">    current embedding dimension divided by 8, and adding the required number of columns</span>
+<span class="sd">    filled with -1 to the tensor. Finally, the function returns the padded tensor.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tensor (torch.Tensor): A PyTorch tensor for storing weight parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tensor (torch.Tensor): Weight tensor after padding</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Get the current embedding dimension</span>
+    <span class="n">curr_dim</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Check if the embedding dimension is a multiple of 8</span>
+    <span class="k">if</span> <span class="n">curr_dim</span> <span class="o">%</span> <span class="mi">8</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Calculate the new padded embedding dimension</span>
+        <span class="n">new_dim</span> <span class="o">=</span> <span class="p">(</span><span class="n">curr_dim</span> <span class="o">//</span> <span class="mi">8</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">8</span>
+        <span class="c1"># Calculate the number of columns to pad</span>
+        <span class="n">num_cols_to_pad</span> <span class="o">=</span> <span class="n">new_dim</span> <span class="o">-</span> <span class="n">curr_dim</span>
+        <span class="c1"># Create the padding tensor filled with -1</span>
+        <span class="n">padding_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_cols_to_pad</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="c1"># Concatenate the padding tensor to the original tensor</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">weight</span><span class="p">,</span> <span class="n">padding_tensor</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">weight</span></div>
+
+
+
+<div class="viewcode-block" id="pad_last_2_dims_to_multiple_of_128">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.pad_last_2_dims_to_multiple_of_128.html#bitorch_engine.utils.model_helper.pad_last_2_dims_to_multiple_of_128">[docs]</a>
+<span class="k">def</span> <span class="nf">pad_last_2_dims_to_multiple_of_128</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pad the last two dimensions of a PyTorch tensor to the nearest multiple of 128.</span>
+
+<span class="sd">    This function ensures the last two dimensions of the input tensor are rounded up to the nearest multiple of 128,</span>
+<span class="sd">    adding padding with zeros where necessary. This is particularly useful for preparing tensors for operations</span>
+<span class="sd">    that require dimensions to be a certain size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tensor (torch.Tensor): A PyTorch tensor that will be padded.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: The tensor padded to ensure its last two dimensions are multiples of 128.</span>
+<span class="sd">        int: The number of elements added as padding to the second-to-last dimension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get the original shape of the tensor</span>
+    <span class="n">padded_tensor</span> <span class="o">=</span> <span class="n">tensor</span>
+    <span class="n">orig_shape</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1"># Compute the padded shape of the tensor by rounding up to the nearest multiple of 128</span>
+    <span class="n">padded_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">orig_shape</span><span class="p">)</span>
+    <span class="n">pad_last</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">pad_sec_last</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">padded_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="mi">128</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">padded_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">padded_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">128</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">128</span>
+        <span class="n">pad_last</span> <span class="o">=</span> <span class="n">padded_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">padded_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">%</span> <span class="mi">128</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">padded_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">padded_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">//</span> <span class="mi">128</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">128</span>
+        <span class="n">pad_sec_last</span> <span class="o">=</span> <span class="n">padded_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_last</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pad_sec_last</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pad_last</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">pad_sec_last</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">padded_tensor</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">padded_tensor</span><span class="p">,</span> <span class="n">pad_sec_last</span></div>
+
+
+
+<div class="viewcode-block" id="binary_matmul_forward_post_processing">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.binary_matmul_forward_post_processing.html#bitorch_engine.utils.model_helper.binary_matmul_forward_post_processing">[docs]</a>
+<span class="k">def</span> <span class="nf">binary_matmul_forward_post_processing</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                                          <span class="n">shape_pre</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                                          <span class="n">x_pad_sec_last</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                          <span class="n">y_pad_sec_last</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                          <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Post-processes the output tensor of a binary matrix multiplication operation.</span>
+
+<span class="sd">    This function performs several post-processing steps on the result of a binary matrix multiplication,</span>
+<span class="sd">    including truncating any padded elements added during the operation, reshaping the tensor back to its</span>
+<span class="sd">    original dimensions with additional specified dimensions, and converting the binary data back to its</span>
+<span class="sd">    original data domain.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">    - tensor (torch.Tensor): The output tensor from a binary matrix multiplication to be post-processed.</span>
+<span class="sd">    - shape_pre (list): The original shape of the tensor before the binary matrix multiplication, which the output tensor will be reshaped to, with the last two dimensions replaced by the actual last two dimensions of the post-processed tensor.</span>
+<span class="sd">    - x_pad_sec_last (int): The number of padded elements added to the second to last dimension of the tensor during the binary matrix multiplication. These will be removed.</span>
+<span class="sd">    - y_pad_sec_last (int): The number of padded elements added to the last dimension of the tensor during the binary matrix multiplication. These will be removed.</span>
+<span class="sd">    - k (int): A constant used to convert the binary data in the tensor back to its original data domain. The conversion formula applied is `k - 2 * tensor`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - torch.Tensor: The post-processed tensor, reshaped to its original dimensions with specified adjustments and converted back to its original data domain.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">    - This function is specifically designed for tensors resulting from binary matrix multiplication operations that involve padding and require post-processing to revert to their original format and domain.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">## truncate padded elements in m und n dim</span>
+    <span class="k">if</span> <span class="n">x_pad_sec_last</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="n">x_pad_sec_last</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="n">y_pad_sec_last</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="o">-</span><span class="n">y_pad_sec_last</span><span class="p">]</span>
+    <span class="c1"># reshape to (bs, num_head, seq_lengh, hid_size_per_head)</span>
+    <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">shape_pre</span> <span class="o">+</span> <span class="p">[</span><span class="n">tensor</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="n">tensor</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)])</span>
+    <span class="c1"># convert to (-1, 1) data domain</span>
+    <span class="n">tensor</span> <span class="o">=</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">tensor</span>
+    <span class="k">return</span> <span class="n">tensor</span></div>
+
+
+
+<div class="viewcode-block" id="prepare_bie_layers">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.prepare_bie_layers.html#bitorch_engine.utils.model_helper.prepare_bie_layers">[docs]</a>
+<span class="k">def</span> <span class="nf">prepare_bie_layers</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prepares binary and n-bit quantized layers within a given model for training or inference.</span>
+<span class="sd">    This function iterates over the modules of the model and calls `prepare_params` on those</span>
+<span class="sd">    which are instances of the specified quantized layer classes. This preparation step is</span>
+<span class="sd">    essential for initializing or transforming parameters specific to quantized operations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (torch.nn.Module): The model containing the layers to be prepared.</span>
+<span class="sd">        layers (list, optional): A list of layer classes to be prepared. If not provided,</span>
+<span class="sd">            defaults to a predefined list of binary and n-bit quantized layer classes,</span>
+<span class="sd">            including both convolutional and linear layers, as well as binary embedding layers.</span>
+
+<span class="sd">    The function imports necessary classes from the `bitorch_engine` package, focusing on</span>
+<span class="sd">    binary and n-bit implementations of convolutional layers, linear layers, and embedding layers.</span>
+<span class="sd">    If no specific layers are provided, it defaults to a comprehensive list of available</span>
+<span class="sd">    quantized layer types. Each layer in the model that matches a type in the `layers` list</span>
+<span class="sd">    will have its `prepare_params` method called, allowing for any necessary parameter</span>
+<span class="sd">    initialization or adjustments before the model is used.</span>
+
+<span class="sd">    This is particularly useful for models that utilize quantized layers, ensuring that</span>
+<span class="sd">    all such layers are correctly set up for either training or deployment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Import statements for binary and n-bit quantized layers from bitorch_engine</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qconv.binary</span> <span class="kn">import</span> <span class="n">BinaryConv2dBase</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qconv.nbit</span> <span class="kn">import</span> <span class="n">nBitConv2dBase</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.binary</span> <span class="kn">import</span> <span class="n">BinaryLinearBase</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.nbit</span> <span class="kn">import</span> <span class="n">nBitLinearBase</span><span class="p">,</span> <span class="n">MPQLinearBase</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qembedding.binary</span> <span class="kn">import</span> <span class="n">BinaryEmbeddingCuda</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">layers</span><span class="p">:</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">BinaryConv2dBase</span><span class="p">,</span> <span class="n">nBitConv2dBase</span><span class="p">,</span> <span class="n">BinaryLinearBase</span><span class="p">,</span> <span class="n">nBitLinearBase</span><span class="p">,</span> <span class="n">MPQLinearBase</span><span class="p">,</span> <span class="n">BinaryEmbeddingCuda</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">modules</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># starts from the second item</span>
+            <span class="n">module_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">module_type</span><span class="p">,</span> <span class="n">layer</span><span class="p">)</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">module_type</span><span class="p">,</span> <span class="n">layer</span><span class="p">)</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">):</span>
+                <span class="n">module</span><span class="o">.</span><span class="n">prepare_params</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="pack_bie_layers">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.pack_bie_layers.html#bitorch_engine.utils.model_helper.pack_bie_layers">[docs]</a>
+<span class="k">def</span> <span class="nf">pack_bie_layers</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Packs the weights of quantization layers in a given model to prepare for efficient storage.</span>
+<span class="sd">    This function should be invoked prior to using `torch.save()` for saving the model,</span>
+<span class="sd">    ensuring that the quantized weights are properly compressed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model: The model whose quantization layers&#39; weights are to be packed. This model</span>
+<span class="sd">                  should already be trained and contain quantization layers that support</span>
+<span class="sd">                  weight packing.</span>
+<span class="sd">        qweight_only: A boolean flag indicating whether only the weights are to be quantized</span>
+<span class="sd">                         and packed. If `True`, only weights are packed, excluding other parameters</span>
+<span class="sd">                         like biases. Defaults to `True`.</span>
+<span class="sd">        layers: A list of layer classes that should be considered for packing. If not provided,</span>
+<span class="sd">                   defaults to a predefined list of binary and n-bit quantized convolutional and</span>
+<span class="sd">                   linear layer bases. This allows customization of which layers are to be packed</span>
+<span class="sd">                   based on the model architecture.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The function iterates through all sub-modules of the provided model, checking if any</span>
+<span class="sd">    module matches the types specified in the `layers` list. For each matching module, it calls</span>
+<span class="sd">    the `generate_quantized_weight` method with the `qweight_only` parameter, which performs the</span>
+<span class="sd">    actual weight packing process.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qconv.binary</span> <span class="kn">import</span> <span class="n">BinaryConv2dBase</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qconv.nbit</span> <span class="kn">import</span> <span class="n">nBitConv2dBase</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.binary</span> <span class="kn">import</span> <span class="n">BinaryLinearBase</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.nbit</span> <span class="kn">import</span> <span class="n">nBitLinearBase</span><span class="p">,</span> <span class="n">MPQLinearBase</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">layers</span><span class="p">:</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">BinaryConv2dBase</span><span class="p">,</span> <span class="n">nBitConv2dBase</span><span class="p">,</span> <span class="n">BinaryLinearBase</span><span class="p">,</span> <span class="n">nBitLinearBase</span><span class="p">,</span> <span class="n">MPQLinearBase</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">modules</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># starts from the second item</span>
+            <span class="n">module_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">module_type</span><span class="p">,</span> <span class="n">layer</span><span class="p">)</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">):</span>
+                <span class="n">module</span><span class="o">.</span><span class="n">generate_quantized_weight</span><span class="p">(</span><span class="n">qweight_only</span><span class="o">=</span><span class="n">qweight_only</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="save_checkpoint">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.save_checkpoint.html#bitorch_engine.utils.model_helper.save_checkpoint">[docs]</a>
+<span class="k">def</span> <span class="nf">save_checkpoint</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Saves the state of a quantized PyTorch model in a bit-packed format. This function is intended for models </span>
+<span class="sd">    that incorporate quantized layers, allowing for efficient storage and potential speedups in model loading </span>
+<span class="sd">    and inference.</span>
+
+<span class="sd">    The function first packs the layers of the model based on the quantization status of the weights and then </span>
+<span class="sd">    saves the model&#39;s state dictionary. The saved checkpoint can be used for inference or to resume training, </span>
+<span class="sd">    depending on the inclusion of unpacked weights.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (torch.nn.Module): The model to save. This model should use quantized layers.</span>
+<span class="sd">        name (str): The file path where the model checkpoint will be saved. This path should include the</span>
+<span class="sd">            filename and the desired file extension (usually &quot;.pth&quot; for PyTorch models).</span>
+<span class="sd">        qweight_only (bool, optional): A flag to indicate whether to save only the quantized weights (True)</span>
+<span class="sd">            or to also include the original, unpacked weights (False). Saving only quantized weights reduces file</span>
+<span class="sd">            size but may limit the ability to resume training. Defaults to True, optimizing for reduced storage.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">pack_bie_layers</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">)</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;state_dict&#39;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+    <span class="p">}</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="load_checkpoint">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.load_checkpoint.html#bitorch_engine.utils.model_helper.load_checkpoint">[docs]</a>
+<span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads a checkpoint into a given model. This function first applies weight packing to the model if</span>
+<span class="sd">    quantized weights are used, then loads the model&#39;s state dict from the checkpoint path provided.</span>
+<span class="sd">    This is particularly useful for models that use quantized weights, allowing the option to load</span>
+<span class="sd">    only the quantized weights for inference or both quantized and unpacked weights for further training.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model: The model into which the checkpoint will be loaded. This model should use quantized layers if</span>
+<span class="sd">            qweight_only is set to True.</span>
+<span class="sd">        checkpoint_path: The file path to the checkpoint from which the model state will be loaded.</span>
+<span class="sd">        qweight_only: A boolean flag indicating whether to pack and load only the quantized weights</span>
+<span class="sd">            (True) or to also consider unpacked weights which can be useful for resuming</span>
+<span class="sd">            training (False). Default is True, which means only quantized weights are considered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pack_bie_layers</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">)</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;state_dict&#39;</span><span class="p">],</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="init_weight">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.init_weight.html#bitorch_engine.utils.model_helper.init_weight">[docs]</a>
+<span class="k">def</span> <span class="nf">init_weight</span><span class="p">(</span><span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">]</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Initializes binary parameters using pre-trained weights if available.</span>
+
+<span class="sd">    This function calculates the weight scale from either the provided pre-trained weights</span>
+<span class="sd">    or the initial weights. It converts weights to int8 for training, achieving a 4x reduction</span>
+<span class="sd">    in size, and prepares for a fully bit-packed uint8 conversion for inference, achieving</span>
+<span class="sd">    a 32x reduction in size. The process aims to preserve the average magnitude of the original weights.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        weight (Tensor): The initial floating-point weight tensor.</span>
+<span class="sd">        cls (Type[torch.nn.Parameter]): class of the output weight.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[Tensor, Tensor]: A tuple containing the initialized weight as a torch.nn.Parameter in int8 format</span>
+<span class="sd">        and the scale of the weight.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Calculate weight scale from the pre-trained weights if provided, else from the initial weight.</span>
+    <span class="c1"># Converts the weight tensor to float if not already in that dtype to ensure consistency</span>
+    <span class="n">w_f</span> <span class="o">=</span> <span class="n">weight</span>
+    <span class="k">if</span> <span class="n">w_f</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">:</span>
+        <span class="n">w_f</span> <span class="o">=</span> <span class="n">w_f</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the scale of the weights based on their L1 norm, divided by the number of elements.</span>
+    <span class="c1"># This captures the average magnitude, which may better represent asymmetrically distributed weights.</span>
+    <span class="n">scale_w</span> <span class="o">=</span> <span class="n">w_f</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">w_f</span><span class="o">.</span><span class="n">nelement</span><span class="p">())</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="c1"># Center the weights around zero by subtracting the mean. This step is crucial for the quantization process.</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="n">w_f</span> <span class="o">-</span> <span class="n">w_f</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="c1"># Quantize weights to int8 using a custom quantization function (assumed to be nv_tensor_quant here).</span>
+    <span class="c1"># Replace zeros with the sign of the original weight to maintain the sign information after quantization.</span>
+    <span class="n">weight_int8</span> <span class="o">=</span> <span class="n">nv_tensor_quant</span><span class="p">(</span><span class="n">weight</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">weight_int8</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">weight_int8</span><span class="o">==</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">sign</span><span class="p">(),</span> <span class="n">weight_int8</span><span class="p">)</span>
+
+    <span class="c1"># Convert the quantized weights into a torch.nn.Parameter of type int8 for further training or inference use.</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+        <span class="n">weight_int8</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">weight</span><span class="p">,</span> <span class="n">scale_w</span></div>
+
+
+
+<div class="viewcode-block" id="qweight_update_fn">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.qweight_update_fn.html#bitorch_engine.utils.model_helper.qweight_update_fn">[docs]</a>
+<span class="k">def</span> <span class="nf">qweight_update_fn</span><span class="p">(</span><span class="n">qweight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">step</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">beta1</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+                      <span class="n">beta2</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.9999</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">half</span><span class="p">,</span> <span class="n">correct_bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">grad</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This method defines how to update quantized weights with quantized gradients.</span>
+<span class="sd">    It may involve operations such as applying momentum or adjusting weights based on some optimization algorithm.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        qweight (torch.nn.Parameter): The current quantized weight parameter to be updated.</span>
+<span class="sd">        exp_avg_s (torch.Tensor, optional): Exponential moving average of squared gradients. Used in optimization algorithms like Adam.</span>
+<span class="sd">        exp_avg_l (torch.Tensor, optional): Exponential moving average of the gradients. Also used in optimizers like Adam.</span>
+<span class="sd">        step (torch.Tensor, optional): The current step or iteration in the optimization process. Can be used to adjust learning rate or for other conditional operations in the update process.</span>
+<span class="sd">        lr (float, optional): Learning rate. A hyperparameter that determines the step size at each iteration while moving toward a minimum of a loss function.</span>
+<span class="sd">        weight_decay (float, optional): Weight decay (L2 penalty). A regularization term that helps to prevent overfitting by penalizing large weights.</span>
+<span class="sd">        beta1 (float, optional): The exponential decay rate for the first moment estimates. A hyperparameter for optimizers like Adam.</span>
+<span class="sd">        beta2 (float, optional): The exponential decay rate for the second-moment estimates. Another hyperparameter for Adam-like optimizers.</span>
+<span class="sd">        eps (float, optional): A small constant for numerical stability.</span>
+<span class="sd">        dtype (torch.dtype, optional): The data type to be used for computations.</span>
+<span class="sd">        correct_bias (optional): Whether to apply bias correction (specific to certain models like BERT).</span>
+<span class="sd">        projector (optinal): Whether use a gradient projector.</span>
+<span class="sd">        grad (optional): gradient tensor will be used if projector used.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None: The function is expected to update the `qweight` in-place and does not return anything.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        NotImplementedError: Indicates that the function has not yet been implemented.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># import corresponding q-layers</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qembedding.binary</span> <span class="kn">import</span> <span class="n">BinaryEmbeddingParameter</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.binary</span> <span class="kn">import</span> <span class="n">BinaryLinearParameter</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.nbit</span> <span class="kn">import</span> <span class="n">nBitLinearParameter</span><span class="p">,</span> <span class="n">MPQWeightParameter</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qconv.binary</span> <span class="kn">import</span> <span class="n">BinaryConvParameter</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qconv.nbit</span> <span class="kn">import</span> <span class="n">nBitConvParameter</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.nbit.cuda.utils</span> <span class="kn">import</span> <span class="n">pack_fp_weight</span>
+
+    <span class="c1"># update step</span>
+    <span class="n">step</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># for binary embedding layers</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">BinaryEmbeddingParameter</span><span class="p">):</span>
+
+        <span class="c1"># for packed binary embedding weight</span>
+        <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">:</span>
+            <span class="n">scale_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">qweight</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+            <span class="c1"># unpack uint8 weight to float tensor (-1, 1) then mul lr</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">unpack_uint8_tensor</span><span class="p">(</span><span class="n">qweight</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">)</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># for unpacked binary embedding weight</span>
+        <span class="k">elif</span> <span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="c1"># (0, 1) to (-1, 1) and mul lr</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">v</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">qweight</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;qweight.dtype &#39;</span><span class="si">{}</span><span class="s2">&#39; has not been supported yet.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">)))</span>
+
+        <span class="n">exp_avg_s</span><span class="o">.</span><span class="n">lerp_</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta2</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">:</span>
+            <span class="n">binary_grad</span> <span class="o">=</span> <span class="n">tensor_to_packed_uint8</span><span class="p">(</span><span class="n">exp_avg_s</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">binary_grad</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> \
+                <span class="s1">&#39;binary embedding grad has incorrect dtype </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">binary_grad</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Generate a new bool tensor where each item is True if the corresponding item in exp_avg_s is &gt;= 0, otherwise False</span>
+            <span class="n">binary_grad</span> <span class="o">=</span> <span class="n">exp_avg_s</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+
+        <span class="c1"># represents the items involved in update</span>
+        <span class="n">active_indices</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">active_indices</span>
+        <span class="c1"># Use bitwise XOR to find differing bits, since XOR returns True if the bits are different</span>
+        <span class="n">differing_bits</span> <span class="o">=</span> <span class="n">qweight</span><span class="p">[</span><span class="n">active_indices</span><span class="p">]</span> <span class="o">^</span> <span class="n">binary_grad</span><span class="p">[</span><span class="n">active_indices</span><span class="p">]</span>
+        <span class="c1"># Modify qweight where the bits are different</span>
+        <span class="n">qweight</span><span class="p">[</span><span class="n">active_indices</span><span class="p">]</span> <span class="o">^=</span> <span class="n">differing_bits</span>
+
+    <span class="c1">#  binary conv and linear layers.</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="p">(</span><span class="n">BinaryLinearParameter</span><span class="p">,</span> <span class="n">BinaryConvParameter</span><span class="p">)):</span>
+        <span class="n">exp_avg_l</span><span class="o">.</span><span class="n">lerp_</span><span class="p">(</span><span class="n">qweight</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta1</span><span class="p">))</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">exp_avg_l</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">sign_</span><span class="p">()</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span>
+        <span class="n">exp_avg_s</span><span class="o">.</span><span class="n">lerp_</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta2</span><span class="p">))</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">exp_avg_s</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">sign_</span><span class="p">()</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">u</span><span class="p">[</span><span class="n">u</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">u</span> <span class="o">!=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">sign</span><span class="p">())</span>
+        <span class="c1"># sign flipping for binary weight update</span>
+        <span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="o">-</span><span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+        <span class="c1"># === debug stuff === #</span>
+        <span class="c1"># flips = mask.view(-1).sum()</span>
+        <span class="c1"># print(flips)</span>
+        <span class="c1"># =================== #</span>
+
+    <span class="c1"># q4 or q8 layers</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="p">(</span><span class="n">nBitLinearParameter</span><span class="p">,</span> <span class="n">nBitConvParameter</span><span class="p">)):</span>
+        <span class="c1"># int8 to floating-point dtype</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="c1"># Decay the first and second moment running average coefficient</span>
+        <span class="c1"># In-place operations to update the averages at the same time</span>
+        <span class="n">exp_avg_l</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">beta1</span><span class="p">)</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta1</span><span class="p">))</span>
+        <span class="n">exp_avg_s</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">beta2</span><span class="p">)</span><span class="o">.</span><span class="n">addcmul_</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta2</span><span class="p">)</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="n">exp_avg_s</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+
+        <span class="n">step_size</span> <span class="o">=</span> <span class="n">lr</span>
+        <span class="k">if</span> <span class="n">correct_bias</span><span class="p">:</span>  <span class="c1"># No bias correction for Bert</span>
+            <span class="n">bias_correction1</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta1</span> <span class="o">**</span> <span class="n">step</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">bias_correction2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta2</span> <span class="o">**</span> <span class="n">step</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">step_size</span> <span class="o">=</span> <span class="n">step_size</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">bias_correction2</span><span class="p">)</span> <span class="o">/</span> <span class="n">bias_correction1</span>
+
+        <span class="n">w</span><span class="o">.</span><span class="n">addcdiv_</span><span class="p">(</span><span class="n">exp_avg_l</span><span class="p">,</span> <span class="n">denom</span><span class="p">,</span> <span class="n">value</span><span class="o">=-</span><span class="n">step_size</span><span class="p">)</span>
+
+        <span class="c1"># Just adding the square of the weights to the loss function is *not*</span>
+        <span class="c1"># the correct way of using L2 regularization/weight decay with Adam,</span>
+        <span class="c1"># since that will interact with the m and v parameters in strange ways.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Instead we want to decay the weights in a manner that doesn&#39;t interact</span>
+        <span class="c1"># with the m/v parameters. This is equivalent to adding the square</span>
+        <span class="c1"># of the weights to the loss with plain (non-momentum) SGD.</span>
+        <span class="c1"># Add weight decay at the end (fixed version)</span>
+        <span class="k">if</span> <span class="n">weight_decay</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">w</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">lr</span> <span class="o">*</span> <span class="n">weight_decay</span><span class="p">))</span>
+
+        <span class="c1"># update int8 qweight</span>
+        <span class="n">qweight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">nv_tensor_quant</span><span class="p">(</span><span class="n">w</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">MPQWeightParameter</span><span class="p">):</span>
+
+        <span class="c1"># unpack qweight</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">gptq_stype_unpacking</span><span class="p">(</span><span class="n">qweight</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="c1"># Decay the first and second moment running average coefficient</span>
+        <span class="c1"># In-place operations to update the averages at the same time</span>
+        <span class="n">exp_avg_l</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">beta1</span><span class="p">)</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta1</span><span class="p">))</span>
+        <span class="n">exp_avg_s</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">beta2</span><span class="p">)</span><span class="o">.</span><span class="n">addcmul_</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta2</span><span class="p">)</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="n">exp_avg_s</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+
+        <span class="n">step_size</span> <span class="o">=</span> <span class="n">lr</span>
+        <span class="k">if</span> <span class="n">correct_bias</span><span class="p">:</span>  <span class="c1"># No bias correction for Bert</span>
+            <span class="n">bias_correction1</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta1</span> <span class="o">**</span> <span class="n">step</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">bias_correction2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta2</span> <span class="o">**</span> <span class="n">step</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">step_size</span> <span class="o">=</span> <span class="n">step_size</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">bias_correction2</span><span class="p">)</span> <span class="o">/</span> <span class="n">bias_correction1</span>
+
+        <span class="c1"># compute norm gradient</span>
+        <span class="n">norm_grad</span> <span class="o">=</span> <span class="n">exp_avg_l</span> <span class="o">/</span> <span class="n">denom</span>
+
+        <span class="c1"># GaLore Projection Back</span>
+        <span class="k">if</span> <span class="n">projector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">norm_grad</span> <span class="o">=</span> <span class="n">projector</span><span class="o">.</span><span class="n">project_back</span><span class="p">(</span><span class="n">norm_grad</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">))</span>
+
+        <span class="n">w</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">norm_grad</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=-</span><span class="n">step_size</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weight_decay</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">w</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">lr</span> <span class="o">*</span> <span class="n">weight_decay</span><span class="p">))</span>
+
+        <span class="c1"># pack fp weight back to Q-weight and update qweight data</span>
+        <span class="n">qweight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pack_fp_weight</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">qweight</span><span class="p">)</span>
+
+        <span class="c1"># manually empty cuda cache.</span>
+        <span class="k">del</span> <span class="n">w</span>
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;qweight.dtype &#39;</span><span class="si">{}</span><span class="s2">&#39; has not been supported yet.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">qweight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">)))</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qlinear.binary.layer
+===========================================
+
+.. automodule:: bitorch_engine.layers.qlinear.binary.layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      BinaryLinearBase
+      BinaryLinearParameter
+   
+   
+
+   
+   
+   
+
+
+

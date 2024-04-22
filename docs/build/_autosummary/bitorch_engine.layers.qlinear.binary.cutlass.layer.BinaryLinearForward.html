@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryMatMul" href="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryMatMul.html" />
+    <link rel="prev" title="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearCutlass" href="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearCutlass.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build_options.html">Build options</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../documentation.html">Full Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bitorch_engine.html">bitorch_engine</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.functions.html">bitorch_engine.functions</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bitorch_engine.layers.html">bitorch_engine.layers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qembedding.html">bitorch_engine.layers.qembedding</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qmha.html">bitorch_engine.layers.qmha</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.optim.html">bitorch_engine.optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.utils.html">bitorch_engine.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../documentation.html">Full Documentation</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.html">bitorch_engine</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.html">bitorch_engine.layers</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.binary.html">bitorch_engine.layers.qlinear.binary</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.binary.cutlass.html">bitorch_engine.layers.qlinear.binary.cutlass</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.binary.cutlass.layer.html">bitorch_engine.layers.qlinear.binary.cutlass.layer</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bitorch-engine-layers-qlinear-binary-cutlass-layer-binarylinearforward">
+<h1>bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward<a class="headerlink" href="#bitorch-engine-layers-qlinear-binary-cutlass-layer-binarylinearforward" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qlinear.binary.cutlass.layer.</span></span><span class="sig-name descname"><span class="pre">BinaryLinearForward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cutlass/layer.html#BinaryLinearForward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward" title="Link to this definition"></a></dt>
+<dd><p>Implements the forward and backward passes of a binary linear layer.</p>
+<p>This class supports binary linear operations where both the inputs and weights are binarized.
+It integrates scaling and value range conversion directly within the forward pass,
+and provides gradient calculations for backpropagation with respect to the input, weights,
+and scaling factors in the backward pass.</p>
+<p>The forward method supports any input shape by flattening the input, and it can optionally
+save tensors for the backward pass if training is enabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>torch.Tensor</em>) – The input tensor.</p></li>
+<li><p><strong>weight</strong> (<em>torch.Tensor</em>) – The weight tensor, expected to be binary.</p></li>
+<li><p><strong>scale_a</strong> (<em>torch.Tensor</em>) – The scaling factor for the activation.</p></li>
+<li><p><strong>scale_w</strong> (<em>torch.Tensor</em>) – The scaling factor for the weights.</p></li>
+<li><p><strong>gemm_kernel_id</strong> (<em>int</em>) – An identifier for the GEMM kernel to be used in the CUTLASS library.</p></li>
+<li><p><strong>is_train</strong> (<em>bool</em>) – Flag indicating whether the operation is in training mode.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The output tensor from the binary linear operation,</dt><dd><p>scaled and converted back to the input’s dtype.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This implementation relies on the CUTLASS library for efficient binary linear operations.</p>
+</div>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward.backward" title="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward.backward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">backward</span></code></a></p></td>
+<td><p>Implements the backward pass of a binary linear layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward.forward" title="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a></p></td>
+<td><p>Define the forward of the custom autograd Function.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward.backward">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackwardCFunction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_gradient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cutlass/layer.html#BinaryLinearForward.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward.backward" title="Link to this definition"></a></dt>
+<dd><p>Implements the backward pass of a binary linear layer.</p>
+<p>This method calculates the gradients with respect to the input tensor, weight tensor,
+and the scaling factor for the activation. It also handles gradient clipping for the
+input tensor based on its value range after scaling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ctx</strong> (<em>Any</em>) – The autograd context, storing saved tensors from the forward pass.</p></li>
+<li><p><strong>output_gradient</strong> (<em>torch.Tensor</em>) – The gradient of the loss with respect to the output of the layer.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing gradients with respect to the input tensor, weight tensor,</dt><dd><p>scaling factor for the activation, followed by three <cite>None</cite> placeholders for
+gradients that are not calculated (scale_w, gemm_kernel_id, is_train).</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method assumes that the weight tensor is of type int8 during the gradient calculation,
+and it performs the sign operation on weights to maintain the binarized nature.
+The method supports backpropagation through layers that use binary weights and activations.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward.forward">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gemm_kernel_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_train</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cutlass/layer.html#BinaryLinearForward.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearForward.forward" title="Link to this definition"></a></dt>
+<dd><p>Define the forward of the custom autograd Function.</p>
+<p>This function is to be overridden by all subclasses.
+There are two ways to define forward:</p>
+<p>Usage 1 (Combined forward and ctx):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@staticmethod</span>
+<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>It must accept a context ctx as the first argument, followed by any
+number of arguments (tensors or other types).</p></li>
+<li><p>See <span class="xref std std-ref">combining-forward-context</span> for more details</p></li>
+</ul>
+<p>Usage 2 (Separate forward and ctx):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@staticmethod</span>
+<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="nd">@staticmethod</span>
+<span class="k">def</span> <span class="nf">setup_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">output</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The forward no longer accepts a ctx argument.</p></li>
+<li><p>Instead, you must also override the <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.autograd.Function.setup_context()</span></code>
+staticmethod to handle setting up the <code class="docutils literal notranslate"><span class="pre">ctx</span></code> object.
+<code class="docutils literal notranslate"><span class="pre">output</span></code> is the output of the forward, <code class="docutils literal notranslate"><span class="pre">inputs</span></code> are a Tuple of inputs
+to the forward.</p></li>
+<li><p>See <span class="xref std std-ref">extending-autograd</span> for more details</p></li>
+</ul>
+<p>The context can be used to store arbitrary data that can be then
+retrieved during the backward pass. Tensors should not be stored
+directly on <cite>ctx</cite> (though this is not currently enforced for
+backward compatibility). Instead, tensors should be saved either with
+<code class="xref py py-func docutils literal notranslate"><span class="pre">ctx.save_for_backward()</span></code> if they are intended to be used in
+<code class="docutils literal notranslate"><span class="pre">backward</span></code> (equivalently, <code class="docutils literal notranslate"><span class="pre">vjp</span></code>) or <code class="xref py py-func docutils literal notranslate"><span class="pre">ctx.save_for_forward()</span></code>
+if they are intended to be used for in <code class="docutils literal notranslate"><span class="pre">jvp</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearCutlass.html" class="btn btn-neutral float-left" title="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryLinearCutlass" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryMatMul.html" class="btn btn-neutral float-right" title="bitorch_engine.layers.qlinear.binary.cutlass.layer.BinaryMatMul" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

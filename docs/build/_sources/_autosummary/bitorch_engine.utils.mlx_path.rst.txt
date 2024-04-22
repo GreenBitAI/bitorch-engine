@@ -1,0 +1,33 @@
+bitorch\_engine.utils.mlx\_path
+===============================
+
+.. automodule:: bitorch_engine.utils.mlx_path
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      get_mlx_include_path
+      get_mlx_lib_path
+      is_mlx_available
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

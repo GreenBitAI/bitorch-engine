@@ -1,0 +1,6 @@
+bitorch\_engine.utils.convert.finalize\_quantized\_layers
+=========================================================
+
+.. currentmodule:: bitorch_engine.utils.convert
+
+.. autofunction:: finalize_quantized_layers

@@ -1,0 +1,24 @@
+bitorch\_engine.utils.arch\_helper.ARCH\_CPU
+============================================
+
+.. currentmodule:: bitorch_engine.utils.arch_helper
+
+.. autoclass:: ARCH_CPU
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~ARCH_CPU.ARM_A76
+        ~ARCH_CPU.ARM_A55
+   
+   

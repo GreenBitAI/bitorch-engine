@@ -1,0 +1,6 @@
+bitorch\_engine.functions.cuda.functions.tensor\_to\_packed\_uint8
+==================================================================
+
+.. currentmodule:: bitorch_engine.functions.cuda.functions
+
+.. autofunction:: tensor_to_packed_uint8

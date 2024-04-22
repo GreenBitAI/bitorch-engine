@@ -1,0 +1,37 @@
+bitorch\_engine.utils.quant\_operators
+======================================
+
+.. automodule:: bitorch_engine.utils.quant_operators
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      bit_set
+      get_binary_col
+      get_binary_row
+      gptq_stype_unpacking
+      nv_tensor_quant
+      q4_quantization
+      q8_quantization
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

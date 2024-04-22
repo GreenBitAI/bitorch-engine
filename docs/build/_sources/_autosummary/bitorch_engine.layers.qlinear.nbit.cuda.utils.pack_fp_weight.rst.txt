@@ -1,0 +1,6 @@
+bitorch\_engine.layers.qlinear.nbit.cuda.utils.pack\_fp\_weight
+===============================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.cuda.utils
+
+.. autofunction:: pack_fp_weight

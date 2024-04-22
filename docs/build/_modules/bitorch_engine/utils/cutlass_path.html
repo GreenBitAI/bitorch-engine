@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.utils.cutlass_path &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.utils.cutlass_path</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.utils.cutlass_path</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+
+
+<div class="viewcode-block" id="check_path">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.cutlass_path.check_path.html#bitorch_engine.utils.cutlass_path.check_path">[docs]</a>
+<span class="k">def</span> <span class="nf">check_path</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks the provided path for the existence of the &#39;cutlass.h&#39; file in expected directories.</span>
+
+<span class="sd">    This function attempts to locate the &#39;cutlass.h&#39; header file in three potential locations</span>
+<span class="sd">    relative to the provided path:</span>
+<span class="sd">    1. Directly within the provided path.</span>
+<span class="sd">    2. Within a &#39;cutlass&#39; directory inside the provided path.</span>
+<span class="sd">    3. Within an &#39;include/cutlass&#39; directory structure inside the provided path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        p (str): The base path as a string where the search for &#39;cutlass.h&#39; will begin.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[bool, str]: A tuple containing:</span>
+<span class="sd">            - A boolean indicating whether &#39;cutlass.h&#39; was found.</span>
+<span class="sd">            - A string representing the path where &#39;cutlass.h&#39; was found, or an empty string if not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">/</span> <span class="s2">&quot;cutlass.h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">/</span> <span class="s2">&quot;cutlass&quot;</span> <span class="o">/</span> <span class="s2">&quot;cutlass.h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">/</span> <span class="s2">&quot;include&quot;</span> <span class="o">/</span> <span class="s2">&quot;cutlass&quot;</span> <span class="o">/</span> <span class="s2">&quot;cutlass.h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span> <span class="o">/</span> <span class="s2">&quot;include&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="find_cutlass">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.cutlass_path.find_cutlass.html#bitorch_engine.utils.cutlass_path.find_cutlass">[docs]</a>
+<span class="k">def</span> <span class="nf">find_cutlass</span><span class="p">(</span><span class="n">check_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Searches for the Cutlass library in predefined and environment-specified directories.</span>
+
+<span class="sd">    This function iterates through a list of potential directories where Cutlass might be located.</span>
+<span class="sd">    It checks each directory to see if Cutlass exists there. The search paths include &#39;/usr/local/include&#39;</span>
+<span class="sd">    and any paths specified in the &#39;CPATH&#39; environment variable.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        check_only (bool): Determines the behavior of the function upon finding Cutlass.</span>
+<span class="sd">                           If True, the function returns a boolean indicating the presence of Cutlass.</span>
+<span class="sd">                           If False, it returns the path where Cutlass is found.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Union[bool, str]: Depending on the value of `check_only`, this function either returns:</span>
+<span class="sd">                          - A boolean value indicating whether Cutlass was found (True) or not (False).</span>
+<span class="sd">                          - The string path to the directory where Cutlass is located. If not found, returns an empty string.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The function utilizes `check_path(p)`, a separate function not shown here, to determine</span>
+<span class="sd">        if Cutlass is present in each directory `p`. It is assumed that `check_path(p)` returns</span>
+<span class="sd">        a tuple (bool, str), where the boolean indicates success, and the string represents the path.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">success</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">search_paths</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;/usr/local/include&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CPATH&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">search_paths</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">check_only</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Searching Cutlass in:&quot;</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">check_path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">check_only</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found Cutlass in:&quot;</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">success</span> <span class="k">if</span> <span class="n">check_only</span> <span class="k">else</span> <span class="n">path</span></div>
+
+
+
+<div class="viewcode-block" id="is_cutlass_available">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.cutlass_path.is_cutlass_available.html#bitorch_engine.utils.cutlass_path.is_cutlass_available">[docs]</a>
+<span class="k">def</span> <span class="nf">is_cutlass_available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">find_cutlass</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="get_cutlass_include_path">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.cutlass_path.get_cutlass_include_path.html#bitorch_engine.utils.cutlass_path.get_cutlass_include_path">[docs]</a>
+<span class="k">def</span> <span class="nf">get_cutlass_include_path</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">find_cutlass</span><span class="p">(</span><span class="n">check_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

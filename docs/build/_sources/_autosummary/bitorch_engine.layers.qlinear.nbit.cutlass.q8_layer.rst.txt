@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qlinear.nbit.cutlass.q8\_layer
+=====================================================
+
+.. automodule:: bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      Q8LinearCutlass
+      Q8LinearFunction
+   
+   
+
+   
+   
+   
+
+
+

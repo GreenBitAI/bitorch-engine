@@ -1,0 +1,30 @@
+bitorch\_engine.layers.qconv.binary.cutlass.layer.BinaryConv2dForward
+=====================================================================
+
+.. currentmodule:: bitorch_engine.layers.qconv.binary.cutlass.layer
+
+.. autoclass:: BinaryConv2dForward
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryConv2dForward.backward
+        ~BinaryConv2dForward.forward
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

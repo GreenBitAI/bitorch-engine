@@ -1,0 +1,6 @@
+bitorch\_engine.optim.diode\_beta.check\_pytorch\_version
+=========================================================
+
+.. currentmodule:: bitorch_engine.optim.diode_beta
+
+.. autofunction:: check_pytorch_version

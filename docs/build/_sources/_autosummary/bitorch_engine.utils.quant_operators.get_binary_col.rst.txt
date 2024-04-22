@@ -1,0 +1,6 @@
+bitorch\_engine.utils.quant\_operators.get\_binary\_col
+=======================================================
+
+.. currentmodule:: bitorch_engine.utils.quant_operators
+
+.. autofunction:: get_binary_col

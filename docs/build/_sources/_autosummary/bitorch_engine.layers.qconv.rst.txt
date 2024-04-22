@@ -1,0 +1,33 @@
+bitorch\_engine.layers.qconv
+============================
+
+.. automodule:: bitorch_engine.layers.qconv
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: module.rst
+   :recursive:
+
+   bitorch_engine.layers.qconv.binary
+   bitorch_engine.layers.qconv.nbit
+

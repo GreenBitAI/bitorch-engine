@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qconv.binary.layer
+=========================================
+
+.. automodule:: bitorch_engine.layers.qconv.binary.layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      BinaryConv2dBase
+      BinaryConvParameter
+   
+   
+
+   
+   
+   
+
+
+

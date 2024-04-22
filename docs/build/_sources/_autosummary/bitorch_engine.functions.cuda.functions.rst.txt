@@ -1,0 +1,36 @@
+bitorch\_engine.functions.cuda.functions
+========================================
+
+.. automodule:: bitorch_engine.functions.cuda.functions
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      fp32toint4
+      q4_pack_tensor
+      q4_unpack_and_scaling_tensor
+      q4_unpack_tensor
+      tensor_to_packed_uint8
+      unpack_uint8_tensor
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

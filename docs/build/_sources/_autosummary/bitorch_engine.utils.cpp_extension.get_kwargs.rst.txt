@@ -1,0 +1,6 @@
+bitorch\_engine.utils.cpp\_extension.get\_kwargs
+================================================
+
+.. currentmodule:: bitorch_engine.utils.cpp_extension
+
+.. autofunction:: get_kwargs

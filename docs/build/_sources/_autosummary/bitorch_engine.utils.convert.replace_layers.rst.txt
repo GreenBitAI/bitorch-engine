@@ -1,0 +1,6 @@
+bitorch\_engine.utils.convert.replace\_layers
+=============================================
+
+.. currentmodule:: bitorch_engine.utils.convert
+
+.. autofunction:: replace_layers

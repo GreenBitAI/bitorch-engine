@@ -1,0 +1,37 @@
+bitorch\_engine.layers.qlinear.nbit.layer.MPQLinearBase
+=======================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.layer
+
+.. autoclass:: MPQLinearBase
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~MPQLinearBase.__init__
+        ~MPQLinearBase.check_parameters
+        ~MPQLinearBase.generate_quantized_weight
+        ~MPQLinearBase.init_gba
+        ~MPQLinearBase.init_gptq
+        ~MPQLinearBase.initialize
+        ~MPQLinearBase.prepare_params
+        ~MPQLinearBase.set_qweight_data
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~MPQLinearBase.training
+   
+   

@@ -1,0 +1,6 @@
+bitorch\_engine.utils.cpp\_extension.get\_cpp\_extension
+========================================================
+
+.. currentmodule:: bitorch_engine.utils.cpp_extension
+
+.. autofunction:: get_cpp_extension

@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qlinear.nbit.cuda.mbwq\_layer
+====================================================
+
+.. automodule:: bitorch_engine.layers.qlinear.nbit.cuda.mbwq_layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      MBWQLinearCuda
+      MBWQLinearCudaFunction
+   
+   
+
+   
+   
+   
+
+
+

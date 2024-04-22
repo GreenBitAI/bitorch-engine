@@ -1,0 +1,6 @@
+bitorch\_engine.utils.model\_helper.pad\_embedding\_dim
+=======================================================
+
+.. currentmodule:: bitorch_engine.utils.model_helper
+
+.. autofunction:: pad_embedding_dim

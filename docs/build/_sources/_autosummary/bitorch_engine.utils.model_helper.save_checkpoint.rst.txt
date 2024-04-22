@@ -1,0 +1,6 @@
+bitorch\_engine.utils.model\_helper.save\_checkpoint
+====================================================
+
+.. currentmodule:: bitorch_engine.utils.model_helper
+
+.. autofunction:: save_checkpoint

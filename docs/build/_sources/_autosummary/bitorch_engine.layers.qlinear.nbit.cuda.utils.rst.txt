@@ -1,0 +1,33 @@
+bitorch\_engine.layers.qlinear.nbit.cuda.utils
+==============================================
+
+.. automodule:: bitorch_engine.layers.qlinear.nbit.cuda.utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      make_group_map
+      pack_fp_weight
+      unpack_qweight
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

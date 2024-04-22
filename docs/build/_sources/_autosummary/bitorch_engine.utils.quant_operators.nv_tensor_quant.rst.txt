@@ -1,0 +1,6 @@
+bitorch\_engine.utils.quant\_operators.nv\_tensor\_quant
+========================================================
+
+.. currentmodule:: bitorch_engine.utils.quant_operators
+
+.. autofunction:: nv_tensor_quant

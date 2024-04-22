@@ -1,0 +1,34 @@
+bitorch\_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass
+===============================================================
+
+.. currentmodule:: bitorch_engine.layers.qconv.nbit.cutlass.layer
+
+.. autoclass:: Q4Conv2dCutlass
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~Q4Conv2dCutlass.__init__
+        ~Q4Conv2dCutlass.forward
+        ~Q4Conv2dCutlass.generate_quantized_weight
+        ~Q4Conv2dCutlass.prepare_params
+        ~Q4Conv2dCutlass.set_activation
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~Q4Conv2dCutlass.training
+   
+   

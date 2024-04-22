@@ -1,0 +1,6 @@
+bitorch\_engine.utils.model\_helper.qweight\_update\_fn
+=======================================================
+
+.. currentmodule:: bitorch_engine.utils.model_helper
+
+.. autofunction:: qweight_update_fn

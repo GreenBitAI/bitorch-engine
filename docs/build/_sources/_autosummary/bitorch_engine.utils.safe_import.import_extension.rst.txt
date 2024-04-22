@@ -1,0 +1,6 @@
+bitorch\_engine.utils.safe\_import.import\_extension
+====================================================
+
+.. currentmodule:: bitorch_engine.utils.safe_import
+
+.. autofunction:: import_extension

@@ -1,0 +1,6 @@
+bitorch\_engine.layers.qlinear.binary.get\_best\_binary\_implementation
+=======================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary
+
+.. autofunction:: get_best_binary_implementation

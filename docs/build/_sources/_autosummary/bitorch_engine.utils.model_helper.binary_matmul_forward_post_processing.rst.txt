@@ -1,0 +1,6 @@
+bitorch\_engine.utils.model\_helper.binary\_matmul\_forward\_post\_processing
+=============================================================================
+
+.. currentmodule:: bitorch_engine.utils.model_helper
+
+.. autofunction:: binary_matmul_forward_post_processing

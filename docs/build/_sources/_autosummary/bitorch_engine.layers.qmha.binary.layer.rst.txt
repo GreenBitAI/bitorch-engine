@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qmha.binary.layer
+========================================
+
+.. automodule:: bitorch_engine.layers.qmha.binary.layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      BMHA
+      LearnableBias
+   
+   
+
+   
+   
+   
+
+
+

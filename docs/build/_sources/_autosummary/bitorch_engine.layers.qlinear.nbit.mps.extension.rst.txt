@@ -1,0 +1,31 @@
+bitorch\_engine.layers.qlinear.nbit.mps.extension
+=================================================
+
+.. automodule:: bitorch_engine.layers.qlinear.nbit.mps.extension
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      get_ext
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

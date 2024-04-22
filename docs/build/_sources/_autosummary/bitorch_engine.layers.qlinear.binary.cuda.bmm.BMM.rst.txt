@@ -1,0 +1,25 @@
+bitorch\_engine.layers.qlinear.binary.cuda.bmm.BMM
+==================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary.cuda.bmm
+
+.. autoclass:: BMM
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~BMM.BSTC32
+        ~BMM.BTC32
+        ~BMM.ADAPTIVE
+   
+   

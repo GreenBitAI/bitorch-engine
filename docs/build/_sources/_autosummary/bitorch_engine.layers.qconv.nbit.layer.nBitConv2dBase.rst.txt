@@ -1,0 +1,36 @@
+bitorch\_engine.layers.qconv.nbit.layer.nBitConv2dBase
+======================================================
+
+.. currentmodule:: bitorch_engine.layers.qconv.nbit.layer
+
+.. autoclass:: nBitConv2dBase
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~nBitConv2dBase.__init__
+        ~nBitConv2dBase.generate_quantized_weight
+        ~nBitConv2dBase.prepare_params
+        ~nBitConv2dBase.reset_parameters
+        ~nBitConv2dBase.set_quantized_weight_data
+        ~nBitConv2dBase.set_weight_data
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~nBitConv2dBase.opt_weight
+        ~nBitConv2dBase.training
+   
+   

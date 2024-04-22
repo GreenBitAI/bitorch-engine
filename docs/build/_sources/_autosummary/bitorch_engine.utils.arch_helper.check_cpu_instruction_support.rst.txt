@@ -1,0 +1,6 @@
+bitorch\_engine.utils.arch\_helper.check\_cpu\_instruction\_support
+===================================================================
+
+.. currentmodule:: bitorch_engine.utils.arch_helper
+
+.. autofunction:: check_cpu_instruction_support

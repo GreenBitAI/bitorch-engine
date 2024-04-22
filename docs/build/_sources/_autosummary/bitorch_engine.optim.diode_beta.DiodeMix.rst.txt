@@ -1,0 +1,30 @@
+bitorch\_engine.optim.diode\_beta.DiodeMix
+==========================================
+
+.. currentmodule:: bitorch_engine.optim.diode_beta
+
+.. autoclass:: DiodeMix
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~DiodeMix.__init__
+        ~DiodeMix.step
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

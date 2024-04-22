@@ -1,0 +1,6 @@
+bitorch\_engine.utils.model\_helper.init\_weight
+================================================
+
+.. currentmodule:: bitorch_engine.utils.model_helper
+
+.. autofunction:: init_weight

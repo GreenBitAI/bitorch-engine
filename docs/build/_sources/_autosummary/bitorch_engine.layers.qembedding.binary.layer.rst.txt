@@ -1,0 +1,35 @@
+bitorch\_engine.layers.qembedding.binary.layer
+==============================================
+
+.. automodule:: bitorch_engine.layers.qembedding.binary.layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      BinaryEmbeddingBag
+      BinaryEmbeddingBagForward
+      BinaryEmbeddingCuda
+      BinaryEmbeddingForward
+      BinaryEmbeddingParameter
+   
+   
+
+   
+   
+   
+
+
+

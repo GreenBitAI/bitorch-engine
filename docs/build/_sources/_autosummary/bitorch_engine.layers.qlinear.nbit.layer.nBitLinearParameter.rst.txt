@@ -1,0 +1,29 @@
+bitorch\_engine.layers.qlinear.nbit.layer.nBitLinearParameter
+=============================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.layer
+
+.. autoclass:: nBitLinearParameter
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~nBitLinearParameter.update
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

@@ -1,0 +1,38 @@
+bitorch\_engine.layers.qlinear.layer.QLinearInf
+===============================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.layer
+
+.. autoclass:: QLinearInf
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~QLinearInf.__init__
+        ~QLinearInf.create_clone_from
+        ~QLinearInf.forward
+        ~QLinearInf.generate_quantized_weight
+        ~QLinearInf.prepare_params
+        ~QLinearInf.set_quantized_weight_data
+        ~QLinearInf.set_weight_data
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~QLinearInf.opt_weight
+        ~QLinearInf.weight
+        ~QLinearInf.training
+   
+   

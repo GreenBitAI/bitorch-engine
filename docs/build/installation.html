@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Build options" href="build_options.html" />
+    <link rel="prev" title="Welcome to Bitorch Engine’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#conda-on-linux-with-cuda">Conda on Linux (with CUDA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-with-cuda">Docker (with CUDA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conda-on-macos-with-mlx">Conda on MacOS (with MLX)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<p>The requirements are:</p>
+<ul class="simple">
+<li><p>A compiler that fully supports C++17, such as clang or gcc (gcc 9.4.0
+or newer is required, but gcc 12.x is not supported yet)</p></li>
+<li><p>Python 3.9 or later</p></li>
+<li><p>PyTorch 1.8 or later</p></li>
+<li><p>CUDA Toolkit 11.8 or 12.1 (optional, for CUDA accelerated layers)</p></li>
+</ul>
+<p>For more detailed information, you can check the <a class="reference external" href="https://github.com/pytorch/pytorch?tab=readme-ov-file#prerequisites">requirements of
+PyTorch</a>.</p>
+<p>Currently, the engine needs to be built from source. We provide
+instructions how to install Python/PyTorch (and CUDA/MLX) for:</p>
+<ul class="simple">
+<li><p>Conda + Linux (with CUDA)</p></li>
+<li><p>Docker (with CUDA)</p></li>
+<li><p>Conda + MacOS (with MLX)</p></li>
+</ul>
+<p>We recommend managing your BITorch Engine installation in a conda
+environment (otherwise you should adapt/remove certain variables,
+e.g. <code class="docutils literal notranslate"><span class="pre">CUDA_HOME</span></code>). You may want to keep everything (environment, code,
+etc.) in one directory or use the default directory for conda
+environments. You may wish to adapt the CUDA version to 12.1 where
+applicable.</p>
+<section id="conda-on-linux-with-cuda">
+<h2>Conda on Linux (with CUDA)<a class="headerlink" href="#conda-on-linux-with-cuda" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Create Environment for Python 3.9 and activate it:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>bitorch-engine<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9
+conda<span class="w"> </span>activate<span class="w"> </span>bitorch-engine
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Install CUDA</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;nvidia/label/cuda-11.8.0&quot;</span><span class="w"> </span>cuda-toolkit
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p><a class="reference external" href="https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing">Download customized Torch
+2.1.0</a>
+(it allows gradients on INT tensors, built for Python 3.9 and CUDA
+11.8) and install it with pip:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch-2.1.0-cp39-cp39-linux_x86_64.whl
+<span class="c1"># optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.16.0&quot;</span><span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
+</pre></div>
+</div>
+<p>Alternatively, you can also save the environment and clone the
+repository within the same directory.</p>
+<details class="summary-click-to-here-to-expand-the-instructions-for-this">
+<summary>Click to here to expand the instructions for this.</summary><ol class="arabic simple" start="0">
+<li><p>Set workspace dir (use an absolute path!):</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">BITORCH_WORKSPACE</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span><span class="s2">/bitorch-workspace&quot;</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>Create Environment for Python 3.9 and activate it:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--prefix<span class="w"> </span>./conda-env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9
+conda<span class="w"> </span>activate<span class="w"> </span>./conda-env
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Install CUDA</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;nvidia/label/cuda-11.8.0&quot;</span><span class="w"> </span>cuda-toolkit
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p><a class="reference external" href="https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing">Download customized Torch
+2.1.0</a>,
+select the package fit for the cuda version you installed in the
+previous step (it allows gradients on INT tensors, built for Python
+3.9 and CUDA 11.8) and install it with pip:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch-2.1.0-cp39-cp39-linux_x86_64.whl
+<span class="c1"># optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.16.0&quot;</span><span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
+</pre></div>
+</div>
+</details><p>After setting up the environment, clone the code and build with pip (to
+hide the build output remove <code class="docutils literal notranslate"><span class="pre">-v</span></code>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/GreenBitAI/bitorch-engine
+<span class="nb">cd</span><span class="w"> </span>bitorch-engine
+<span class="c1"># only gcc versions 9.x, 10.x, 11.x are supported</span>
+<span class="c1"># to select the correct gcc, use:</span>
+<span class="c1"># export CC=gcc-11 CPP=g++-11 CXX=g++-11</span>
+<span class="nv">CUDA_HOME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CONDA_PREFIX</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>-v
+</pre></div>
+</div>
+</section>
+<section id="docker-with-cuda">
+<h2>Docker (with CUDA)<a class="headerlink" href="#docker-with-cuda" title="Link to this heading"></a></h2>
+<p>You can also use our prepared Dockerfile to build a docker image (which
+includes building the engine under <code class="docutils literal notranslate"><span class="pre">/bitorch-engine</span></code>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>docker
+docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>bitorch/engine<span class="w"> </span>.
+docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span>--volume<span class="w"> </span><span class="s2">&quot;/path/to/your/project&quot;</span>:<span class="s2">&quot;/workspace&quot;</span><span class="w"> </span>bitorch/engine:latest
+</pre></div>
+</div>
+<p>Check the <a class="reference external" href="https://github.com/GreenBitAI/bitorch-engine/blob/HEAD/docker/README.md">docker readme</a> for options and more
+details.</p>
+</section>
+<section id="conda-on-macos-with-mlx">
+<h2>Conda on MacOS (with MLX)<a class="headerlink" href="#conda-on-macos-with-mlx" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>We recommend to create a virtual environment for and activate it. In
+the following example we use a conda environment for python 3.9, but
+virtualenv should work as well.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>bitorch-engine<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9
+conda<span class="w"> </span>activate<span class="w"> </span>bitorch-engine
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Download <a class="reference external" href="https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing">customized Torch for
+arm</a>
+(it allows gradients on INT tensors, built for Python 3.9 and CUDA
+11.8) and install it with pip:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>path/to/torch-2.2.1-cp39-none-macosx_11_0_arm64.whl
+<span class="c1"># optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.17.1&quot;</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>For MacOS users and to use OpenMP acceleration, install OpenMP with
+Homebrew and configure the environment:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew<span class="w"> </span>install<span class="w"> </span>libomp
+<span class="c1"># during libomp installation it should remind you, you need something like this:</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LDFLAGS</span><span class="o">=</span><span class="s2">&quot;-L</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="k">)</span><span class="s2">/opt/libomp/lib&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CPPFLAGS</span><span class="o">=</span><span class="s2">&quot;-I</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="k">)</span><span class="s2">/opt/libomp/include&quot;</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>To use the <a class="reference external" href="https://github.com/ml-explore/mlx">mlx</a> accelerated
+<code class="docutils literal notranslate"><span class="pre">MPQLinearLayer</span></code>, you need to install the python library.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># use one of the following, to either install with pip or conda:</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="nv">mlx</span><span class="o">==</span><span class="m">0</span>.4.0
+conda<span class="w"> </span>install<span class="w"> </span>conda-forge::mlx<span class="o">=</span><span class="m">0</span>.4.0
+</pre></div>
+</div>
+<p>Currently, we only tested version 0.4.0. However, newer versions might
+also work. To train the <code class="docutils literal notranslate"><span class="pre">MPQLinearLayer</span></code> you need to install our
+custom PyTorch version (see steps above). Without it, you need to
+specify <code class="docutils literal notranslate"><span class="pre">requires_grad=False</span></code> when initializing <code class="docutils literal notranslate"><span class="pre">MPQLinearLayer</span></code>. 5.
+You should now be able to build with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/GreenBitAI/bitorch-engine
+<span class="nb">cd</span><span class="w"> </span>bitorch-engine
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>-v
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Bitorch Engine’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="build_options.html" class="btn btn-neutral float-right" title="Build options" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

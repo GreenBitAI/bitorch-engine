@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qconv.nbit.cutlass.layer
+===============================================
+
+.. automodule:: bitorch_engine.layers.qconv.nbit.cutlass.layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      Q4Conv2dCutlass
+      Q4Conv2dCutlassForward
+   
+   
+
+   
+   
+   
+
+
+

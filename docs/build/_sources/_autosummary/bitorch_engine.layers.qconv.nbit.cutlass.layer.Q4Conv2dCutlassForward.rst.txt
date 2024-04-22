@@ -1,0 +1,30 @@
+bitorch\_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlassForward
+======================================================================
+
+.. currentmodule:: bitorch_engine.layers.qconv.nbit.cutlass.layer
+
+.. autoclass:: Q4Conv2dCutlassForward
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~Q4Conv2dCutlassForward.backward
+        ~Q4Conv2dCutlassForward.forward
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

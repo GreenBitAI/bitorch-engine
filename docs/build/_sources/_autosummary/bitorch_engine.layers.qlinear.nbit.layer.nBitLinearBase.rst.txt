@@ -1,0 +1,36 @@
+bitorch\_engine.layers.qlinear.nbit.layer.nBitLinearBase
+========================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.layer
+
+.. autoclass:: nBitLinearBase
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~nBitLinearBase.__init__
+        ~nBitLinearBase.generate_quantized_weight
+        ~nBitLinearBase.prepare_params
+        ~nBitLinearBase.reset_parameters
+        ~nBitLinearBase.set_quantized_weight_data
+        ~nBitLinearBase.set_weight_data
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~nBitLinearBase.opt_weight
+        ~nBitLinearBase.training
+   
+   

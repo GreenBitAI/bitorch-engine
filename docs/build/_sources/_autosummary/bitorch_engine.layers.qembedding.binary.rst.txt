@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qembedding.binary
+========================================
+
+.. automodule:: bitorch_engine.layers.qembedding.binary
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: module.rst
+   :recursive:
+
+   bitorch_engine.layers.qembedding.binary.layer
+

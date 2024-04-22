@@ -1,0 +1,6 @@
+bitorch\_engine.layers.qlinear.nbit.mps.extension.get\_ext
+==========================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.mps.extension
+
+.. autofunction:: get_ext

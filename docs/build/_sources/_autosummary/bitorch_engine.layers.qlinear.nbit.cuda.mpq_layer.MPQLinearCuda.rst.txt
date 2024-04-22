@@ -1,0 +1,33 @@
+bitorch\_engine.layers.qlinear.nbit.cuda.mpq\_layer.MPQLinearCuda
+=================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.cuda.mpq_layer
+
+.. autoclass:: MPQLinearCuda
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~MPQLinearCuda.__init__
+        ~MPQLinearCuda.check_parameters
+        ~MPQLinearCuda.forward
+        ~MPQLinearCuda.prepare_params
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~MPQLinearCuda.training
+   
+   

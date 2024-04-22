@@ -1,0 +1,6 @@
+bitorch\_engine.utils.mlx\_path.get\_mlx\_lib\_path
+===================================================
+
+.. currentmodule:: bitorch_engine.utils.mlx_path
+
+.. autofunction:: get_mlx_lib_path

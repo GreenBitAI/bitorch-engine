@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">..layer</span> <span class="kn">import</span> <span class="n">nBitLinearBase</span><span class="p">,</span> <span class="n">nBitLinearParameter</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Function</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.safe_import</span> <span class="kn">import</span> <span class="n">import_extension</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.model_helper</span> <span class="kn">import</span> <span class="n">flatten_x</span><span class="p">,</span> <span class="n">unflatten_x</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.functions.cuda</span> <span class="kn">import</span> <span class="n">q4_unpack_and_scaling_tensor</span>
+
+
+<span class="n">q_linear_cutlass</span> <span class="o">=</span> <span class="n">import_extension</span><span class="p">(</span><span class="s2">&quot;q_linear_cutlass&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Q4LinearFunction">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearFunction.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearFunction">[docs]</a>
+<span class="k">class</span> <span class="nc">Q4LinearFunction</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implements a custom linear function with quantization for forward and backward passes.</span>
+<span class="sd">    This function specifically supports 4-bit quantization for activations and weights during the forward pass,</span>
+<span class="sd">    and provides gradients for input, weights, and scale factors during the backward pass.</span>
+
+<span class="sd">    Note: Both forward and backward methods are static methods.</span>
+
+<span class="sd">    The forward pass quantizes inputs and weights to 4-bits using specified scale factors and performs linear (fully connected) operation.</span>
+<span class="sd">    The backward pass computes gradients for the quantized inputs, weights, and scale factors, considering the quantization effects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Q4LinearFunction.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearFunction.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearFunction.forward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">eps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">is_train</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass of the Q4Linear function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx: Context object to save variables for backward computation.</span>
+<span class="sd">            x (torch.Tensor): Input tensor.</span>
+<span class="sd">            weight (torch.Tensor): Weight tensor.</span>
+<span class="sd">            scale_a (torch.Tensor): Scale factor for input quantization.</span>
+<span class="sd">            scale_w (torch.Tensor): Scale factor for weight quantization.</span>
+<span class="sd">            eps (torch.Tensor): Epsilon tensor for quantization to avoid division by zero.</span>
+<span class="sd">            is_train (bool): Flag indicating if the model is in training mode.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The output tensor after applying the linear operation on quantized inputs and weights.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">flatten_x</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">q_linear_cutlass</span><span class="o">.</span><span class="n">q4_forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">is_train</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">q_a</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">q_w</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">q_a</span><span class="p">,</span> <span class="n">q_w</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">unflatten_x</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="Q4LinearFunction.backward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearFunction.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearFunction.backward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">BackwardCFunction</span><span class="p">,</span>
+                 <span class="n">output_gradient</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backward pass of the Q4Linear function.</span>
+
+<span class="sd">        Computes gradients for the input tensor, weight tensor, and scale factors based on the output gradient.</span>
+<span class="sd">        Adjusts gradients based on quantization ranges and effects to ensure proper gradient flow for quantized operations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx: Context object with saved tensors from the forward pass.</span>
+<span class="sd">            output_gradient (torch.Tensor): Gradient of the loss with respect to the output of this function.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[torch.Tensor, ...]: Tuple containing gradients for input tensor, weight tensor, scale factor for activation,</span>
+<span class="sd">                                      and None placeholders for scale_w and eps which do not receive gradients directly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output_gradient</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">flatten_x</span><span class="p">(</span><span class="n">output_gradient</span><span class="p">)</span>
+
+        <span class="nb">input</span><span class="p">,</span> <span class="n">q_a</span><span class="p">,</span> <span class="n">q_w</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">,</span> <span class="n">scale_w</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">q4_unpack_and_scaling_tensor</span><span class="p">(</span><span class="n">q_w</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">))</span>  <span class="c1"># (m, n)*(n, k) = (m, k)</span>
+        <span class="n">grad_weight</span> <span class="o">=</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">q4_unpack_and_scaling_tensor</span><span class="p">(</span><span class="n">q_a</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">))</span>
+
+        <span class="c1"># grad clip range input</span>
+        <span class="n">q_w</span> <span class="o">=</span> <span class="nb">input</span> <span class="o">/</span> <span class="n">scale_a</span>
+        <span class="n">indicate_small</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">8</span>
+        <span class="n">indicate_large</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&gt;</span> <span class="mi">7</span>
+        <span class="n">indicate_middle</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">indicate_small</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">indicate_large</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">grad_input</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">indicate_middle</span><span class="p">)</span>
+
+        <span class="c1">## grad of the scaling factor for activation</span>
+        <span class="n">grad_scale_a</span> <span class="o">=</span> \
+            <span class="p">((</span><span class="n">indicate_small</span> <span class="o">*</span> <span class="o">-</span><span class="mf">8.0</span> <span class="o">+</span> <span class="n">indicate_large</span> <span class="o">*</span> <span class="mf">7.0</span> <span class="o">+</span> <span class="n">indicate_middle</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="o">-</span><span class="n">q_w</span> <span class="o">+</span> <span class="n">q_w</span><span class="o">.</span><span class="n">round</span><span class="p">()))</span> <span class="o">*</span> <span class="n">grad_input</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">*</span> <span class="mf">7.0</span><span class="p">)))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="n">unflatten_x</span><span class="p">(</span><span class="n">grad_input</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">grad_input</span><span class="p">,</span> <span class="n">grad_weight</span><span class="p">,</span> <span class="n">grad_scale_a</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Q4LinearCutlass">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass">[docs]</a>
+<span class="k">class</span> <span class="nc">Q4LinearCutlass</span><span class="p">(</span><span class="n">nBitLinearBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class implements a quantized linear layer using the CUTLASS library, specifically designed for 4-bit quantization.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bias_a (torch.nn.Parameter): Bias parameter for the activations, initialized to zeros.</span>
+<span class="sd">        scale_a (torch.nn.Parameter): Scale parameter for the activation quantization, initialized to zero.</span>
+<span class="sd">        scale_w (torch.nn.Parameter): Scale parameter for the weight quantization, initialized to one.</span>
+<span class="sd">        eps (torch.Tensor): A small epsilon value used to avoid division by zero, registered as a buffer.</span>
+
+<span class="sd">    The class inherits from `nBitLinearBase`, extending it with 4-bit quantization capabilities. It introduces parameters</span>
+<span class="sd">    and methods for managing and applying quantization to both weights and activations within a linear (fully connected) layer context.</span>
+
+<span class="sd">    The quantization process involves scaling floating-point weights to a 4-bit representation, which significantly reduces</span>
+<span class="sd">    memory usage and computational cost, especially on hardware that supports low-precision arithmetic. This class is designed</span>
+<span class="sd">    to work with neural network models where efficiency and speed are critical, such as on edge devices or in high-performance</span>
+<span class="sd">    computing environments.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        prepare_params: function will be called between initialization, checkpoint loading and the actual forward pass.</span>
+<span class="sd">        generate_quantized_weight: Quantizes the weights and optionally removes the floating-point weights to save memory.</span>
+<span class="sd">        _check_forward: Checks that the input dimensions are compatible with the weight dimensions and certain constraints are met.</span>
+<span class="sd">        set_activation: Quantizes the activation to 8-bit representation.</span>
+<span class="sd">        forward: Defines the computation performed at every call.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Q4LinearCutlass.__init__">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the Q4LinearCutlass layer, setting up parameters for activation and weight quantization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Q4LinearCutlass</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;scale_w&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;eps&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.00001</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Q4LinearCutlass.prepare_params">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.prepare_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares and initializes the model parameters for training.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method MUST be called after model initialization and before training starts to ensure the weights are</span>
+<span class="sd">            properly prepared for efficient computation.</span>
+
+<span class="sd">            One can use &quot;prepare_bie_layers&quot; method from project_root.utils.model_helper to call this function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mf">5.6345</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Q4LinearCutlass.generate_quantized_weight">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.generate_quantized_weight">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_quantized_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs weight quantization. This method should be called before saving the model&#39;s weights</span>
+<span class="sd">        to ensure that the weights are quantized. If `qweight_only` is set to True, the original weights</span>
+<span class="sd">        are discarded to save memory, keeping only the quantized weights.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight_only (bool): If True, retains only the quantized weights and discards the original weights.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">q_linear_cutlass</span><span class="o">.</span><span class="n">q4_w_pack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">qweight_only</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Q4LinearCutlass._check_forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass._check_forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">_check_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validates the input tensor dimensions against the weight dimensions and checks if they are compatible.</span>
+<span class="sd">        Additionally, it enforces specific size constraints depending on the mode (training or inference).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input tensor to the layer.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If any of the dimension checks fail.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;Error: input and weights&#39; dim mismatch.&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">%</span> <span class="mi">32</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Batch size must be divisible by 32 for the training mode.&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">32</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Output channel dimension must be divisible by 32.&quot;</span>
+        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">32</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Input channel dimension must be divisible by 32.&quot;</span></div>
+
+
+<div class="viewcode-block" id="Q4LinearCutlass.set_activation">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.set_activation">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_activation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Quantizes the activation to 8-bit by applying a scaling factor and optionally adds a learnable bias.</span>
+<span class="sd">        The scaling factor is computed based on the input tensor&#39;s mean absolute value, considering the</span>
+<span class="sd">        quantization precision.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input activation tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The quantized activation tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># alpha = 2 * tensor.abs().mean() / math.sqrt(Qp) where Qp=127 for 8-bit</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="o">.</span><span class="n">is_nonzero</span><span class="p">():</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mf">11.269</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># learnable shift input</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_a</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Q4LinearCutlass.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4LinearCutlass.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass of the layer. It performs necessary pre-checks on the input tensor, quantizes the</span>
+<span class="sd">        activations, and then applies the quantized linear function using the quantized weights.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input tensor with shape (batch size, number of features).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The output tensor after applying the quantized linear transformation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_activation</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Q4LinearFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Q4MatMulFunction">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction">[docs]</a>
+<span class="k">class</span> <span class="nc">Q4MatMulFunction</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class implements a custom autograd function for quantized matrix multiplication (MatMul)</span>
+<span class="sd">    using 4-bit quantization. It quantizes the inputs to 4 bits, performs the MatMul operation,</span>
+<span class="sd">    and then dequantizes the result. This operation is designed to work with low-precision arithmetic</span>
+<span class="sd">    to improve computational efficiency while maintaining reasonable accuracy.</span>
+
+<span class="sd">    Both the forward and backward methods are implemented as static methods, allowing this class</span>
+<span class="sd">    to be used directly without instantiation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Q4MatMulFunction.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.forward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">x_clip</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_clip</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">eps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">is_train</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass of the Q4MatMulFunction. Quantizes inputs, performs MatMul, and dequantizes the output.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx: Context object to save tensors for backward computation.</span>
+<span class="sd">            x (torch.Tensor): Input tensor 1.</span>
+<span class="sd">            y (torch.Tensor): Input tensor 2.</span>
+<span class="sd">            x_clip (torch.Tensor): Clipping value for input tensor x, used for quantization range.</span>
+<span class="sd">            y_clip (torch.Tensor): Clipping value for input tensor y, used for quantization range.</span>
+<span class="sd">            eps (torch.Tensor): Epsilon value to avoid division by zero during quantization.</span>
+<span class="sd">            is_train (bool): Flag indicating if the model is in training mode.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The result of the quantized MatMul operation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shape_pre</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="c1"># outputs[0-2]: result, q4_x, q4_y</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">q_linear_cutlass</span><span class="o">.</span><span class="n">q4_matmul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_clip</span><span class="p">,</span> <span class="n">y_clip</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">x_clip</span><span class="p">,</span> <span class="n">y_clip</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+
+        <span class="c1"># reshape to (bs, num_head, seq_lengh, hid_size_per_head)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">shape_pre</span> <span class="o">+</span> <span class="p">[</span><span class="n">output</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="n">output</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)])</span>
+
+        <span class="k">return</span> <span class="n">output</span><span class="o">*</span><span class="n">x_clip</span><span class="o">*</span><span class="n">y_clip</span></div>
+
+
+<div class="viewcode-block" id="Q4MatMulFunction.backward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMulFunction.backward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">BackwardCFunction</span><span class="p">,</span>
+                 <span class="n">output_gradient</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backward pass of the Q4MatMulFunction. Computes gradients for the input tensors based on the output gradient.</span>
+
+<span class="sd">        This method calculates the gradients for both input tensors and their clipping values,</span>
+<span class="sd">        taking into account the quantization performed during the forward pass. It uses a custom backward</span>
+<span class="sd">        operation defined in `q_linear_cutlass` to compute these gradients efficiently.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx: Context object containing saved tensors from the forward pass.</span>
+<span class="sd">            output_gradient (torch.Tensor): Gradient of the loss with respect to the output of this function.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[torch.Tensor, ...]: A tuple containing gradients for x, y, x_clip, y_clip, and None placeholders</span>
+<span class="sd">                                       for eps and is_train, as these do not require gradients.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shape_pre</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">size</span><span class="p">()[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">q4_x</span><span class="p">,</span> <span class="n">q4_y</span><span class="p">,</span> <span class="n">x_clip</span><span class="p">,</span> <span class="n">y_clip</span><span class="p">,</span> <span class="n">eps</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+
+        <span class="n">scale_grad</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mf">11.269</span> <span class="c1">#squre(127)</span>
+
+        <span class="n">grad_x</span><span class="p">,</span> <span class="n">grad_y</span> <span class="o">=</span> \
+            <span class="n">q_linear_cutlass</span><span class="o">.</span><span class="n">q4_matmul_backward</span><span class="p">(</span>
+                <span class="n">output_gradient</span><span class="p">,</span> <span class="n">q4_x</span><span class="p">,</span> <span class="n">q4_y</span><span class="p">,</span> <span class="n">x_clip</span><span class="p">,</span> <span class="n">y_clip</span><span class="p">,</span> <span class="n">scale_grad</span><span class="p">)</span>
+
+        <span class="c1"># grad clip range x</span>
+        <span class="n">q_w</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="n">x_clip</span>
+        <span class="n">indicate_small</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">128</span>
+        <span class="n">indicate_large</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&gt;</span> <span class="mi">127</span>
+        <span class="n">indicate_middle</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">indicate_small</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">indicate_large</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="c1"># reshape to (bs, num_head, seq_lengh, hid_size_per_head)</span>
+        <span class="n">grad_x</span> <span class="o">=</span> <span class="n">grad_x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">shape_pre</span> <span class="o">+</span> <span class="p">[</span><span class="n">grad_x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="n">grad_x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)])</span>
+        <span class="n">grad_x</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">indicate_middle</span><span class="p">)</span>
+
+        <span class="c1">## grad of the scaling factor for activation</span>
+        <span class="n">grad_scale_x</span> <span class="o">=</span> \
+            <span class="p">((</span><span class="n">indicate_small</span> <span class="o">*</span> <span class="o">-</span><span class="mf">128.0</span> <span class="o">+</span> <span class="n">indicate_large</span> <span class="o">*</span> <span class="mf">127.0</span> <span class="o">+</span> <span class="n">indicate_middle</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="o">-</span><span class="n">q_w</span> <span class="o">+</span> <span class="n">q_w</span><span class="o">.</span><span class="n">round</span><span class="p">()))</span> <span class="o">*</span> <span class="n">grad_x</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span><span class="o">*</span><span class="mf">127.0</span><span class="p">)))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># grad clip range y</span>
+        <span class="n">q_w</span> <span class="o">=</span> <span class="n">y</span> <span class="o">/</span> <span class="n">y_clip</span>
+        <span class="n">indicate_small</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">128</span>
+        <span class="n">indicate_large</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&gt;</span> <span class="mi">127</span>
+        <span class="n">indicate_middle</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">indicate_small</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">indicate_large</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">grad_y</span> <span class="o">=</span> <span class="n">grad_y</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">shape_pre</span> <span class="o">+</span> <span class="p">[</span><span class="n">grad_y</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="n">grad_y</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)])</span>
+        <span class="n">grad_y</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">indicate_middle</span><span class="p">)</span>
+
+        <span class="c1">## grad of the scaling factor for activation</span>
+        <span class="n">grad_scale_y</span> <span class="o">=</span> \
+            <span class="p">((</span><span class="n">indicate_small</span> <span class="o">*</span> <span class="o">-</span><span class="mf">128.0</span> <span class="o">+</span> <span class="n">indicate_large</span> <span class="o">*</span> <span class="mf">127.0</span> <span class="o">+</span> <span class="n">indicate_middle</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="o">-</span><span class="n">q_w</span> <span class="o">+</span> <span class="n">q_w</span><span class="o">.</span><span class="n">round</span><span class="p">()))</span> <span class="o">*</span> <span class="n">grad_y</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span><span class="o">*</span><span class="mf">127.0</span><span class="p">)))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">grad_x</span><span class="p">,</span> <span class="n">grad_y</span><span class="p">,</span> <span class="n">grad_scale_x</span><span class="p">,</span> <span class="n">grad_scale_y</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Q4MatMul">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul">[docs]</a>
+<span class="k">class</span> <span class="nc">Q4MatMul</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A custom PyTorch module for performing quantized matrix multiplication, specifically designed</span>
+<span class="sd">    for 4-bit quantization. This module quantizes inputs before multiplication based on a dynamic</span>
+<span class="sd">    scaling factor and aims to maintain high precision in low-bitwidth computations.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        device (torch.device): The device on which tensors will be allocated.</span>
+<span class="sd">        dtype (torch.dtype): The data type for the parameters and outputs.</span>
+<span class="sd">        x_clip (torch.nn.Parameter): The dynamic scaling factor for the first input tensor.</span>
+<span class="sd">        y_clip (torch.nn.Parameter): The dynamic scaling factor for the second input tensor.</span>
+<span class="sd">        eps (torch.Tensor): A small epsilon value to prevent division by zero in computations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dtype (torch.dtype): The desired data type for computations (default: torch.float).</span>
+<span class="sd">        device (torch.device, optional): The device on which to perform computations.</span>
+<span class="sd">        *args: Variable length argument list for the parent class.</span>
+<span class="sd">        **kwargs: Arbitrary keyword arguments for the parent class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Q4MatMul.__init__">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Q4MatMul</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_clip</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_clip</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;eps&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.00001</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Q4MatMul.set_activation_scale">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul.set_activation_scale">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_activation_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dynamically sets the scaling factors for input tensors x and y, based on their</span>
+<span class="sd">        respective values. This scaling helps in quantizing the activations for multiplication.</span>
+
+<span class="sd">        The scale is calculated as: alpha = 2 * tensor.abs().mean() / math.sqrt(Qp),</span>
+<span class="sd">        where Qp = 127 for 8-bit quantization, adjusted here for 4-bit quantization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The first input tensor for matrix multiplication.</span>
+<span class="sd">            y (torch.Tensor): The second input tensor for matrix multiplication.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_clip</span><span class="o">.</span><span class="n">is_nonzero</span><span class="p">():</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mf">11.269</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_clip</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_clip</span><span class="o">.</span><span class="n">is_nonzero</span><span class="p">():</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mf">11.269</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_clip</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Q4MatMul.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul.html#bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer.Q4MatMul.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass of the Q4MatMul module. Validates input dimensions, sets activation scales,</span>
+<span class="sd">        and performs quantized matrix multiplication.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The first input tensor.</span>
+<span class="sd">            y (torch.Tensor): The second input tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The result of the quantized matrix multiplication.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If the input tensors do not have more than two dimensions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">y</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span><span class="o">&gt;</span> <span class="mi">2</span><span class="p">),</span> \
+            <span class="s2">&quot;Expected tensor dim &gt; 2, but got input_dim: &#39;</span><span class="si">{}</span><span class="s2">&#39;, other_dim: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">dim</span><span class="p">(),</span>
+                <span class="n">y</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_activation_scale</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Q4MatMulFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_clip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_clip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

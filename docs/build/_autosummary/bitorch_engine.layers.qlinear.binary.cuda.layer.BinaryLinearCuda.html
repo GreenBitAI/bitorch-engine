@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward" href="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward.html" />
+    <link rel="prev" title="bitorch_engine.layers.qlinear.binary.cuda.layer" href="bitorch_engine.layers.qlinear.binary.cuda.layer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build_options.html">Build options</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../documentation.html">Full Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bitorch_engine.html">bitorch_engine</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.functions.html">bitorch_engine.functions</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bitorch_engine.layers.html">bitorch_engine.layers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qembedding.html">bitorch_engine.layers.qembedding</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qmha.html">bitorch_engine.layers.qmha</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.optim.html">bitorch_engine.optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.utils.html">bitorch_engine.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../documentation.html">Full Documentation</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.html">bitorch_engine</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.html">bitorch_engine.layers</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.binary.html">bitorch_engine.layers.qlinear.binary</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.binary.cuda.html">bitorch_engine.layers.qlinear.binary.cuda</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.binary.cuda.layer.html">bitorch_engine.layers.qlinear.binary.cuda.layer</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bitorch-engine-layers-qlinear-binary-cuda-layer-binarylinearcuda">
+<h1>bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda<a class="headerlink" href="#bitorch-engine-layers-qlinear-binary-cuda-layer-binarylinearcuda" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qlinear.binary.cuda.layer.</span></span><span class="sig-name descname"><span class="pre">BinaryLinearCuda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bmm_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM.html#bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM" title="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM"><span class="pre">BMM</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">BMM.ADAPTIVE</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cuda/layer.html#BinaryLinearCuda"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda" title="Link to this definition"></a></dt>
+<dd><p>A CUDA implementation of binary linear layers for neural networks. This class specializes in handling
+binary weights and activations for efficient computation on GPU devices. It extends BinaryLinearBase
+and mixes in BinaryLinearImplementationMixin to leverage both generic and hardware-specific optimizations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.bmm_type">
+<span class="sig-name descname"><span class="pre">bmm_type</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.bmm_type" title="Link to this definition"></a></dt>
+<dd><p>Specifies the type of binary matrix multiplication kernel to use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM.html#bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM" title="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM">BMM</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.bits_binary_word">
+<span class="sig-name descname"><span class="pre">bits_binary_word</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.bits_binary_word" title="Link to this definition"></a></dt>
+<dd><p>Defines the bit width of the binary words used in CUTLASS operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.bias_a">
+<span class="sig-name descname"><span class="pre">bias_a</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.bias_a" title="Link to this definition"></a></dt>
+<dd><p>Layer-wise bias for input activations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.scale_a">
+<span class="sig-name descname"><span class="pre">scale_a</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.scale_a" title="Link to this definition"></a></dt>
+<dd><p>Layer-wise scale for input activations to manage quantization effects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.scale_w">
+<span class="sig-name descname"><span class="pre">scale_w</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.scale_w" title="Link to this definition"></a></dt>
+<dd><p>Scale for the weights to maintain numerical stability in lower precision.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – Variable length argument list for base class initialization.</p></li>
+<li><p><strong>bmm_type</strong> (<a class="reference internal" href="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM.html#bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM" title="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM"><em>BMM</em></a>) – Enum indicating the binary matrix multiplication (BMM) kernel type.</p></li>
+<li><p><strong>**kwargs</strong> – Arbitrary keyword arguments for base class initialization.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.__init__" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a></p></td>
+<td><p>Initializes the BinaryLinearBase class with specified configurations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.create_clone_from" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.create_clone_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_clone_from</span></code></a></p></td>
+<td><p>Creates a clone of this layer from a given recipe and device.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.forward" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a></p></td>
+<td><p>Forward pass for the binary linear layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.generate_quantized_weight" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.generate_quantized_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_quantized_weight</span></code></a></p></td>
+<td><p>Generates and sets the quantized weight parameter from the current weights.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.prepare_params" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.prepare_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_params</span></code></a></p></td>
+<td><p>Prepares and initializes the model parameters for training, specifically converting floating-point weights to int8 format.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_activation" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_activation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_activation</span></code></a></p></td>
+<td><p>Sets and scales the activation tensor x using the layer's scaling parameter and bias.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_weight_data" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_weight_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_weight_data</span></code></a></p></td>
+<td><p>Sets the weight data for this layer and prepares the parameters for training.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.w_pack" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.w_pack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">w_pack</span></code></a></p></td>
+<td><p>Packs the given floating-point weights into a binary format suitable for binary matrix multiplication.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.device_id" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.device_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">device_id</span></code></a></p></td>
+<td><p>Returns the device index of the current device.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">training</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bmm_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM.html#bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM" title="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM"><span class="pre">BMM</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">BMM.ADAPTIVE</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cuda/layer.html#BinaryLinearCuda.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initializes the BinaryLinearBase class with specified configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_features</strong> (<em>int</em>) – Dimension of input features after bit-packing.</p></li>
+<li><p><strong>out_features</strong> (<em>int</em>) – Dimension of output features or hidden states.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em><em>, </em><em>optional</em>) – Device on which to allocate tensors. Defaults to None.</p></li>
+<li><p><strong>dtype</strong> (<em>torch.dtype</em><em>, </em><em>optional</em>) – Data type for floating-point weights. Defaults to torch.float.</p></li>
+<li><p><strong>symmetric</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, quantization is symmetric around 0. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.create_clone_from">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_clone_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LayerRecipe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">device</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cuda/layer.html#BinaryLinearCuda.create_clone_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.create_clone_from" title="Link to this definition"></a></dt>
+<dd><p>Creates a clone of this layer from a given recipe and device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recipe</strong> (<em>LayerRecipe</em>) – A recipe object containing layer configuration and weights.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em><em>, </em><em>optional</em>) – The device on which the layer should be deployed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of BinaryLinearCuda with configurations and weights copied from the recipe.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.device_id" title="Link to this definition"></a></dt>
+<dd><p>Returns the device index of the current device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The index of the device.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bmm_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM.html#bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM" title="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM"><span class="pre">BMM</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">BMM.ADAPTIVE</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cuda/layer.html#BinaryLinearCuda.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass for the binary linear layer. Applies quantized matrix multiplication based on the specified
+BMM type, scales and biases the input activations, and returns the output tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – The input activation tensor.</p></li>
+<li><p><strong>bmm_type</strong> (<a class="reference internal" href="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM.html#bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM" title="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM"><em>BMM</em></a>) – The type of binary matrix multiplication kernel to use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor of the binary linear operation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.generate_quantized_weight">
+<span class="sig-name descname"><span class="pre">generate_quantized_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qweight_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cuda/layer.html#BinaryLinearCuda.generate_quantized_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.generate_quantized_weight" title="Link to this definition"></a></dt>
+<dd><p>Generates and sets the quantized weight parameter from the current weights. A bit-packing CUDA kernel
+will be called to do this job.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qweight_only</strong> (<em>bool</em>) – If True, the original weight tensor is discarded to save memory.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.prepare_params">
+<span class="sig-name descname"><span class="pre">prepare_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cuda/layer.html#BinaryLinearCuda.prepare_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.prepare_params" title="Link to this definition"></a></dt>
+<dd><p>Prepares and initializes the model parameters for training, specifically converting floating-point weights
+to int8 format.</p>
+<p>This method leverages the <cite>init_weight</cite> function to convert the model’s floating-point weights to int8,
+achieving a significant reduction in memory usage. It also computes a scale for the weights, which is essential
+for maintaining the numerical fidelity of the model’s computations in the lower precision format. The conversion
+to int8 format is particularly beneficial for accelerating training and inference on hardware that supports
+lower precision arithmetic.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method MUST be called after model initialization and before training starts to ensure the weights are
+properly prepared for efficient computation.</p>
+<p>One can use “prepare_bie_layers” method from project_root.utils.model_helper to call this function.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_activation">
+<span class="sig-name descname"><span class="pre">set_activation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cuda/layer.html#BinaryLinearCuda.set_activation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_activation" title="Link to this definition"></a></dt>
+<dd><p>Sets and scales the activation tensor x using the layer’s scaling parameter and bias.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input activation tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scaled and biased activation tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_weight_data">
+<span class="sig-name descname"><span class="pre">set_weight_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cuda/layer.html#BinaryLinearCuda.set_weight_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_weight_data" title="Link to this definition"></a></dt>
+<dd><p>Sets the weight data for this layer and prepares the parameters for training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The new weight tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.w_pack">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">w_pack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bmm_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM.html#bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM" title="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM"><span class="pre">BMM</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/binary/cuda/layer.html#BinaryLinearCuda.w_pack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.w_pack" title="Link to this definition"></a></dt>
+<dd><p>Packs the given floating-point weights into a binary format suitable for binary matrix multiplication.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weights</strong> (<em>torch.Tensor</em>) – The floating-point weight tensor to be packed.</p></li>
+<li><p><strong>bmm_type</strong> (<a class="reference internal" href="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM.html#bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM" title="bitorch_engine.layers.qlinear.binary.cuda.bmm.BMM"><em>BMM</em></a>) – The binary matrix multiplication kernel type to be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The packed binary weights.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bitorch_engine.layers.qlinear.binary.cuda.layer.html" class="btn btn-neutral float-left" title="bitorch_engine.layers.qlinear.binary.cuda.layer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward.html" class="btn btn-neutral float-right" title="bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

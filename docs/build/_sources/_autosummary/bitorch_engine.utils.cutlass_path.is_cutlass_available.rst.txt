@@ -1,0 +1,6 @@
+bitorch\_engine.utils.cutlass\_path.is\_cutlass\_available
+==========================================================
+
+.. currentmodule:: bitorch_engine.utils.cutlass_path
+
+.. autofunction:: is_cutlass_available

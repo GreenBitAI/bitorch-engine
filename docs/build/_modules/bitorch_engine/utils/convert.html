@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.utils.convert &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.utils.convert</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.utils.convert</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+
+<div class="viewcode-block" id="collect_layers">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.convert.collect_layers.html#bitorch_engine.utils.convert.collect_layers">[docs]</a>
+<span class="k">def</span> <span class="nf">collect_layers</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">layer_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parent_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Collect the names of all layers within a module recursively with certain types.</span>
+
+<span class="sd">    :param module: the model</span>
+<span class="sd">    :param layer_types: the desired layer types</span>
+<span class="sd">    :param parent_name: the name of the parent (usually empty when called directly)</span>
+<span class="sd">    :return: a list of names of all layers with the desired types</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">layer_types</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layer_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="ow">in</span> <span class="n">layer_types</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">parent_name</span><span class="p">:</span> <span class="n">module</span><span class="p">}</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">named_children</span><span class="p">():</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">collect_layers</span><span class="p">(</span>
+                <span class="n">child</span><span class="p">,</span>
+                <span class="n">layer_types</span><span class="o">=</span><span class="n">layer_types</span><span class="p">,</span>
+                <span class="n">parent_name</span><span class="o">=</span><span class="n">parent_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="k">if</span> <span class="n">parent_name</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="n">name</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="replace_layers">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.convert.replace_layers.html#bitorch_engine.utils.convert.replace_layers">[docs]</a>
+<span class="k">def</span> <span class="nf">replace_layers</span><span class="p">(</span>
+    <span class="n">module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+    <span class="n">names_to_replace</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">class_</span><span class="p">:</span> <span class="n">Type</span><span class="p">,</span>
+    <span class="n">replace_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">],</span>
+    <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function replaces all layers (recursively) within the given modules, whose names are included in the given</span>
+<span class="sd">    list. It requires a function replace_fn that constructs the replacement object for each given layer. Creating</span>
+<span class="sd">    a list of layers can be done with the `collect_layers` function.</span>
+
+<span class="sd">    :param module: the (sub-)network module, in which the layers should be replaced</span>
+<span class="sd">    :param names_to_replace: the names of all layers to be replaced</span>
+<span class="sd">    :param class_: the replacement class</span>
+<span class="sd">    :param replace_fn: function which creates an instance of the replacement class</span>
+<span class="sd">    :param parent_name: the name of the parent (usually empty when called directly)</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: check and support replacement in sequential</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">class_</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">replaced_layers</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="n">full_name</span> <span class="o">=</span> <span class="n">parent_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">attr</span> <span class="k">if</span> <span class="n">parent_name</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="n">attr</span>
+        <span class="k">if</span> <span class="n">full_name</span> <span class="ow">in</span> <span class="n">names_to_replace</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span>
+                <span class="n">module</span><span class="p">,</span>
+                <span class="n">attr</span><span class="p">,</span>
+                <span class="n">replace_fn</span><span class="p">(</span><span class="n">tmp</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span> <span class="n">class_</span>
+            <span class="p">),</span> <span class="s2">&quot;The replacement function does not create an object of the correct class. Recursion could fail/loop.&quot;</span>
+            <span class="n">replaced_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+
+    <span class="c1"># recursively call on children</span>
+    <span class="k">for</span> <span class="n">child_name</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">named_children</span><span class="p">():</span>
+        <span class="n">replaced_layers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="n">replace_layers</span><span class="p">(</span>
+                <span class="n">child</span><span class="p">,</span>
+                <span class="n">names_to_replace</span><span class="p">,</span>
+                <span class="n">class_</span><span class="p">,</span>
+                <span class="n">replace_fn</span><span class="p">,</span>
+                <span class="n">parent_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">child_name</span> <span class="k">if</span> <span class="n">parent_name</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="n">child_name</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">replaced_layers</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_get_simple_linear_replace_fn</span><span class="p">(</span><span class="n">class_</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">replace_fn</span><span class="p">(</span><span class="n">previous_layer</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">class_</span><span class="p">(</span><span class="n">previous_layer</span><span class="o">.</span><span class="n">in_features</span><span class="p">,</span> <span class="n">previous_layer</span><span class="o">.</span><span class="n">out_features</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">replace_fn</span>
+
+
+<div class="viewcode-block" id="get_mpq_config">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.convert.get_mpq_config.html#bitorch_engine.utils.convert.get_mpq_config">[docs]</a>
+<span class="k">def</span> <span class="nf">get_mpq_config</span><span class="p">(</span><span class="n">mpq_strategy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function returns the parameters for a given strategy string. Default is &quot;2-8-32&quot;.</span>
+
+<span class="sd">    Currently, known options are &quot;2-8-32&quot;, &quot;2-32-32&quot;, &quot;2-128-32&quot;, &quot;4-128-256&quot;, &quot;8-128-256&quot; (weight bits, group size, double quantized group size).</span>
+<span class="sd">    :param mpq_strategy: the strategy string</span>
+<span class="sd">    :return: args needed to be set for the MPQ layer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">mpq_strategy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mpq_strategy</span> <span class="o">=</span> <span class="s2">&quot;2-32-32&quot;</span>
+    <span class="n">base_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dq_mode&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;use_gba_quant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;asym&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+    <span class="n">config_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;2-8-32&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;w_bit&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;group_size&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;dq_group_size&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">},</span>
+        <span class="s2">&quot;2-32-32&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;w_bit&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;group_size&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s2">&quot;dq_group_size&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">},</span>
+        <span class="s2">&quot;2-128-32&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;w_bit&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;group_size&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;dq_group_size&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">},</span>
+        <span class="s2">&quot;4-128-256&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;w_bit&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;group_size&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;dq_group_size&quot;</span><span class="p">:</span> <span class="mi">256</span><span class="p">},</span>
+        <span class="s2">&quot;8-128-256&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;w_bit&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;group_size&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;dq_group_size&quot;</span><span class="p">:</span> <span class="mi">256</span><span class="p">},</span>
+        <span class="c1"># asymmetric currently not supported</span>
+        <span class="c1"># &quot;2-32-asym&quot;: {&quot;w_bit&quot;: 2, &quot;group_size&quot;: 32, &quot;dq_group_size&quot;: -1, &quot;asym&quot;: True},</span>
+        <span class="c1"># &quot;4-32-256-asym&quot;: {&quot;w_bit&quot;: 4, &quot;group_size&quot;: 32, &quot;dq_group_size&quot;: 256, &quot;asym&quot;: True},</span>
+    <span class="p">}</span>
+    <span class="k">assert</span> <span class="n">mpq_strategy</span> <span class="ow">in</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mpq_strategy</span><span class="si">}</span><span class="s2"> unknown!&quot;</span>
+    <span class="n">base_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">config_dict</span><span class="p">[</span><span class="n">mpq_strategy</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">base_config</span></div>
+
+
+
+<div class="viewcode-block" id="quantize_linear_with_mpq_linear_cuda">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.convert.quantize_linear_with_mpq_linear_cuda.html#bitorch_engine.utils.convert.quantize_linear_with_mpq_linear_cuda">[docs]</a>
+<span class="k">def</span> <span class="nf">quantize_linear_with_mpq_linear_cuda</span><span class="p">(</span>
+    <span class="n">module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+    <span class="n">names_to_replace</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">mpq_strategy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span>
+    <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replace all layers contained in `names_to_replace` within the given module with `MPQLinearCuda` layers.</span>
+<span class="sd">    :param module: the module which contains Linear layers</span>
+<span class="sd">    :param names_to_replace: the list of layer names to be replaced</span>
+<span class="sd">    :param mpq_strategy: which MPQ strategy to use, see `get_mpq_config`</span>
+<span class="sd">    :param dtype: the dtype of the new module</span>
+<span class="sd">    :param parent_name: the name of the parent (usually empty when called directly)</span>
+<span class="sd">    :return: the list of names of layers which were replaced</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.nbit.cuda</span> <span class="kn">import</span> <span class="n">MPQLinearCuda</span>
+
+    <span class="n">mpq_quantization_config</span> <span class="o">=</span> <span class="n">get_mpq_config</span><span class="p">(</span><span class="n">mpq_strategy</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">replace_fn</span><span class="p">(</span><span class="n">previous_layer</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">MPQLinearCuda</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">previous_layer</span><span class="o">.</span><span class="n">in_features</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">previous_layer</span><span class="o">.</span><span class="n">out_features</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">mpq_quantization_config</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">replace_layers</span><span class="p">(</span>
+        <span class="n">module</span><span class="p">,</span> <span class="n">names_to_replace</span><span class="p">,</span> <span class="n">MPQLinearCuda</span><span class="p">,</span> <span class="n">replace_fn</span><span class="p">,</span> <span class="n">parent_name</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="quantize_linear_with_q4_linear_cutlass">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.convert.quantize_linear_with_q4_linear_cutlass.html#bitorch_engine.utils.convert.quantize_linear_with_q4_linear_cutlass">[docs]</a>
+<span class="k">def</span> <span class="nf">quantize_linear_with_q4_linear_cutlass</span><span class="p">(</span>
+    <span class="n">module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+    <span class="n">names_to_replace</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replace all layers contained in `names_to_replace` within the given module with `Q4LinearCutlass` layers.</span>
+<span class="sd">    :param module: the module which contains Linear layers</span>
+<span class="sd">    :param names_to_replace: the list of layer names to be replaced</span>
+<span class="sd">    :param parent_name: the name of the parent (usually empty when called directly)</span>
+<span class="sd">    :return: the list of names of layers which were replaced</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.nbit.cutlass</span> <span class="kn">import</span> <span class="n">Q4LinearCutlass</span>
+
+    <span class="k">return</span> <span class="n">replace_layers</span><span class="p">(</span>
+        <span class="n">module</span><span class="p">,</span>
+        <span class="n">names_to_replace</span><span class="p">,</span>
+        <span class="n">Q4LinearCutlass</span><span class="p">,</span>
+        <span class="n">_get_simple_linear_replace_fn</span><span class="p">(</span><span class="n">Q4LinearCutlass</span><span class="p">),</span>
+        <span class="n">parent_name</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="quantize_linear_with_binary_linear_cuda">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.convert.quantize_linear_with_binary_linear_cuda.html#bitorch_engine.utils.convert.quantize_linear_with_binary_linear_cuda">[docs]</a>
+<span class="k">def</span> <span class="nf">quantize_linear_with_binary_linear_cuda</span><span class="p">(</span>
+    <span class="n">module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+    <span class="n">names_to_replace</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replace all layers contained in `names_to_replace` within the given module with `BinaryLinearCuda` layers.</span>
+<span class="sd">    :param module: the module which contains Linear layers</span>
+<span class="sd">    :param names_to_replace: the list of layer names to be replaced</span>
+<span class="sd">    :param parent_name: the name of the parent (usually empty when called directly)</span>
+<span class="sd">    :return: the list of names of layers which were replaced</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.binary.cuda</span> <span class="kn">import</span> <span class="n">BinaryLinearCuda</span>
+
+    <span class="k">return</span> <span class="n">replace_layers</span><span class="p">(</span>
+        <span class="n">module</span><span class="p">,</span>
+        <span class="n">names_to_replace</span><span class="p">,</span>
+        <span class="n">BinaryLinearCuda</span><span class="p">,</span>
+        <span class="n">_get_simple_linear_replace_fn</span><span class="p">(</span><span class="n">BinaryLinearCuda</span><span class="p">),</span>
+        <span class="n">parent_name</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

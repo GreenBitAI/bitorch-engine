@@ -1,0 +1,6 @@
+bitorch\_engine.utils.convert.quantize\_linear\_with\_q4\_linear\_cutlass
+=========================================================================
+
+.. currentmodule:: bitorch_engine.utils.convert
+
+.. autofunction:: quantize_linear_with_q4_linear_cutlass

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qconv.nbit.cutlass.layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qconv.nbit.cutlass.layer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qconv.nbit.cutlass.layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Function</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.safe_import</span> <span class="kn">import</span> <span class="n">import_extension</span>
+<span class="kn">from</span> <span class="nn">..layer</span> <span class="kn">import</span> <span class="n">nBitConv2dBase</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.functions.cuda</span> <span class="kn">import</span> <span class="n">q4_unpack_and_scaling_tensor</span>
+
+<span class="n">q4_conv_cutlass</span> <span class="o">=</span> <span class="n">import_extension</span><span class="p">(</span><span class="s2">&quot;q4_conv_cutlass&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Q4Conv2dCutlassForward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlassForward.html#bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlassForward">[docs]</a>
+<span class="k">class</span> <span class="nc">Q4Conv2dCutlassForward</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A custom forward function for 4-bit quantized convolution using CUTLASS kernels.</span>
+
+<span class="sd">    This class implements the forward and backward passes for a 4-bit quantized convolution</span>
+<span class="sd">    operation, intended for use with PyTorch&#39;s autograd mechanism. It utilizes CUTLASS low-precision</span>
+<span class="sd">    computation primitives for efficient GPU acceleration.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        forward (Function): Performs the forward pass of the 4-bit quantized convolution.</span>
+<span class="sd">        backward (Function): Implements the backward pass for gradient computation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Q4Conv2dCutlassForward.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlassForward.html#bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlassForward.forward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">is_train</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for the 4-bit quantized convolution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx (torch.autograd.function.FunctionCtx): Context object to save information for backward computation.</span>
+<span class="sd">            x (torch.Tensor): Input tensor.</span>
+<span class="sd">            weight (torch.Tensor): Weight tensor.</span>
+<span class="sd">            scale_a (torch.Tensor): Scaling factor for input quantization.</span>
+<span class="sd">            scale_w (torch.Tensor): Scaling factor for weight quantization.</span>
+<span class="sd">            is_train (bool): Flag indicating if the model is in training mode.</span>
+<span class="sd">            kernel_size (int): Size of the convolution kernel.</span>
+<span class="sd">            stride (int): Stride of the convolution.</span>
+<span class="sd">            padding (int): Padding added to both sides of the input.</span>
+<span class="sd">            dilation (int): Spacing between kernel elements.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The result of the 4-bit quantized convolution operation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">q4_conv_cutlass</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">,</span> <span class="n">is_train</span><span class="p">,</span>
+                                         <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">q_a</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">q_w</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="c1"># variables for backward</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">q_a</span><span class="p">,</span> <span class="n">q_w</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">)</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">dilation</span> <span class="o">=</span> <span class="n">dilation</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">weight_shape</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Q4Conv2dCutlassForward.backward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlassForward.html#bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlassForward.backward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">BackwardCFunction</span><span class="p">,</span>
+                 <span class="n">output_gradient</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backward pass for the 4-bit quantized convolution.</span>
+
+<span class="sd">        This method computes the gradients of the input tensor and weight tensor based on the gradient of the layer&#39;s output.</span>
+<span class="sd">        It also calculates the gradient of the scale factor used in quantization. The method uses saved tensors and</span>
+<span class="sd">        attributes from the forward pass for this computation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx (torch.autograd.function.BackwardCFunction): Context object with saved tensors and options.</span>
+<span class="sd">            output_gradient (torch.Tensor): Gradient of the loss with respect to the output of the forward pass.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[torch.Tensor, ...]: Gradients of the input tensor, weight tensor, and scale factors, with None placeholders for non-differentiable parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">input</span><span class="p">,</span> <span class="n">q_a</span><span class="p">,</span> <span class="n">q_w</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">,</span> <span class="n">scale_a</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+        <span class="n">stride</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">stride</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">padding</span>
+        <span class="n">dilation</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">dilation</span>
+        <span class="n">weight_shape</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">weight_shape</span>
+
+        <span class="c1"># input grad</span>
+        <span class="n">qw_unpacked</span> <span class="o">=</span> <span class="n">q4_unpack_and_scaling_tensor</span><span class="p">(</span><span class="n">q_w</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">conv2d_input</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">qw_unpacked</span><span class="p">,</span> <span class="n">output_gradient</span><span class="p">,</span>
+                                                <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">)</span>
+        <span class="c1"># weight grad</span>
+        <span class="n">qa_unpacked</span> <span class="o">=</span> <span class="n">q4_unpack_and_scaling_tensor</span><span class="p">(</span><span class="n">q_a</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">grad_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">conv2d_weight</span><span class="p">(</span><span class="n">qa_unpacked</span><span class="p">,</span> <span class="n">weight_shape</span><span class="p">,</span> <span class="n">output_gradient</span><span class="p">,</span>
+                                                  <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">)</span>
+
+        <span class="c1"># grad clip range input</span>
+        <span class="n">sw</span> <span class="o">=</span> <span class="nb">input</span> <span class="o">/</span> <span class="n">scale_a</span>
+        <span class="n">indicate_small</span> <span class="o">=</span> <span class="n">sw</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">8</span>
+        <span class="n">indicate_large</span> <span class="o">=</span> <span class="n">sw</span> <span class="o">&gt;</span> <span class="mi">7</span>
+        <span class="n">indicate_middle</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">indicate_small</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">indicate_large</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">grad_input</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">indicate_middle</span><span class="p">)</span>
+
+        <span class="c1"># grad of the scaling factor for activation</span>
+        <span class="n">grad_scale_a</span> <span class="o">=</span> \
+            <span class="p">((</span><span class="n">indicate_small</span> <span class="o">*</span> <span class="o">-</span><span class="mf">8.0</span> <span class="o">+</span> <span class="n">indicate_large</span> <span class="o">*</span> <span class="mf">7.0</span> <span class="o">+</span> <span class="n">indicate_middle</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="o">-</span><span class="n">sw</span> <span class="o">+</span> <span class="n">sw</span><span class="o">.</span><span class="n">round</span><span class="p">()))</span> <span class="o">*</span> <span class="n">grad_input</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">*</span> <span class="mf">7.0</span><span class="p">)))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">grad_input</span><span class="p">,</span> <span class="n">grad_weight</span><span class="p">,</span> <span class="n">grad_scale_a</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Q4Conv2dCutlass">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.html#bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass">[docs]</a>
+<span class="k">class</span> <span class="nc">Q4Conv2dCutlass</span><span class="p">(</span><span class="n">nBitConv2dBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A specialized 4-bit quantized convolutional layer using CUTLASS kernels.</span>
+
+<span class="sd">    This class extends nBitConv2dBase to implement a 4-bit quantized convolution</span>
+<span class="sd">    layer optimized for CUTLASS. It supports quantization for both weights and activations,</span>
+<span class="sd">    aiming to reduce model size and improve computational efficiency while maintaining</span>
+<span class="sd">    accuracy.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bias_a (torch.nn.Parameter): Bias parameter for activation quantization.</span>
+<span class="sd">        scale_a (torch.nn.Parameter): Scale parameter for activation quantization.</span>
+<span class="sd">        scale_w (torch.nn.Parameter): Scale parameter for weight quantization.</span>
+<span class="sd">        eps (torch.Tensor): A small epsilon value to prevent division by zero in calculations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Q4Conv2dCutlass.__init__">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.html#bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the Q4Conv2dCutlass layer with provided arguments.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: Variable length argument list for base class.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments for base class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Q4Conv2dCutlass</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;scale_w&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;eps&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.00001</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Q4Conv2dCutlass.prepare_params">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.html#bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.prepare_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares and initializes the model parameters for training.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method MUST be called after model initialization and before training starts to ensure the weights are</span>
+<span class="sd">            properly prepared for efficient computation.</span>
+
+<span class="sd">            One can use &quot;prepare_bie_layers&quot; method from project_root.utils.model_helper to call this function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mf">5.6345</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Q4Conv2dCutlass.generate_quantized_weight">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.html#bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.generate_quantized_weight">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_quantized_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs weight quantization and optionally releases the floating-point weights.</span>
+
+<span class="sd">        This method should be called before saving the model weights, especially for inference.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight_only (bool): If True, releases the floating-point weight after quantization.</span>
+<span class="sd">            It will save runtime memory for inference.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">q4_conv_cutlass</span><span class="o">.</span><span class="n">w_pack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">qweight_only</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Q4Conv2dCutlass.set_activation">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.html#bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.set_activation">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_activation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates scale of input and shift the input using a learnable bias_a.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input activation tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The quantized activation tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculation based on a fixed quantization formula</span>
+        <span class="c1"># alpha = 2 * tensor.abs().mean() / math.sqrt(Qp) where Qp=127 for 8-bit</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="o">.</span><span class="n">is_nonzero</span><span class="p">():</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mf">11.269</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># learnable shift input</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_a</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_check_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks the input tensor before forward pass. Ensure compatibility with CUTLASS requirements.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input tensor to the layer.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If input or output channels are not divisible by 32, due to CUTLASS constraints.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># this is the cutlass specific constraints</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">%</span> <span class="mi">32</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Input channel dimension must be divisible by 32.&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">%</span> <span class="mi">32</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Output channel dimension must be divisible by 32.&quot;</span>
+
+<div class="viewcode-block" id="Q4Conv2dCutlass.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.html#bitorch_engine.layers.qconv.nbit.cutlass.layer.Q4Conv2dCutlass.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the forward pass of the 4-bit quantized convolution using CUTLASS.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Input tensor of shape (N, C, H, W).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The output tensor of the convolution operation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_activation</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Q4Conv2dCutlassForward</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

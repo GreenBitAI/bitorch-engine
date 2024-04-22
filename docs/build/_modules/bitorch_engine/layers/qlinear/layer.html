@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.layer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qlinear.layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">bitorch</span> <span class="kn">import</span> <span class="n">RuntimeMode</span>
+<span class="kn">from</span> <span class="nn">bitorch.layers.extensions</span> <span class="kn">import</span> <span class="n">LayerRecipe</span>
+<span class="kn">from</span> <span class="nn">bitorch.layers.qlinear</span> <span class="kn">import</span> <span class="n">QLinearImplementation</span><span class="p">,</span> <span class="n">QLinearBase</span>
+
+<span class="kn">from</span> <span class="nn">.binary</span> <span class="kn">import</span> <span class="n">BinaryLinear</span>
+<span class="kn">from</span> <span class="nn">.binary.layer</span> <span class="kn">import</span> <span class="n">BinaryLinearBase</span>
+<span class="kn">from</span> <span class="nn">.nbit</span> <span class="kn">import</span> <span class="n">nBitLinearBase</span>
+<span class="kn">from</span> <span class="nn">.qlinear_implementation</span> <span class="kn">import</span> <span class="n">QLinearImplementationMixin</span>
+
+
+<div class="viewcode-block" id="QLinearInf">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.layers.qlinear.layer.QLinearInf.html#bitorch_engine.layers.qlinear.layer.QLinearInf">[docs]</a>
+<span class="nd">@QLinearImplementation</span><span class="p">(</span><span class="n">RuntimeMode</span><span class="o">.</span><span class="n">INFERENCE_AUTO</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">QLinearInf</span><span class="p">(</span><span class="n">QLinearImplementationMixin</span><span class="p">,</span> <span class="n">BinaryLinearBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    QLinearInf is a class for quantized linear layers optimized for inference.</span>
+<span class="sd">    It inherits from QLinearImplementationMixin and BinaryLinearBase to utilize</span>
+<span class="sd">    quantization functionalities and binary linear operations.</span>
+
+<span class="sd">    This class specifically handles inference operations with quantized weights,</span>
+<span class="sd">    potentially using different bit widths for activations and weights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="QLinearInf.create_clone_from">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.layers.qlinear.layer.QLinearInf.html#bitorch_engine.layers.qlinear.layer.QLinearInf.create_clone_from">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_clone_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">recipe</span><span class="p">:</span> <span class="n">LayerRecipe</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a clone of the layer from a given recipe, adjusting input feature dimensions</span>
+<span class="sd">        and setting up quantization parameters based on the recipe&#39;s specifications.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            recipe (LayerRecipe): A configuration object containing layer specifications.</span>
+<span class="sd">            device (torch.device, optional): The device on which to create the layer. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Any: An instance of the cloned layer with quantization applied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">QLinearBase</span><span class="o">.</span><span class="n">get_args_as_kwargs</span><span class="p">(</span><span class="n">recipe</span><span class="p">)</span>
+        <span class="n">input_features</span><span class="p">,</span> <span class="n">output_features</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;in_features&quot;</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;out_features&quot;</span><span class="p">]</span>
+        <span class="n">input_features</span> <span class="o">//=</span> <span class="mi">32</span>
+        <span class="n">new_layer</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">input_features</span><span class="p">,</span>
+            <span class="n">output_features</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">a_bit</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;input_quantization&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_width</span><span class="p">,</span>
+            <span class="n">w_bit</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;input_quantization&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_width</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">new_layer</span><span class="o">.</span><span class="n">set_weight_data</span><span class="p">(</span><span class="n">recipe</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">new_layer</span><span class="o">.</span><span class="n">generate_quantized_weight</span><span class="p">(</span><span class="n">qweight_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_layer</span></div>
+
+
+<div class="viewcode-block" id="QLinearInf.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.layers.qlinear.layer.QLinearInf.html#bitorch_engine.layers.qlinear.layer.QLinearInf.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">input_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">out_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">a_bit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">w_bit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the QLinearInf layer with specified input and output feature dimensions,</span>
+<span class="sd">        quantization bit widths, and device. Currently, bias is not supported and must be False.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_features (int): The dimension of input features after bit-packing.</span>
+<span class="sd">            out_features (int): The dimension of output features (hidden states).</span>
+<span class="sd">            device (optional): The device on which to initialize the layer. Defaults to None.</span>
+<span class="sd">            a_bit (int, optional): Bit width for activation quantization. Defaults to 1.</span>
+<span class="sd">            w_bit (int, optional): Bit width for weight quantization. Defaults to 1.</span>
+<span class="sd">            bias (bool, optional): Indicates if bias is used. Currently must be False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If bias is set to True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_features</span><span class="p">,</span> <span class="n">out_features</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">bias</span><span class="p">,</span> <span class="s2">&quot;currently QLinearInf only supports bias = False&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">a_bit</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">w_bit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">BinaryLinear</span><span class="p">(</span><span class="n">input_features</span><span class="p">,</span> <span class="n">out_features</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">nBitLinearBase</span><span class="p">(</span>
+                <span class="n">input_features</span><span class="p">,</span> <span class="n">out_features</span><span class="p">,</span> <span class="n">a_bit</span><span class="p">,</span> <span class="n">w_bit</span><span class="p">,</span> <span class="n">device</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="QLinearInf.prepare_params">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.layers.qlinear.layer.QLinearInf.html#bitorch_engine.layers.qlinear.layer.QLinearInf.prepare_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares the parameters of the layer for quantization and inference,</span>
+<span class="sd">        calling the corresponding method of the underlying binary or n-bit linear layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">prepare_params</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="QLinearInf.generate_quantized_weight">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.layers.qlinear.layer.QLinearInf.html#bitorch_engine.layers.qlinear.layer.QLinearInf.generate_quantized_weight">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_quantized_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates and sets the quantized weights for the layer, optionally focusing</span>
+<span class="sd">        only on the quantized weights without affecting the original weights.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight_only (bool, optional): If True, only quantized weights are generated. Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">generate_quantized_weight</span><span class="p">(</span><span class="n">qweight_only</span><span class="o">=</span><span class="n">qweight_only</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="QLinearInf.set_weight_data">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.layers.qlinear.layer.QLinearInf.html#bitorch_engine.layers.qlinear.layer.QLinearInf.set_weight_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_weight_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the weight data for the layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The tensor containing the weight data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">set_weight_data</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="QLinearInf.set_quantized_weight_data">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.layers.qlinear.layer.QLinearInf.html#bitorch_engine.layers.qlinear.layer.QLinearInf.set_quantized_weight_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_quantized_weight_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the quantized weight data for the layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The tensor containing the quantized weight data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">set_quantized_weight_data</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Property to access the weight tensor of the layer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The weight tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">opt_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Property to access the optimized weight tensor of the layer, which may</span>
+<span class="sd">        include quantized or otherwise transformed weights for efficient inference.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The optimized weight tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">opt_weight</span>
+
+<div class="viewcode-block" id="QLinearInf.forward">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.layers.qlinear.layer.QLinearInf.html#bitorch_engine.layers.qlinear.layer.QLinearInf.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forwards the input tensor x through the quantized linear layer, performing</span>
+<span class="sd">        the linear operation with quantized weights.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input tensor to forward through the layer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The output tensor after passing through the layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

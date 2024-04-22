@@ -1,0 +1,6 @@
+bitorch\_engine.utils.quant\_operators.gptq\_stype\_unpacking
+=============================================================
+
+.. currentmodule:: bitorch_engine.utils.quant_operators
+
+.. autofunction:: gptq_stype_unpacking

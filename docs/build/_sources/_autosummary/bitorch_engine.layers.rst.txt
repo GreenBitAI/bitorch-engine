@@ -1,0 +1,35 @@
+bitorch\_engine.layers
+======================
+
+.. automodule:: bitorch_engine.layers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: module.rst
+   :recursive:
+
+   bitorch_engine.layers.qconv
+   bitorch_engine.layers.qembedding
+   bitorch_engine.layers.qlinear
+   bitorch_engine.layers.qmha
+

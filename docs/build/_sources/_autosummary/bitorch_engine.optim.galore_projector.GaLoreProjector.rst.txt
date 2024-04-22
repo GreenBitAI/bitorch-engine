@@ -1,0 +1,27 @@
+bitorch\_engine.optim.galore\_projector.GaLoreProjector
+=======================================================
+
+.. currentmodule:: bitorch_engine.optim.galore_projector
+
+.. autoclass:: GaLoreProjector
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~GaLoreProjector.__init__
+        ~GaLoreProjector.get_orthogonal_matrix
+        ~GaLoreProjector.project
+        ~GaLoreProjector.project_back
+   
+   
+
+   
+   
+   

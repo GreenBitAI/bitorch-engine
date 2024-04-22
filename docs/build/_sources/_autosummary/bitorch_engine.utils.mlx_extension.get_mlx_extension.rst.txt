@@ -1,0 +1,6 @@
+bitorch\_engine.utils.mlx\_extension.get\_mlx\_extension
+========================================================
+
+.. currentmodule:: bitorch_engine.utils.mlx_extension
+
+.. autofunction:: get_mlx_extension

@@ -1,0 +1,30 @@
+bitorch\_engine.layers.qlinear.nbit.cutlass.q4\_layer.Q4MatMulFunction
+======================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.cutlass.q4_layer
+
+.. autoclass:: Q4MatMulFunction
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~Q4MatMulFunction.backward
+        ~Q4MatMulFunction.forward
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   

@@ -1,0 +1,6 @@
+bitorch\_engine.utils.cutlass\_path.find\_cutlass
+=================================================
+
+.. currentmodule:: bitorch_engine.utils.cutlass_path
+
+.. autofunction:: find_cutlass

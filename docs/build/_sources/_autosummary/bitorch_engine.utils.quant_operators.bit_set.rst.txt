@@ -1,0 +1,6 @@
+bitorch\_engine.utils.quant\_operators.bit\_set
+===============================================
+
+.. currentmodule:: bitorch_engine.utils.quant_operators
+
+.. autofunction:: bit_set

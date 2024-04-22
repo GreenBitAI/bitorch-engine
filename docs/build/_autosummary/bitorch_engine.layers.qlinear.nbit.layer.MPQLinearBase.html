@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter" href="bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter.html" />
+    <link rel="prev" title="bitorch_engine.layers.qlinear.nbit.layer" href="bitorch_engine.layers.qlinear.nbit.layer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build_options.html">Build options</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../documentation.html">Full Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bitorch_engine.html">bitorch_engine</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.functions.html">bitorch_engine.functions</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bitorch_engine.layers.html">bitorch_engine.layers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qembedding.html">bitorch_engine.layers.qembedding</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qmha.html">bitorch_engine.layers.qmha</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.optim.html">bitorch_engine.optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.utils.html">bitorch_engine.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../documentation.html">Full Documentation</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.html">bitorch_engine</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.html">bitorch_engine.layers</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.nbit.html">bitorch_engine.layers.qlinear.nbit</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.nbit.layer.html">bitorch_engine.layers.qlinear.nbit.layer</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bitorch-engine-layers-qlinear-nbit-layer-mpqlinearbase">
+<h1>bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase<a class="headerlink" href="#bitorch-engine-layers-qlinear-nbit-layer-mpqlinearbase" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qlinear.nbit.layer.</span></span><span class="sig-name descname"><span class="pre">MPQLinearBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">torch.float16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_gba_quant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dq_group_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dq_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asym</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requires_grad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase" title="Link to this definition"></a></dt>
+<dd><p>Base class for mixed precision quantized (MPQ) linear layers, designed to support
+the computational needs of large language models (LLMs) with mixed precision quantization,
+such as 16-bit activations and 4-bit weights for efficient inference. It introduces optimized
+computation for bitwise unpacking of quantized weights and 16-bit floating-point matrix multiplication,
+tailored for various hardware platforms.</p>
+<p>Different to nBitLinearBase, MPQLinearBase serves as the base class for mixed precision quantized linear layers.
+This special class is mainly to support the mixed precision linear layer in the current LLMs model,
+such as using 16-bit activation and 4-bit quantization weight for inference.
+During the reasoning process, two main calculation processes are introduced, namely bitwise unpacking of qweight
+from lower bits to 16-bit float, and 16-bit matrix multiplication. Correspondingly, the performance of these
+two processes has been optimized on different hardware.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.in_channels">
+<span class="sig-name descname"><span class="pre">in_channels</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.in_channels" title="Link to this definition"></a></dt>
+<dd><p>The number of input features after bit-packing, representing the dimensionality
+of the input space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.out_channels">
+<span class="sig-name descname"><span class="pre">out_channels</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.out_channels" title="Link to this definition"></a></dt>
+<dd><p>The number of output features, representing the dimensionality of the output space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.a_bit">
+<span class="sig-name descname"><span class="pre">a_bit</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.a_bit" title="Link to this definition"></a></dt>
+<dd><p>The bit-width used for activation quantization, defaulting to 16 bits for high precision.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.w_bit">
+<span class="sig-name descname"><span class="pre">w_bit</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.w_bit" title="Link to this definition"></a></dt>
+<dd><p>The bit-width used for weight quantization, aiming to reduce memory footprint and computational cost.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.dtype">
+<span class="sig-name descname"><span class="pre">dtype</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.dtype" title="Link to this definition"></a></dt>
+<dd><p>The data type for computations within this layer, typically torch.half for efficiency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.group_size">
+<span class="sig-name descname"><span class="pre">group_size</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.group_size" title="Link to this definition"></a></dt>
+<dd><p>The grouping size for quantization, affecting scale and zero-point calculation.
+A value of -1 indicates that the entire input width is treated as one group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.use_gba_quant">
+<span class="sig-name descname"><span class="pre">use_gba_quant</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.use_gba_quant" title="Link to this definition"></a></dt>
+<dd><p>Flag to indicate the use of GBA-specific quantization techniques over GPTQ-compliant methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.dq_group_size">
+<span class="sig-name descname"><span class="pre">dq_group_size</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.dq_group_size" title="Link to this definition"></a></dt>
+<dd><p>Double quantization group size, specific to GBA quantization, for further granularity in quantization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.dq_mode">
+<span class="sig-name descname"><span class="pre">dq_mode</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.dq_mode" title="Link to this definition"></a></dt>
+<dd><p>Double quantization mode, catering to different versions and requirements of LLaMA models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.disable_bias">
+<span class="sig-name descname"><span class="pre">disable_bias</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.disable_bias" title="Link to this definition"></a></dt>
+<dd><p>Whether to include a bias term in the linear calculation. Disabling can reduce parameters and computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.asym">
+<span class="sig-name descname"><span class="pre">asym</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.asym" title="Link to this definition"></a></dt>
+<dd><p>Indicates whether asymmetric quantization is used, offering an alternative to symmetric quantization strategies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.initialize" title="Link to this definition"></a></dt>
+<dd><p>Initializes parameters and quantization buffers based on the selected quantization method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.init_gptq">
+<span class="sig-name descname"><span class="pre">init_gptq</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.init_gptq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.init_gptq" title="Link to this definition"></a></dt>
+<dd><p>Sets up parameters specific to GPTQ quantization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.init_gba">
+<span class="sig-name descname"><span class="pre">init_gba</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.init_gba"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.init_gba" title="Link to this definition"></a></dt>
+<dd><p>Configures buffers and scales for GBA quantization, accommodating for asymmetry and double quantization modes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.set_qweight_data">
+<span class="sig-name descname"><span class="pre">set_qweight_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.set_qweight_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.set_qweight_data" title="Link to this definition"></a></dt>
+<dd><p>Updates the quantized weight tensor with new data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.generate_quantized_weight">
+<span class="sig-name descname"><span class="pre">generate_quantized_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.generate_quantized_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.generate_quantized_weight" title="Link to this definition"></a></dt>
+<dd><p>Placeholder for weight quantization method, to be implemented by subclasses.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.check_parameters">
+<span class="sig-name descname"><span class="pre">check_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.check_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.check_parameters" title="Link to this definition"></a></dt>
+<dd><p>Placeholder for parameter validation, ensuring correct layer configuration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.prepare_params">
+<span class="sig-name descname"><span class="pre">prepare_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.prepare_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.prepare_params" title="Link to this definition"></a></dt>
+<dd><p>Prepares quantized parameters for the forward pass, potentially decompressing quantized values.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.__init__" title="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a></p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">param in_channels<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dim of input features after bit-packing</p>
+</dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.check_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_parameters</span></code></a></p></td>
+<td><p>Validates the configuration and parameters of the layer to ensure they are set correctly for the quantization process.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id1" title="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.generate_quantized_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_quantized_weight</span></code></a></p></td>
+<td><p>A placeholder method for the weight quantization process.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id2" title="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.init_gba"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_gba</span></code></a></p></td>
+<td><p>Prepares the layer for GBA-specific quantization, configuring buffers for scales, zero-points, and statistics for double quantization if enabled.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id3" title="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.init_gptq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_gptq</span></code></a></p></td>
+<td><p>Initializes parameters and buffers specific to the GPTQ quantization method.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id4" title="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.initialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize</span></code></a></p></td>
+<td><p>Initializes layer parameters and quantization buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id5" title="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.prepare_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_params</span></code></a></p></td>
+<td><p>This method should be executed before the actual forward pass.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id6" title="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.set_qweight_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_qweight_data</span></code></a></p></td>
+<td><p>Updates the quantized weight tensor with new data.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">training</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">torch.float16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_gba_quant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dq_group_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dq_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asym</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">requires_grad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>int</em>) – dim of input features after bit-packing</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – dim of hidden states</p></li>
+<li><p><strong>a_bit</strong> – activation bits</p></li>
+<li><p><strong>w_bit</strong> – weight bits</p></li>
+<li><p><strong>dtype</strong> – data type used in this layer</p></li>
+<li><p><strong>group_size</strong> – number of associated weight elements-&gt;scale and zero facter</p></li>
+<li><p><strong>disable_bias</strong> – whether use bias</p></li>
+<li><p><strong>use_gba_quant</strong> – True: GBA specific quantization, False: use GPTQ-compliant methods</p></li>
+<li><p><strong>dq_group_size</strong> – gba specific parameter. Indicates double quantization group size.</p></li>
+<li><p><strong>dq_mode</strong> – gba specific parameter. Indicates double quantization mode, which is used to adapt to multiple different LLaMA versions.</p></li>
+<li><p><strong>asym</strong> – gba specific parameter. Indicates asymmetry or symmetry quantization strategies.</p></li>
+<li><p><strong>requires_grad</strong> (<em>bool</em>) – Indicates whether gradient calculation should be enabled for the parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">check_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.check_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Validates the configuration and parameters of the layer to ensure they are set correctly for the
+quantization process. This method should check for common configuration errors and ensure that all
+required parameters for the selected quantization method are correctly initialized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – Indicates that the method has not been implemented yet and needs to be
+    provided by subclasses.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">generate_quantized_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qweight_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.generate_quantized_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>A placeholder method for the weight quantization process. Subclasses should implement this method
+to define how the layer’s weights are quantized based on the current configuration and quantization
+method. This operation is typically executed before saving the model weights or performing inference to ensure that the weights
+are in the appropriate quantized format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qweight_only</strong> (<em>bool</em>) – A flag to indicate whether only the quantized weights need to be generated,
+without considering other quantization parameters like scales or zero-points.
+Default is False, which means all relevant quantization parameters are generated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">init_gba</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.init_gba"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>Prepares the layer for GBA-specific quantization, configuring buffers for scales, zero-points,
+and statistics for double quantization if enabled. GBA quantization allows for fine-tuned control
+over the quantization process, accommodating asymmetric quantization and providing additional
+parameters to adjust for different model versions and requirements.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">init_gptq</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.init_gptq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>Initializes parameters and buffers specific to the GPTQ quantization method. This includes
+setting up zero-point buffers, scale factors, and ensuring asymmetric quantization is enabled.
+GPTQ, being a more general quantization approach, requires specific buffers to hold quantization
+parameters for accurate computation and minimal precision loss.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>Initializes layer parameters and quantization buffers. This method sets up the infrastructure
+for either GBA or GPTQ quantization methods, based on the layer configuration. It allocates
+memory for quantized weights, scales, zero-points, and other necessary buffers, ensuring
+they are ready for the quantization process.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">prepare_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.prepare_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd><p>This method should be executed before the actual forward pass. It mainly decompress quantized parameters
+such as qscale and qzero. This step could be simplified or eliminated in the future by having a kernel
+implementation that can decompress during kernel computation.</p>
+<p>One can use “prepare_bie_layers” method from project_root.utils.model_helper to call this function.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method should be called before executing the forward pass, especially after loading
+the model from a checkpoint or before inference to ensure that quantized parameters are
+correctly prepared.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – Indicates that the method has not been implemented yet and should be
+    provided by subclasses.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">set_qweight_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/layer.html#MPQLinearBase.set_qweight_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd><p>Updates the quantized weight tensor with new data. This method is crucial for adjusting the quantized
+weights based on training or fine-tuning processes, ensuring the layer’s weights reflect the most
+recent updates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>torch.Tensor</em>) – The new quantized weight data to be set in the layer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bitorch_engine.layers.qlinear.nbit.layer.html" class="btn btn-neutral float-left" title="bitorch_engine.layers.qlinear.nbit.layer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter.html" class="btn btn-neutral float-right" title="bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

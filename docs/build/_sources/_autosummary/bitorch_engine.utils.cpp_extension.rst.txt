@@ -1,0 +1,32 @@
+bitorch\_engine.utils.cpp\_extension
+====================================
+
+.. automodule:: bitorch_engine.utils.cpp_extension
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      get_cpp_extension
+      get_kwargs
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

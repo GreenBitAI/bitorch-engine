@@ -1,0 +1,25 @@
+bitorch\_engine.utils.arch\_helper.linux\_arch\_ident
+=====================================================
+
+.. currentmodule:: bitorch_engine.utils.arch_helper
+
+.. autoclass:: linux_arch_ident
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~linux_arch_ident.get_arm_model
+        ~linux_arch_ident.is_arm
+   
+   
+
+   
+   
+   

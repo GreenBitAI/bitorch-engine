@@ -1,0 +1,6 @@
+bitorch\_engine.functions.cuda.extension.get\_ext
+=================================================
+
+.. currentmodule:: bitorch_engine.functions.cuda.extension
+
+.. autofunction:: get_ext

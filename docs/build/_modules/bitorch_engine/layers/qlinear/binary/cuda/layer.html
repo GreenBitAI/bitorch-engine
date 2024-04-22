@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.binary.cuda.layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../binary.html">bitorch_engine.layers.qlinear.binary</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.binary.cuda.layer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qlinear.binary.cuda.layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">bitorch</span> <span class="kn">import</span> <span class="n">RuntimeMode</span>
+<span class="kn">from</span> <span class="nn">bitorch.layers</span> <span class="kn">import</span> <span class="n">QLinearBase</span>
+<span class="kn">from</span> <span class="nn">bitorch.layers.extensions</span> <span class="kn">import</span> <span class="n">LayerRecipe</span>
+<span class="kn">from</span> <span class="nn">bitorch.layers.register</span> <span class="kn">import</span> <span class="n">QLinearImplementation</span>
+<span class="kn">from</span> <span class="nn">torch._utils</span> <span class="kn">import</span> <span class="n">_get_device_index</span> <span class="k">as</span> <span class="n">_torch_get_device_index</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Function</span>
+
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.safe_import</span> <span class="kn">import</span> <span class="n">import_extension</span>
+<span class="kn">from</span> <span class="nn">.bmm</span> <span class="kn">import</span> <span class="n">BMM</span>
+<span class="kn">from</span> <span class="nn">..binary_implementation</span> <span class="kn">import</span> <span class="n">BinaryLinearImplementationMixin</span>
+<span class="kn">from</span> <span class="nn">..layer</span> <span class="kn">import</span> <span class="n">BinaryLinearBase</span><span class="p">,</span> <span class="n">BinaryLinearParameter</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.quant_operators</span> <span class="kn">import</span> <span class="n">nv_tensor_quant</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.model_helper</span> <span class="kn">import</span> <span class="n">init_weight</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.model_helper</span> <span class="kn">import</span> <span class="n">flatten_x</span><span class="p">,</span> <span class="n">unflatten_x</span>
+
+<span class="n">binary_linear_cuda</span> <span class="o">=</span> <span class="n">import_extension</span><span class="p">(</span><span class="s2">&quot;binary_linear_cuda&quot;</span><span class="p">)</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BinaryLinearForward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward">[docs]</a>
+<span class="k">class</span> <span class="nc">BinaryLinearForward</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implements the forward and backward passes for binary linear operation.</span>
+
+<span class="sd">    This class performs the binary linear transformation using custom CUDA operations,</span>
+<span class="sd">    suitable for efficiently processing binary weights and activations in deep learning models.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        ctx: The context object used to save information for backward computation.</span>
+<span class="sd">        input: The input tensor for the linear operation.</span>
+<span class="sd">        weight: The binary weight tensor.</span>
+<span class="sd">        bmm_type: An enumeration indicating the type of binary matrix multiplication kernel to use.</span>
+<span class="sd">        scale_a: The scaling factor for the input activation.</span>
+<span class="sd">        scale_w: The scaling factor for the weight.</span>
+<span class="sd">        is_train: training or eval</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BinaryLinearForward.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward.forward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">bmm_type</span><span class="p">:</span> <span class="n">BMM</span><span class="p">,</span>
+                <span class="n">scale_a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">is_train</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for binary linear operation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx: The context object.</span>
+<span class="sd">            input: The input tensor.</span>
+<span class="sd">            weight: The binary weight tensor.</span>
+<span class="sd">            bmm_type: The binary matrix multiplication kernel type.</span>
+<span class="sd">            scale_a: The scaling factor for the input activation.</span>
+<span class="sd">            scale_w: The scaling factor for the weight.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The result of the binary linear operation scaled by the activation and weight scaling factors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">input</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">flatten_x</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">,</span> <span class="n">scale_a</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">binary_linear_cuda</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bmm_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">unflatten_x</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="o">*</span><span class="n">scale_a</span><span class="o">*</span><span class="n">scale_w</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearForward.backward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearForward.backward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">BackwardCFunction</span><span class="p">,</span>
+                 <span class="n">output_gradient</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backward pass for the binary linear operation, computing gradients for input, weight,</span>
+<span class="sd">        and scale factors based on the output gradient received from subsequent layers.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx (torch.autograd.function.BackwardCFunction): The autograd context that stores</span>
+<span class="sd">                information from the forward pass, including saved tensors for use in gradient</span>
+<span class="sd">                calculations.</span>
+<span class="sd">            output_gradient (torch.Tensor): The gradient of the loss with respect to the output</span>
+<span class="sd">                of the binary linear operation. This tensor is used to compute the gradients for</span>
+<span class="sd">                the input and weight tensors.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            typing.Tuple[torch.Tensor, ...]: A tuple containing gradients with respect to the</span>
+<span class="sd">                input tensor (`grad_input`), weight tensor (`grad_weight`), a None placeholder for</span>
+<span class="sd">                the bias (since this operation doesn&#39;t involve a bias term), and the scaling factor</span>
+<span class="sd">                for the activation (`grad_scale_a`). The gradient for the weight scaling factor is</span>
+<span class="sd">                not computed and thus returned as None.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            - The gradients computation involves sign operations and scaling by the respective</span>
+<span class="sd">              scaling factors (`scale_w` for weights and `scale_a` for activations) to account for</span>
+<span class="sd">              the binarization effect in the forward pass.</span>
+<span class="sd">            - Gradient clipping is applied to `grad_input` to ensure the updates remain within</span>
+<span class="sd">              the expected range, reflecting the constraints of using binary weights and activations.</span>
+<span class="sd">            - This method requires a custom optimizer capable of handling int8 gradients and weights,</span>
+<span class="sd">              as the standard optimizers may not support direct updates with int8 tensors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output_gradient</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">flatten_x</span><span class="p">(</span><span class="n">output_gradient</span><span class="p">)</span>
+
+        <span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">,</span> <span class="n">scale_a</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+
+        <span class="n">wt</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># grad calculation</span>
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">wt</span><span class="o">.</span><span class="n">sign</span><span class="p">()</span><span class="o">*</span><span class="n">scale_w</span><span class="p">)</span> <span class="c1"># (m, k)</span>
+
+        <span class="c1">## ====== calcualtes grad_weight  ====== ##</span>
+        <span class="n">input_sign</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">sign</span><span class="p">()</span>
+        <span class="n">grad_weight</span> <span class="o">=</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">input_sign</span><span class="o">*</span><span class="n">scale_a</span><span class="p">)</span> <span class="c1"># (n, k)</span>
+
+        <span class="c1"># grad clip range input</span>
+        <span class="n">q_w</span> <span class="o">=</span> <span class="nb">input</span> <span class="o">/</span> <span class="n">scale_a</span>
+        <span class="n">indicate_small</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">indicate_large</span> <span class="o">=</span> <span class="n">q_w</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="n">indicate_middle</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">indicate_small</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">indicate_large</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">grad_input</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">indicate_middle</span><span class="p">)</span>
+        <span class="c1">## grad of the scaling factor for activation</span>
+        <span class="n">grad_scale_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">grad_input</span> <span class="o">*</span> <span class="n">input_sign</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">numel</span><span class="p">())))</span>
+
+        <span class="c1"># reshape to original</span>
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="n">unflatten_x</span><span class="p">(</span><span class="n">grad_input</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="c1"># convert to int8 grad_w</span>
+        <span class="n">grad_weight</span> <span class="o">=</span> <span class="n">nv_tensor_quant</span><span class="p">(</span><span class="n">grad_weight</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">grad_input</span><span class="p">,</span> <span class="n">grad_weight</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grad_scale_a</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BinaryLinearCuda">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda">[docs]</a>
+<span class="nd">@QLinearImplementation</span><span class="p">(</span><span class="n">RuntimeMode</span><span class="o">.</span><span class="n">GPU</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">BinaryLinearCuda</span><span class="p">(</span><span class="n">BinaryLinearBase</span><span class="p">,</span> <span class="n">BinaryLinearImplementationMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A CUDA implementation of binary linear layers for neural networks. This class specializes in handling</span>
+<span class="sd">    binary weights and activations for efficient computation on GPU devices. It extends BinaryLinearBase</span>
+<span class="sd">    and mixes in BinaryLinearImplementationMixin to leverage both generic and hardware-specific optimizations.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bmm_type (BMM): Specifies the type of binary matrix multiplication kernel to use.</span>
+<span class="sd">        bits_binary_word (int): Defines the bit width of the binary words used in CUTLASS operations.</span>
+<span class="sd">        bias_a (torch.nn.Parameter): Layer-wise bias for input activations.</span>
+<span class="sd">        scale_a (torch.nn.Parameter): Layer-wise scale for input activations to manage quantization effects.</span>
+<span class="sd">        scale_w (torch.nn.Parameter): Scale for the weights to maintain numerical stability in lower precision.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *args: Variable length argument list for base class initialization.</span>
+<span class="sd">        bmm_type (BMM): Enum indicating the binary matrix multiplication (BMM) kernel type.</span>
+<span class="sd">        **kwargs: Arbitrary keyword arguments for base class initialization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BinaryLinearCuda.__init__">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">bmm_type</span><span class="p">:</span> <span class="n">BMM</span> <span class="o">=</span> <span class="n">BMM</span><span class="o">.</span><span class="n">ADAPTIVE</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BinaryLinearCuda</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># cutlass uses uint8_t as container</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bits_binary_word</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bmm_type</span> <span class="o">=</span> <span class="n">bmm_type</span>
+        <span class="c1"># input scale (layer-wise) and bias (dim=input_features)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_features</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;scale_w&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearCuda.create_clone_from">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.create_clone_from">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_clone_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">recipe</span><span class="p">:</span> <span class="n">LayerRecipe</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a clone of this layer from a given recipe and device.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            recipe (LayerRecipe): A recipe object containing layer configuration and weights.</span>
+<span class="sd">            device (torch.device, optional): The device on which the layer should be deployed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            An instance of BinaryLinearCuda with configurations and weights copied from the recipe.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">QLinearBase</span><span class="o">.</span><span class="n">get_args_as_kwargs</span><span class="p">(</span><span class="n">recipe</span><span class="p">)</span>
+        <span class="n">input_features</span><span class="p">,</span> <span class="n">output_features</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;in_features&quot;</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;out_features&quot;</span><span class="p">]</span>
+        <span class="n">new_layer</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">input_features</span><span class="p">,</span> <span class="n">output_features</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="n">new_layer</span><span class="o">.</span><span class="n">set_weight_data</span><span class="p">(</span><span class="n">recipe</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_layer</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearCuda.prepare_params">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.prepare_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares and initializes the model parameters for training, specifically converting floating-point weights</span>
+<span class="sd">        to int8 format.</span>
+
+<span class="sd">        This method leverages the `init_weight` function to convert the model&#39;s floating-point weights to int8,</span>
+<span class="sd">        achieving a significant reduction in memory usage. It also computes a scale for the weights, which is essential</span>
+<span class="sd">        for maintaining the numerical fidelity of the model&#39;s computations in the lower precision format. The conversion</span>
+<span class="sd">        to int8 format is particularly beneficial for accelerating training and inference on hardware that supports</span>
+<span class="sd">        lower precision arithmetic.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method MUST be called after model initialization and before training starts to ensure the weights are</span>
+<span class="sd">            properly prepared for efficient computation.</span>
+
+<span class="sd">            One can use &quot;prepare_bie_layers&quot; method from project_root.utils.model_helper to call this function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">init_weight</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">BinaryLinearParameter</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">device_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the device index of the current device.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The index of the device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_torch_get_device_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BinaryLinearCuda.generate_quantized_weight">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.generate_quantized_weight">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_quantized_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates and sets the quantized weight parameter from the current weights. A bit-packing CUDA kernel</span>
+<span class="sd">        will be called to do this job.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight_only (bool): If True, the original weight tensor is discarded to save memory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">binary_linear_cuda</span><span class="o">.</span><span class="n">w_pack</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bmm_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">qweight_only</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearCuda.w_pack">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.w_pack">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">w_pack</span><span class="p">(</span><span class="n">weights</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">bmm_type</span><span class="p">:</span> <span class="n">BMM</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Packs the given floating-point weights into a binary format suitable for binary matrix multiplication.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            weights (torch.Tensor): The floating-point weight tensor to be packed.</span>
+<span class="sd">            bmm_type (BMM): The binary matrix multiplication kernel type to be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The packed binary weights.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">binary_linear_cuda</span><span class="o">.</span><span class="n">w_pack</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">bmm_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearCuda.set_activation">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_activation">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_activation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets and scales the activation tensor x using the layer&#39;s scaling parameter and bias.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input activation tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The scaled and biased activation tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use layer norm of the activation value to initialize scale_a</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="o">.</span><span class="n">is_nonzero</span><span class="p">():</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">symmetric</span> <span class="k">else</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># learnable shift input</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_a</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearCuda.set_weight_data">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.set_weight_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_weight_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the weight data for this layer and prepares the parameters for training.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The new weight tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_weight_data</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prepare_params</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearCuda.forward">
+<a class="viewcode-back" href="../../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.html#bitorch_engine.layers.qlinear.binary.cuda.layer.BinaryLinearCuda.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">bmm_type</span><span class="p">:</span> <span class="n">BMM</span> <span class="o">=</span> <span class="n">BMM</span><span class="o">.</span><span class="n">ADAPTIVE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for the binary linear layer. Applies quantized matrix multiplication based on the specified</span>
+<span class="sd">        BMM type, scales and biases the input activations, and returns the output tensor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input activation tensor.</span>
+<span class="sd">            bmm_type (BMM): The type of binary matrix multiplication kernel to use.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The output tensor of the binary linear operation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bmm_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">bmm_type</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bmm_type</span> <span class="o">=</span> <span class="n">bmm_type</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bmm_type</span> <span class="ow">is</span> <span class="n">BMM</span><span class="o">.</span><span class="n">BTC32</span><span class="p">:</span> <span class="c1"># constraint for bit-tensorcore kernel</span>
+            <span class="c1"># m, n, k</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_features</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="o">%</span> <span class="mi">8</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">k</span> <span class="o">%</span> <span class="mi">128</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">8</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Invalid matrix dimensions for bit-tensorcore (BTC) kernel m:</span><span class="si">{}</span><span class="s2">, n:</span><span class="si">{}</span><span class="s2">, k:</span><span class="si">{}</span><span class="s2">. &quot;</span>
+                                <span class="s2">&quot;Guidelines: m and n must be multiplies of 8, and k must be multiplies of 128.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_activation</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">BinaryLinearForward</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bmm_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

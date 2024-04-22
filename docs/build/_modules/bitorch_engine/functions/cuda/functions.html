@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.functions.cuda.functions &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.functions.cuda.functions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.functions.cuda.functions</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.safe_import</span> <span class="kn">import</span> <span class="n">import_extension</span>
+
+<span class="n">functions_cuda</span> <span class="o">=</span> <span class="n">import_extension</span><span class="p">(</span><span class="s2">&quot;functions_cuda&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="fp32toint4">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.functions.cuda.functions.fp32toint4.html#bitorch_engine.functions.cuda.functions.fp32toint4">[docs]</a>
+<span class="k">def</span> <span class="nf">fp32toint4</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a 32-bit floating point tensor to a 4-bit integer representation.</span>
+
+<span class="sd">    This function takes an input tensor of floating point numbers and compresses it</span>
+<span class="sd">    into a tensor of 4-bit integers, effectively reducing the memory footprint by a factor of 8.</span>
+<span class="sd">    The conversion process involves finding the minimum and maximum values of the input</span>
+<span class="sd">    to normalize the data range, and then quantizing the normalized values into 4-bit integers.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        - input (Tensor): A tensor of 32-bit floating point numbers that we want to compress.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        - Tensor: A tensor of 4-bit integers representing the quantized version of the input tensor.</span>
+<span class="sd">          The output tensor uses a 64-bit integer data type to store the 4-bit values,</span>
+<span class="sd">          with each 64-bit integer holding sixteen 4-bit values.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        - The input tensor is assumed to be a flat 1D tensor, and the output tensor will also be a 1D tensor.</span>
+<span class="sd">        - This function is designed to be executed on CUDA-enabled devices and utilizes custom CUDA kernels</span>
+<span class="sd">          for the quantization process.</span>
+<span class="sd">        - The function allocates temporary memory on the GPU for intermediate computations, which is</span>
+<span class="sd">          freed before returning the output tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">functions_cuda</span><span class="o">.</span><span class="n">fp32toint4</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="tensor_to_packed_uint8">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.functions.cuda.functions.tensor_to_packed_uint8.html#bitorch_engine.functions.cuda.functions.tensor_to_packed_uint8">[docs]</a>
+<span class="k">def</span> <span class="nf">tensor_to_packed_uint8</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Packs the given tensor into an 8-bit unsigned integer tensor representation on CUDA.</span>
+
+<span class="sd">    This function converts a tensor of various data types (int8, float32, bfloat16, half)</span>
+<span class="sd">    to an 8-bit unsigned integer tensor using CUDA kernels for efficient computation.</span>
+<span class="sd">    It ensures that the operation is performed on the correct CUDA device by employing</span>
+<span class="sd">    a device guard based on the input tensor&#39;s device. If the data type of the input tensor</span>
+<span class="sd">    is not supported, the function will terminate the program with an error message.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        input (torch.Tensor): The input tensor to be packed. Can be of type int8, float32,</span>
+<span class="sd">                             bfloat16, or half.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: An 8-bit unsigned integer representation of the input tensor.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The input tensor must be on a CUDA device.</span>
+<span class="sd">        The function terminates the program if the input tensor&#39;s type is not supported.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">functions_cuda</span><span class="o">.</span><span class="n">tensor_pack_to_uint8</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="unpack_uint8_tensor">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.functions.cuda.functions.unpack_uint8_tensor.html#bitorch_engine.functions.cuda.functions.unpack_uint8_tensor">[docs]</a>
+<span class="k">def</span> <span class="nf">unpack_uint8_tensor</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unpacks an 8-bit unsigned integer tensor into a floating-point tensor using CUDA,</span>
+<span class="sd">    scaling the unpacked values by a provided scale tensor.</span>
+
+<span class="sd">    This function is a Python interface to the CUDA backend that performs the unpacking</span>
+<span class="sd">    and scaling operation. It is designed to work with tensors that represent compressed</span>
+<span class="sd">    data in 8-bit unsigned integer format and converts them into a higher precision</span>
+<span class="sd">    floating-point format. This is useful in scenarios where compact data representations</span>
+<span class="sd">    need to be expanded and processed in their original or higher precision for further</span>
+<span class="sd">    computations or analysis.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        - input (torch.Tensor): A tensor of 8-bit unsigned integers with shape</span>
+<span class="sd">          (batch_size, sequence_length, packed_embedding_dimension). This tensor represents</span>
+<span class="sd">          the compressed embeddings or data to be unpacked.</span>
+<span class="sd">        - scale (torch.Tensor): A tensor with shape (batch_size, sequence_length, 1) that</span>
+<span class="sd">          contains scaling factors for each sequence in the batch. These factors are applied</span>
+<span class="sd">          to the unpacked floating-point values.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        - torch.Tensor: A tensor of floating-point (-1.0, 1.0) values with shape</span>
+<span class="sd">          (batch_size, sequence_length, packed_embedding_dimension * 8), where the unpacked</span>
+<span class="sd">          and scaled embeddings or data are stored.</span>
+
+<span class="sd">    The function directly interfaces with a CUDA implementation for efficient processing</span>
+<span class="sd">    on GPUs, offering significant speedups compared to CPU-based operations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">functions_cuda</span><span class="o">.</span><span class="n">uint8_to_unpacked_tensor</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="q4_pack_tensor">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.functions.cuda.functions.q4_pack_tensor.html#bitorch_engine.functions.cuda.functions.q4_pack_tensor">[docs]</a>
+<span class="k">def</span> <span class="nf">q4_pack_tensor</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">is_transpose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Packs a tensor into a 4-bit packed format using CUDA accelerated functions.</span>
+
+<span class="sd">    This function takes an input tensor and optionally transposes it before packing.</span>
+<span class="sd">    The packing process reduces the storage requirement by representing each value</span>
+<span class="sd">    in the tensor with only 4 bits. This is particularly useful for quantized neural</span>
+<span class="sd">    network weights and other scenarios where precision can be traded for storage</span>
+<span class="sd">    efficiency without significantly affecting the application&#39;s performance.</span>
+
+<span class="sd">    The actual packing is performed by a CUDA-accelerated function for efficiency,</span>
+<span class="sd">    making this function suitable for large tensors.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input (torch.Tensor): The input tensor to be packed. This tensor should be</span>
+<span class="sd">                              in a compatible format (int32) where each value</span>
+<span class="sd">                              can be represented in 4 bits.</span>
+<span class="sd">        is_transpose (bool): If True, the tensor will be transposed before packing.</span>
+<span class="sd">                             This is useful if the packed tensor needs to be in a</span>
+<span class="sd">                             specific orientation for subsequent operations.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: A tensor containing the 4-bit packed representation of the</span>
+<span class="sd">                      input tensor. The returned tensor will have a dtype of int8</span>
+<span class="sd">                      and potentially half the number of elements in the last</span>
+<span class="sd">                      dimension of the input tensor if `is_transpose` is False.</span>
+<span class="sd">                      If `is_transpose` is True and the transposition changes the</span>
+<span class="sd">                      tensor&#39;s shape, the returned tensor&#39;s shape will be adjusted</span>
+<span class="sd">                      accordingly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">input</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="s2">&quot;Error: input tensor dtype should be int32&quot;</span>
+    <span class="k">return</span> <span class="n">functions_cuda</span><span class="o">.</span><span class="n">q4_pack</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">is_transpose</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="q4_unpack_tensor">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.functions.cuda.functions.q4_unpack_tensor.html#bitorch_engine.functions.cuda.functions.q4_unpack_tensor">[docs]</a>
+<span class="k">def</span> <span class="nf">q4_unpack_tensor</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">is_transpose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unpacks a tensor that has been previously packed using 4-bit quantization into its original format.</span>
+
+<span class="sd">    This function is designed to work with tensors that have been quantized and packed,</span>
+<span class="sd">    reducing their bit representation from a standard format (int32) down to 4-bit representations,</span>
+<span class="sd">    and then packed two values into a single int8 type. This unpacking function reverses that process,</span>
+<span class="sd">    reconstructing the original quantized values as a new tensor.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        input (torch.Tensor): The input tensor that contains packed 4-bit quantized values.</span>
+<span class="sd">                            It must be of dtype int8.</span>
+<span class="sd">        is_transpose (bool, optional): Indicates whether the unpacked tensor should be transposed.</span>
+<span class="sd">                                      The default is False, meaning no transposition will occur.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: A tensor containing the unpacked quantized values. The dtype of this tensor</span>
+<span class="sd">                    will depend on the implementation of the `q4_unpack` function in the `functions_cuda` module,</span>
+<span class="sd">                    typically returning values in a format suitable for further processing or analysis.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: If the input tensor&#39;s dtype is not int8, an assertion error is raised to</span>
+<span class="sd">                      ensure the unpacking process is applied to a correctly formatted tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">input</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span> <span class="s2">&quot;Error: input tensor dtype should be int8.&quot;</span>
+    <span class="k">return</span> <span class="n">functions_cuda</span><span class="o">.</span><span class="n">q4_unpack</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">is_transpose</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="q4_unpack_and_scaling_tensor">
+<a class="viewcode-back" href="../../../../_autosummary/bitorch_engine.functions.cuda.functions.q4_unpack_and_scaling_tensor.html#bitorch_engine.functions.cuda.functions.q4_unpack_and_scaling_tensor">[docs]</a>
+<span class="k">def</span> <span class="nf">q4_unpack_and_scaling_tensor</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span> <span class="n">is_transpose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unpacks a tensor that has been previously packed using 4-bit quantization into its original format.</span>
+
+<span class="sd">    This function is designed to work with tensors that have been quantized and packed,</span>
+<span class="sd">    reducing their bit representation from a standard format (int32) down to 4-bit representations,</span>
+<span class="sd">    and then packed two values into a single int8 type. This unpacking function reverses that process,</span>
+<span class="sd">    reconstructing the original quantized values as a new tensor.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        input (torch.Tensor): The input tensor that contains packed 4-bit quantized values.</span>
+<span class="sd">                            It must be of dtype int8.</span>
+<span class="sd">        scale (float): a scaling factor will be multiplied to the unpacked values.</span>
+<span class="sd">        is_transpose (bool, optional): Indicates whether the unpacked tensor should be transposed.</span>
+<span class="sd">                                      The default is False, meaning no transposition will occur.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor (float): A tensor containing the unpacked quantized values. The dtype of this tensor</span>
+<span class="sd">                        will depend on the implementation of the `q4_unpack` function in the `functions_cuda` module,</span>
+<span class="sd">                        typically returning values in a format suitable for further processing or analysis.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: If the input tensor&#39;s dtype is not int8, an assertion error is raised to</span>
+<span class="sd">                      ensure the unpacking process is applied to a correctly formatted tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">input</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span> <span class="s2">&quot;Error: input tensor dtype should be int8.&quot;</span>
+    <span class="k">return</span> <span class="n">functions_cuda</span><span class="o">.</span><span class="n">q4_unpack_and_scaling</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">is_transpose</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

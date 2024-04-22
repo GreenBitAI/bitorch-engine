@@ -1,0 +1,6 @@
+bitorch\_engine.utils.model\_helper.prepare\_bie\_layers
+========================================================
+
+.. currentmodule:: bitorch_engine.utils.model_helper
+
+.. autofunction:: prepare_bie_layers

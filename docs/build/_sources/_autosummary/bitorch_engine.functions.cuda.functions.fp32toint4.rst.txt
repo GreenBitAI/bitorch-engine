@@ -1,0 +1,6 @@
+bitorch\_engine.functions.cuda.functions.fp32toint4
+===================================================
+
+.. currentmodule:: bitorch_engine.functions.cuda.functions
+
+.. autofunction:: fp32toint4

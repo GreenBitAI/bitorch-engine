@@ -1,0 +1,6 @@
+bitorch\_engine.utils.cutlass\_path.get\_cutlass\_include\_path
+===============================================================
+
+.. currentmodule:: bitorch_engine.utils.cutlass_path
+
+.. autofunction:: get_cutlass_include_path

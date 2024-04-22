@@ -1,0 +1,6 @@
+bitorch\_engine.utils.model\_helper.unflatten\_x
+================================================
+
+.. currentmodule:: bitorch_engine.utils.model_helper
+
+.. autofunction:: unflatten_x

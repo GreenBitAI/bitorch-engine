@@ -1,0 +1,6 @@
+bitorch\_engine.utils.cutlass\_path.check\_path
+===============================================
+
+.. currentmodule:: bitorch_engine.utils.cutlass_path
+
+.. autofunction:: check_path

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.nbit.layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.nbit.layer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qlinear.nbit.layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">init</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.model_helper</span> <span class="kn">import</span> <span class="n">qweight_update_fn</span>
+
+
+<div class="viewcode-block" id="MPQWeightParameter">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter.html#bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter">[docs]</a>
+<span class="k">class</span> <span class="nc">MPQWeightParameter</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A custom parameter class for quantized weights, extending torch.nn.Parameter,</span>
+<span class="sd">    with additional attributes specific to quantization.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        privileged_grad: Optional tensor for privileged gradients (not used in standard backpropagation).</span>
+<span class="sd">        scales, zeros: Quantization scales and zero points for the affine quantization.</span>
+<span class="sd">        g_idx: Group index for weight quantization.</span>
+<span class="sd">        w_bit: Bit-width for weight quantization.</span>
+<span class="sd">        asym: Flag to indicate if asymmetric quantization is used.</span>
+<span class="sd">        group_size: The size of quantization groups.</span>
+<span class="sd">        layer_type: Type of layer (e.g., MPQLinear: 1, MBWQLinear: 2).</span>
+<span class="sd">        q_perm: Permutation indices for quantization groups.</span>
+<span class="sd">        qscales_zeros, qscales_scales, qzeros_zeros, qzeros_scales: Additional quantization parameters for calculating</span>
+<span class="sd">            (q)scales and (q)zeros.</span>
+<span class="sd">        q_group_map: Mapping from weights to quantization groups.</span>
+<span class="sd">        rows: Storing rows information for each bit-width in the quantized weight matrix.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        data (Tensor, optional): Parameter tensor.</span>
+<span class="sd">        requires_grad (bool, optional): If the parameter requires gradient. Default: True.</span>
+<span class="sd">        The rest of the parameters are specific to the quantization process and are optional.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="n">privileged_grad</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">scales</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">zeros</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">g_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">w_bit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">asym</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">group_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">layer_type</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">q_perm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">qscales_zeros</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">qscales_scales</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">qzeros_zeros</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">qzeros_scales</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">q_group_map</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MPQWeightParameter.__init__">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter.html#bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">privileged_grad</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">scales</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">zeros</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">g_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">w_bit</span><span class="p">:</span> <span class="nb">int</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">asym</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">group_size</span><span class="p">:</span> <span class="nb">int</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">layer_type</span><span class="p">:</span> <span class="nb">int</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">q_perm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">qscales_zeros</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">qscales_scales</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">qzeros_zeros</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">qzeros_scales</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">q_group_map</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">privileged_grad</span> <span class="o">=</span> <span class="n">privileged_grad</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scales</span> <span class="o">=</span> <span class="n">scales</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zeros</span> <span class="o">=</span> <span class="n">zeros</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_idx</span> <span class="o">=</span> <span class="n">g_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span> <span class="o">=</span> <span class="n">w_bit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asym</span> <span class="o">=</span> <span class="n">asym</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span> <span class="o">=</span> <span class="n">group_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer_type</span> <span class="o">=</span> <span class="n">layer_type</span> <span class="c1"># layer_type: MPQLinear: 1, MBWQLinear: 2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_perm</span> <span class="o">=</span> <span class="n">q_perm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qscales_zeros</span> <span class="o">=</span> <span class="n">qscales_zeros</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qscales_scales</span> <span class="o">=</span> <span class="n">qscales_scales</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qzeros_zeros</span> <span class="o">=</span> <span class="n">qzeros_zeros</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qzeros_scales</span> <span class="o">=</span> <span class="n">qzeros_scales</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_group_map</span> <span class="o">=</span> <span class="n">q_group_map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="n">rows</span></div>
+
+
+<div class="viewcode-block" id="MPQWeightParameter.update">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter.html#bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter.update">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">qweight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">step</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">beta1</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+               <span class="n">beta2</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.9999</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">half</span><span class="p">,</span> <span class="n">correct_bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">grad</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method defines how to update quantized weights with quantized gradients.</span>
+<span class="sd">        It may involve operations such as applying momentum or adjusting weights based on some optimization algorithm.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight (torch.nn.Parameter): The current quantized weight parameter to be updated.</span>
+<span class="sd">            exp_avg_s (torch.Tensor, optional): Exponential moving average of squared gradients. Used in optimization algorithms like Adam.</span>
+<span class="sd">            exp_avg_l (torch.Tensor, optional): Exponential moving average of the gradients. Also used in optimizers like Adam.</span>
+<span class="sd">            step (torch.Tensor, optional): The current step or iteration in the optimization process. Can be used to adjust learning rate or for other conditional operations in the update process.</span>
+<span class="sd">            lr (float, optional): Learning rate. A hyperparameter that determines the step size at each iteration while moving toward a minimum of a loss function.</span>
+<span class="sd">            weight_decay (float, optional): Weight decay (L2 penalty). A regularization term that helps to prevent overfitting by penalizing large weights.</span>
+<span class="sd">            beta1 (float, optional): The exponential decay rate for the first moment estimates. A hyperparameter for optimizers like Adam.</span>
+<span class="sd">            beta2 (float, optional): The exponential decay rate for the second-moment estimates. Another hyperparameter for Adam-like optimizers.</span>
+<span class="sd">            eps (float, optional): A small constant for numerical stability.</span>
+<span class="sd">            dtype (torch.dtype, optional): The data type to be used for computations.</span>
+<span class="sd">            correct_bias (optional): Whether to apply bias correction (specific to certain models like BERT).</span>
+<span class="sd">            projector (optinal): Whether use a gradient projector.</span>
+<span class="sd">            grad (optional): gradient tensor will be used if projector used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None: The function is expected to update the `qweight` in-place and does not return anything.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Indicates that the function has not yet been implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">MPQWeightParameter</span><span class="p">),</span> <span class="s1">&#39;Error: the type of qweight must be &#39;</span> \
+                                                              <span class="s1">&#39;MPQWeightParameter. &#39;</span>
+        <span class="n">qweight_update_fn</span><span class="p">(</span><span class="n">qweight</span><span class="o">=</span><span class="n">qweight</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="o">=</span><span class="n">exp_avg_s</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="o">=</span><span class="n">exp_avg_l</span><span class="p">,</span>
+                          <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="n">weight_decay</span><span class="p">,</span> <span class="n">beta1</span><span class="o">=</span><span class="n">beta1</span><span class="p">,</span> <span class="n">beta2</span><span class="o">=</span><span class="n">beta2</span><span class="p">,</span>
+                          <span class="n">correct_bias</span><span class="o">=</span><span class="n">correct_bias</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="n">projector</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="n">grad</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="nBitLinearParameter">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.nBitLinearParameter.html#bitorch_engine.layers.qlinear.nbit.layer.nBitLinearParameter">[docs]</a>
+<span class="k">class</span> <span class="nc">nBitLinearParameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A custom parameter class for n-bit linear layer, extending torch.nn.Parameter.</span>
+
+<span class="sd">    This class is designed to support n-bit linear layers, particularly useful</span>
+<span class="sd">    in models requiring efficient memory usage and specialized optimization techniques.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (torch.Tensor, optional): The initial data for the parameter. Defaults to None.</span>
+<span class="sd">        requires_grad (bool, optional): Flag indicating whether gradients should be computed</span>
+<span class="sd">                                        for this parameter in the backward pass. Defaults to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span><span class="p">)</span>
+
+<div class="viewcode-block" id="nBitLinearParameter.update">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.nBitLinearParameter.html#bitorch_engine.layers.qlinear.nbit.layer.nBitLinearParameter.update">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">qweight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">step</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">beta1</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+               <span class="n">beta2</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.9999</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">half</span><span class="p">,</span> <span class="n">correct_bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">grad</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method defines how to update quantized weights with quantized gradients.</span>
+<span class="sd">        It may involve operations such as applying momentum or adjusting weights based on some optimization algorithm.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight (torch.nn.Parameter): The current quantized weight parameter to be updated.</span>
+<span class="sd">            exp_avg_s (torch.Tensor, optional): Exponential moving average of squared gradients. Used in optimization algorithms like Adam.</span>
+<span class="sd">            exp_avg_l (torch.Tensor, optional): Exponential moving average of the gradients. Also used in optimizers like Adam.</span>
+<span class="sd">            step (torch.Tensor, optional): The current step or iteration in the optimization process. Can be used to adjust learning rate or for other conditional operations in the update process.</span>
+<span class="sd">            lr (float, optional): Learning rate. A hyperparameter that determines the step size at each iteration while moving toward a minimum of a loss function.</span>
+<span class="sd">            weight_decay (float, optional): Weight decay (L2 penalty). A regularization term that helps to prevent overfitting by penalizing large weights.</span>
+<span class="sd">            beta1 (float, optional): The exponential decay rate for the first moment estimates. A hyperparameter for optimizers like Adam.</span>
+<span class="sd">            beta2 (float, optional): The exponential decay rate for the second-moment estimates. Another hyperparameter for Adam-like optimizers.</span>
+<span class="sd">            eps (float, optional): A small constant for numerical stability.</span>
+<span class="sd">            dtype (torch.dtype, optional): The data type to be used for computations.</span>
+<span class="sd">            correct_bias (optional): Whether to apply bias correction (specific to certain models like BERT).</span>
+<span class="sd">            projector (optinal): Whether use a gradient projector.</span>
+<span class="sd">            grad (optional): gradient tensor will be used if projector used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None: The function is expected to update the `qweight` in-place and does not return anything.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Indicates that the function has not yet been implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">nBitLinearParameter</span><span class="p">),</span> <span class="s1">&#39;Error: the type of qweight must be &#39;</span> \
+                                                              <span class="s1">&#39;nBitLinearParameter. &#39;</span>
+        <span class="n">qweight_update_fn</span><span class="p">(</span><span class="n">qweight</span><span class="o">=</span><span class="n">qweight</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="o">=</span><span class="n">exp_avg_s</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="o">=</span><span class="n">exp_avg_l</span><span class="p">,</span>
+                          <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="n">weight_decay</span><span class="p">,</span> <span class="n">beta1</span><span class="o">=</span><span class="n">beta1</span><span class="p">,</span> <span class="n">beta2</span><span class="o">=</span><span class="n">beta2</span><span class="p">,</span>
+                          <span class="n">correct_bias</span><span class="o">=</span><span class="n">correct_bias</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="n">projector</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="n">grad</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="nBitLinearBase">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase">[docs]</a>
+<span class="k">class</span> <span class="nc">nBitLinearBase</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A base class for n-bit Quantization-Aware Training (QAT) linear layers. This class provides a framework for</span>
+<span class="sd">    implementing layers that operate with low-bitwidth activations and weights during training, and supports</span>
+<span class="sd">    quantization for efficient inference. It maintains both floating-point and quantized weights to facilitate</span>
+<span class="sd">    the QAT process.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        in_channels (int): The dimension of input features after bit-packing, indicating the number of input features to the layer.</span>
+<span class="sd">        out_channels (int): The dimension of output features, indicating the number of output features produced by the layer.</span>
+<span class="sd">        a_bit (int): The bit-width for activations used during training. Defaults to 4 bits.</span>
+<span class="sd">        w_bit (int): The bit-width for weights used during training and inference. Defaults to 4 bits.</span>
+<span class="sd">        device: The device on which the layer&#39;s parameters are stored. Defaults to `None`, which means the default device is used.</span>
+<span class="sd">        dtype: The data type for the layer&#39;s parameters. Defaults to `torch.float`.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        This class is designed to be subclassed by specific implementations of n-bit linear layers, which should</span>
+<span class="sd">        provide mechanisms for parameter preparation (`prepare_params`), weight quantization (`generate_quantized_weight`),</span>
+<span class="sd">        and other necessary operations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="nBitLinearBase.__init__">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">a_bit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+                 <span class="n">w_bit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+                 <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">nBitLinearBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">=</span> <span class="n">out_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a_bit</span> <span class="o">=</span> <span class="n">a_bit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span> <span class="o">=</span> <span class="n">w_bit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="nBitLinearBase.reset_parameters">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.reset_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes or resets the floating-point weights of the layer using Kaiming uniform initialization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">))</span>
+        <span class="n">init</span><span class="o">.</span><span class="n">kaiming_uniform_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="nBitLinearBase.set_weight_data">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.set_weight_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_weight_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the floating-point weights of the layer to the provided tensor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The tensor to set as the new weights.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="nBitLinearBase.prepare_params">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.prepare_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares and initializes the model parameters for training.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method MUST be called after model initialization and before training starts to ensure the weights are</span>
+<span class="sd">            properly prepared for efficient computation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this method.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="nBitLinearBase.set_quantized_weight_data">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.set_quantized_weight_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_quantized_weight_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the quantized weights of the layer to the provided tensor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The tensor to set as the new quantized weights.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="nBitLinearBase.generate_quantized_weight">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.nBitLinearBase.generate_quantized_weight">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_quantized_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates and sets the quantized weights based on the current floating-point weights. This method must be</span>
+<span class="sd">        implemented by subclasses and is crucial for converting floating-point weights to low-bitwidth quantized weights</span>
+<span class="sd">        for inference.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight_only (bool): If `True`, only quantized weights are generated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this method.&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_check_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A placeholder method for checking the inputs to the forward pass. This method must be implemented by subclasses</span>
+<span class="sd">        to ensure the input tensor is suitable for processing by the layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this method.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">opt_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the optimal weight for the current mode (training or inference). If the model is in inference mode</span>
+<span class="sd">        and quantized weights are not yet generated, it triggers quantized weight generation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.nn.Parameter: The current optimal weights (floating-point for training, quantized for inference).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generate_quantized_weight</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span></div>
+
+
+
+<div class="viewcode-block" id="MPQLinearBase">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase">[docs]</a>
+<span class="k">class</span> <span class="nc">MPQLinearBase</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for mixed precision quantized (MPQ) linear layers, designed to support</span>
+<span class="sd">    the computational needs of large language models (LLMs) with mixed precision quantization,</span>
+<span class="sd">    such as 16-bit activations and 4-bit weights for efficient inference. It introduces optimized</span>
+<span class="sd">    computation for bitwise unpacking of quantized weights and 16-bit floating-point matrix multiplication,</span>
+<span class="sd">    tailored for various hardware platforms.</span>
+
+<span class="sd">    Different to nBitLinearBase, MPQLinearBase serves as the base class for mixed precision quantized linear layers.</span>
+<span class="sd">    This special class is mainly to support the mixed precision linear layer in the current LLMs model,</span>
+<span class="sd">    such as using 16-bit activation and 4-bit quantization weight for inference.</span>
+<span class="sd">    During the reasoning process, two main calculation processes are introduced, namely bitwise unpacking of qweight</span>
+<span class="sd">    from lower bits to 16-bit float, and 16-bit matrix multiplication. Correspondingly, the performance of these</span>
+<span class="sd">    two processes has been optimized on different hardware.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        in_channels (int): The number of input features after bit-packing, representing the dimensionality</span>
+<span class="sd">                           of the input space.</span>
+<span class="sd">        out_channels (int): The number of output features, representing the dimensionality of the output space.</span>
+<span class="sd">        a_bit (int): The bit-width used for activation quantization, defaulting to 16 bits for high precision.</span>
+<span class="sd">        w_bit (int): The bit-width used for weight quantization, aiming to reduce memory footprint and computational cost.</span>
+<span class="sd">        dtype (torch.dtype): The data type for computations within this layer, typically torch.half for efficiency.</span>
+<span class="sd">        group_size (int): The grouping size for quantization, affecting scale and zero-point calculation.</span>
+<span class="sd">                          A value of -1 indicates that the entire input width is treated as one group.</span>
+<span class="sd">        use_gba_quant (bool): Flag to indicate the use of GBA-specific quantization techniques over GPTQ-compliant methods.</span>
+<span class="sd">        dq_group_size (int): Double quantization group size, specific to GBA quantization, for further granularity in quantization.</span>
+<span class="sd">        dq_mode (int): Double quantization mode, catering to different versions and requirements of LLaMA models.</span>
+<span class="sd">        disable_bias (bool): Whether to include a bias term in the linear calculation. Disabling can reduce parameters and computation.</span>
+<span class="sd">        asym (bool): Indicates whether asymmetric quantization is used, offering an alternative to symmetric quantization strategies.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        initialize(): Initializes parameters and quantization buffers based on the selected quantization method.</span>
+<span class="sd">        init_gptq(): Sets up parameters specific to GPTQ quantization.</span>
+<span class="sd">        init_gba(): Configures buffers and scales for GBA quantization, accommodating for asymmetry and double quantization modes.</span>
+<span class="sd">        set_qweight_data(data): Updates the quantized weight tensor with new data.</span>
+<span class="sd">        generate_quantized_weight(): Placeholder for weight quantization method, to be implemented by subclasses.</span>
+<span class="sd">        check_parameters(): Placeholder for parameter validation, ensuring correct layer configuration.</span>
+<span class="sd">        prepare_params(): Prepares quantized parameters for the forward pass, potentially decompressing quantized values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MPQLinearBase.__init__">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">a_bit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+                 <span class="n">w_bit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+                 <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">half</span><span class="p">,</span>
+                 <span class="n">group_size</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">use_gba_quant</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">dq_group_size</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">dq_mode</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                 <span class="n">disable_bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">asym</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            in_channels (int): dim of input features after bit-packing</span>
+<span class="sd">            out_channels (int): dim of hidden states</span>
+<span class="sd">            a_bit: activation bits</span>
+<span class="sd">            w_bit: weight bits</span>
+<span class="sd">            dtype: data type used in this layer</span>
+<span class="sd">            group_size: number of associated weight elements-&gt;scale and zero facter</span>
+<span class="sd">            disable_bias: whether use bias</span>
+<span class="sd">            use_gba_quant: True: GBA specific quantization, False: use GPTQ-compliant methods</span>
+<span class="sd">            dq_group_size: gba specific parameter. Indicates double quantization group size.</span>
+<span class="sd">            dq_mode: gba specific parameter. Indicates double quantization mode, which is used to adapt to multiple different LLaMA versions.</span>
+<span class="sd">            asym: gba specific parameter. Indicates asymmetry or symmetry quantization strategies.</span>
+<span class="sd">            requires_grad (bool): Indicates whether gradient calculation should be enabled for the parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MPQLinearBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">=</span> <span class="n">out_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a_bit</span> <span class="o">=</span> <span class="n">a_bit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span> <span class="o">=</span> <span class="n">w_bit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxq</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span> <span class="o">=</span> <span class="n">group_size</span> <span class="k">if</span> <span class="n">group_size</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asym</span> <span class="o">=</span> <span class="n">asym</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disable_bias</span> <span class="o">=</span> <span class="n">disable_bias</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_gba_quant</span> <span class="o">=</span> <span class="n">use_gba_quant</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dq_group_size</span> <span class="o">=</span> <span class="n">dq_group_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="n">requires_grad</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dq_mode</span> <span class="o">=</span> <span class="n">dq_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MPQLinearBase.initialize">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.initialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes layer parameters and quantization buffers. This method sets up the infrastructure</span>
+<span class="sd">        for either GBA or GPTQ quantization methods, based on the layer configuration. It allocates</span>
+<span class="sd">        memory for quantized weights, scales, zero-points, and other necessary buffers, ensuring</span>
+<span class="sd">        they are ready for the quantization process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">## Both GPTQ and GBA methods require qweights, scales, zeros and group_index</span>
+        <span class="c1"># trainable params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="n">MPQWeightParameter</span><span class="p">(</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">//</span> <span class="mi">32</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">),</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+            <span class="n">requires_grad</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">,</span>
+            <span class="n">w_bit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span><span class="p">,</span>
+            <span class="n">asym</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">asym</span><span class="p">,</span>
+            <span class="n">group_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group_size</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">privileged_grad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="c1"># non-trainable params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;g_idx&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">i</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">)],</span>
+                                                   <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+        <span class="c1"># still need to initialize for the checkpoint loading. Unused params will be released in &quot;prepare_params()&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;bias&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;wf&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c1"># init</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_gba_quant</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_gba</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_gptq</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MPQLinearBase.init_gptq">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.init_gptq">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_gptq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes parameters and buffers specific to the GPTQ quantization method. This includes</span>
+<span class="sd">        setting up zero-point buffers, scale factors, and ensuring asymmetric quantization is enabled.</span>
+<span class="sd">        GPTQ, being a more general quantization approach, requires specific buffers to hold quantization</span>
+<span class="sd">        parameters for accurate computation and minimal precision loss.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qzeros&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span><span class="p">),</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">//</span> <span class="mi">32</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scales</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asym</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="MPQLinearBase.init_gba">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.init_gba">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_gba</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares the layer for GBA-specific quantization, configuring buffers for scales, zero-points,</span>
+<span class="sd">        and statistics for double quantization if enabled. GBA quantization allows for fine-tuned control</span>
+<span class="sd">        over the quantization process, accommodating asymmetric quantization and providing additional</span>
+<span class="sd">        parameters to adjust for different model versions and requirements.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># non-trainable params</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dq_group_size</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dq_group_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span>
+
+        <span class="n">buffer_shape_1</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span><span class="p">),</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dq_group_size</span><span class="p">),</span>
+            <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">buffer_shape_2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span><span class="p">),</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dq_group_size</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dq_group_size</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">asym</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qzeros&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span><span class="p">),</span>
+                                                        <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">//</span> <span class="mi">32</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_bit</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qscales&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">buffer_shape_2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qscales&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span><span class="p">),</span>
+                                                            <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qstatistic&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">buffer_shape_2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qzeros_zeros&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">buffer_shape_1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qzeros_scales&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">buffer_shape_1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dq_mode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qscales_zeros&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qscales_scales&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qscales_zeros&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">buffer_shape_1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;qscales_scales&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">buffer_shape_1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;scales&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">),</span>
+                                                  <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;zeros&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_size</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span><span class="p">),</span>
+                                                  <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="MPQLinearBase.set_qweight_data">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.set_qweight_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_qweight_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the quantized weight tensor with new data. This method is crucial for adjusting the quantized</span>
+<span class="sd">        weights based on training or fine-tuning processes, ensuring the layer&#39;s weights reflect the most</span>
+<span class="sd">        recent updates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (torch.Tensor): The new quantized weight data to be set in the layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="MPQLinearBase.generate_quantized_weight">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.generate_quantized_weight">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_quantized_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A placeholder method for the weight quantization process. Subclasses should implement this method</span>
+<span class="sd">        to define how the layer&#39;s weights are quantized based on the current configuration and quantization</span>
+<span class="sd">        method. This operation is typically executed before saving the model weights or performing inference to ensure that the weights</span>
+<span class="sd">        are in the appropriate quantized format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight_only (bool): A flag to indicate whether only the quantized weights need to be generated,</span>
+<span class="sd">                                 without considering other quantization parameters like scales or zero-points.</span>
+<span class="sd">                                 Default is False, which means all relevant quantization parameters are generated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;this method has not been implemented.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MPQLinearBase.check_parameters">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.check_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validates the configuration and parameters of the layer to ensure they are set correctly for the</span>
+<span class="sd">        quantization process. This method should check for common configuration errors and ensure that all</span>
+<span class="sd">        required parameters for the selected quantization method are correctly initialized.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Indicates that the method has not been implemented yet and needs to be</span>
+<span class="sd">                                 provided by subclasses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this method.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MPQLinearBase.prepare_params">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.html#bitorch_engine.layers.qlinear.nbit.layer.MPQLinearBase.prepare_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This method should be executed before the actual forward pass. It mainly decompress quantized parameters</span>
+<span class="sd">        such as qscale and qzero. This step could be simplified or eliminated in the future by having a kernel</span>
+<span class="sd">        implementation that can decompress during kernel computation.</span>
+
+<span class="sd">        One can use &quot;prepare_bie_layers&quot; method from project_root.utils.model_helper to call this function.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method should be called before executing the forward pass, especially after loading</span>
+<span class="sd">            the model from a checkpoint or before inference to ensure that quantized parameters are</span>
+<span class="sd">            correctly prepared.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Indicates that the method has not been implemented yet and should be</span>
+<span class="sd">                                 provided by subclasses.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this method.&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

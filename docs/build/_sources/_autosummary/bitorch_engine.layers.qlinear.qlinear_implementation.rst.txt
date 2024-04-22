@@ -1,0 +1,31 @@
+bitorch\_engine.layers.qlinear.qlinear\_implementation
+======================================================
+
+.. automodule:: bitorch_engine.layers.qlinear.qlinear_implementation
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      QLinearImplementationMixin
+   
+   
+
+   
+   
+   
+
+
+

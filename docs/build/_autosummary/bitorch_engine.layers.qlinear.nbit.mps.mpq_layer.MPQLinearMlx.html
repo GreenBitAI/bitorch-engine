@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlxFunction" href="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlxFunction.html" />
+    <link rel="prev" title="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer" href="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build_options.html">Build options</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../documentation.html">Full Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bitorch_engine.html">bitorch_engine</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.functions.html">bitorch_engine.functions</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bitorch_engine.layers.html">bitorch_engine.layers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qconv.html">bitorch_engine.layers.qconv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qembedding.html">bitorch_engine.layers.qembedding</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bitorch_engine.layers.qmha.html">bitorch_engine.layers.qmha</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.optim.html">bitorch_engine.optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bitorch_engine.utils.html">bitorch_engine.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../documentation.html">Full Documentation</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.html">bitorch_engine</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.html">bitorch_engine.layers</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.html">bitorch_engine.layers.qlinear</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.nbit.html">bitorch_engine.layers.qlinear.nbit</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.nbit.mps.html">bitorch_engine.layers.qlinear.nbit.mps</a></li>
+          <li class="breadcrumb-item"><a href="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.html">bitorch_engine.layers.qlinear.nbit.mps.mpq_layer</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bitorch-engine-layers-qlinear-nbit-mps-mpq-layer-mpqlinearmlx">
+<h1>bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx<a class="headerlink" href="#bitorch-engine-layers-qlinear-nbit-mps-mpq-layer-mpqlinearmlx" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.</span></span><span class="sig-name descname"><span class="pre">MPQLinearMlx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/mps/mpq_layer.html#MPQLinearMlx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx" title="Link to this definition"></a></dt>
+<dd><p>Represents a MPS-compatible implementation of the mixed precision quantized (MPQ) linear layer,
+inheriting from MPQLinearBase. This class is specifically optimized for MPS devices, supporting
+operations with quantized weights and activations in a mixed precision format. It uses the Mlx
+library to perform efficient quantized matrix multiplication on MPS devices.</p>
+<p>The layer supports quantization bits for weights (w_bit) of 2, 4, or 8 and fixed activation
+bit (a_bit) of 16, ensuring compatibility with common hardware accelerators and optimizing
+performance for deep learning inference tasks on MPS-enabled Apple Devices.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.qweight">
+<span class="sig-name descname"><span class="pre">qweight</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.qweight" title="Link to this definition"></a></dt>
+<dd><p>Quantized weights of the layer, adhering to specified precision.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.w_bit">
+<span class="sig-name descname"><span class="pre">w_bit</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.w_bit" title="Link to this definition"></a></dt>
+<dd><p>Bit width for weight quantization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.a_bit">
+<span class="sig-name descname"><span class="pre">a_bit</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.a_bit" title="Link to this definition"></a></dt>
+<dd><p>Bit width for activation quantization, fixed at 16.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.scales">
+<span class="sig-name descname"><span class="pre">scales</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.scales" title="Link to this definition"></a></dt>
+<dd><p>Scale factors for quantized weights, calculated during parameter preparation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.zeros">
+<span class="sig-name descname"><span class="pre">zeros</span></span><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.zeros" title="Link to this definition"></a></dt>
+<dd><p>Zero points for quantized weights, supporting asymmetric quantization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.check_parameters">
+<span class="sig-name descname"><span class="pre">check_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/mps/mpq_layer.html#MPQLinearMlx.check_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.check_parameters" title="Link to this definition"></a></dt>
+<dd><p>Validates the quantization parameters to ensure they meet the requirements.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.prepare_params">
+<span class="sig-name descname"><span class="pre">prepare_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/mps/mpq_layer.html#MPQLinearMlx.prepare_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.prepare_params" title="Link to this definition"></a></dt>
+<dd><p>Prepares and decompresses quantized parameters for the forward pass. Must be called
+before performing inference to correctly setup layer parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/mps/mpq_layer.html#MPQLinearMlx.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.forward" title="Link to this definition"></a></dt>
+<dd><p>Executes the forward pass of the layer using quantized operations.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.__init__" title="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a></p></td>
+<td><p>Initializes the MPQLinearMlx layer with given arguments and keyword arguments, setting up the layer to use Mlx with mixed precision quantized weights and activations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.check_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_parameters</span></code></a></p></td>
+<td><p>Ensures that the quantization bit widths for weights (w_bit) and activations (a_bit) are valid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id1" title="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a></p></td>
+<td><p>Performs the forward pass of the MPQLinearMlx layer using quantized weights and activations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id2" title="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.prepare_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_params</span></code></a></p></td>
+<td><p>This method should be executed before the actual forward pass.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">training</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/mps/mpq_layer.html#MPQLinearMlx.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlx.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initializes the MPQLinearMlx layer with given arguments and keyword arguments, setting up
+the layer to use Mlx with mixed precision quantized weights and activations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">check_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/mps/mpq_layer.html#MPQLinearMlx.check_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Ensures that the quantization bit widths for weights (w_bit) and activations (a_bit) are valid.
+Raises an assertion error if the conditions are not met.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/mps/mpq_layer.html#MPQLinearMlx.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Performs the forward pass of the MPQLinearMlx layer using quantized weights and activations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor with shape (batch size, number of features).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor resulting from the quantized linear transformation and bias addition.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">prepare_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/mps/mpq_layer.html#MPQLinearMlx.prepare_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>This method should be executed before the actual forward pass. It mainly decompress quantized parameters
+such as qscale and qzero. This step could be simplified or eliminated in the future by having a kernel
+implementation that can decompress during kernel computation.</p>
+<p>One can use “prepare_bie_layers” method from project_root.utils.model_helper to call this function.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.html" class="btn btn-neutral float-left" title="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlxFunction.html" class="btn btn-neutral float-right" title="bitorch_engine.layers.qlinear.nbit.mps.mpq_layer.MPQLinearMlxFunction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

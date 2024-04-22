@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qlinear.binary.layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../binary.html">bitorch_engine.layers.qlinear.binary</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qlinear.binary.layer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qlinear.binary.layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.model_helper</span> <span class="kn">import</span> <span class="n">qweight_update_fn</span>
+
+
+<div class="viewcode-block" id="BinaryLinearParameter">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearParameter.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearParameter">[docs]</a>
+<span class="k">class</span> <span class="nc">BinaryLinearParameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A custom parameter class for binary linear layer, extending torch.nn.Parameter.</span>
+
+<span class="sd">    This class is designed to support binary linear layer, particularly useful</span>
+<span class="sd">    in models requiring efficient memory usage and specialized optimization techniques.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (torch.Tensor, optional): The initial data for the parameter. Defaults to None.</span>
+<span class="sd">        requires_grad (bool, optional): Flag indicating whether gradients should be computed</span>
+<span class="sd">                                        for this parameter in the backward pass. Defaults to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BinaryLinearParameter.update">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearParameter.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearParameter.update">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">qweight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+               <span class="n">step</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">beta1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.99</span><span class="p">,</span>
+               <span class="n">beta2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9999</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">half</span><span class="p">,</span> <span class="n">correct_bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">grad</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method defines how to update quantized weights with quantized gradients.</span>
+<span class="sd">        It may involve operations such as applying momentum or adjusting weights based on some optimization algorithm.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight (torch.nn.Parameter): The current quantized weight parameter to be updated.</span>
+<span class="sd">            exp_avg_s (torch.Tensor, optional): Exponential moving average of squared gradients. Used in optimization algorithms like Adam.</span>
+<span class="sd">            exp_avg_l (torch.Tensor, optional): Exponential moving average of the gradients. Also used in optimizers like Adam.</span>
+<span class="sd">            step (torch.Tensor, optional): The current step or iteration in the optimization process. Can be used to adjust learning rate or for other conditional operations in the update process.</span>
+<span class="sd">            lr (float, optional): Learning rate. A hyperparameter that determines the step size at each iteration while moving toward a minimum of a loss function.</span>
+<span class="sd">            weight_decay (float, optional): Weight decay (L2 penalty). A regularization term that helps to prevent overfitting by penalizing large weights.</span>
+<span class="sd">            beta1 (float, optional): The exponential decay rate for the first moment estimates. A hyperparameter for optimizers like Adam.</span>
+<span class="sd">            beta2 (float, optional): The exponential decay rate for the second-moment estimates. Another hyperparameter for Adam-like optimizers.</span>
+<span class="sd">            eps (float, optional): A small constant for numerical stability.</span>
+<span class="sd">            dtype (torch.dtype, optional): The data type to be used for computations.</span>
+<span class="sd">            correct_bias (optional): Whether to apply bias correction (specific to certain models like BERT).</span>
+<span class="sd">            projector (optinal): Whether use a gradient projector.</span>
+<span class="sd">            grad (optional): gradient tensor will be used if projector used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None: The function is expected to update the `qweight` in-place and does not return anything.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Indicates that the function has not yet been implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">BinaryLinearParameter</span><span class="p">),</span> <span class="s1">&#39;Error: the type of qweight must be &#39;</span> \
+                                                           <span class="s1">&#39;BinaryLinearParameter. &#39;</span>
+        <span class="n">qweight_update_fn</span><span class="p">(</span><span class="n">qweight</span><span class="o">=</span><span class="n">qweight</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="o">=</span><span class="n">exp_avg_s</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="o">=</span><span class="n">exp_avg_l</span><span class="p">,</span>
+                          <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="n">weight_decay</span><span class="p">,</span> <span class="n">beta1</span><span class="o">=</span><span class="n">beta1</span><span class="p">,</span> <span class="n">beta2</span><span class="o">=</span><span class="n">beta2</span><span class="p">,</span>
+                          <span class="n">correct_bias</span><span class="o">=</span><span class="n">correct_bias</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="n">projector</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="n">grad</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BinaryLinearBase">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase">[docs]</a>
+<span class="k">class</span> <span class="nc">BinaryLinearBase</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for binary linear layers, supporting both floating-point and quantized weights.</span>
+
+<span class="sd">    This class is designed to facilitate the creation of binary linear layers,</span>
+<span class="sd">    where weights can be represented in a quantized format for efficient computation,</span>
+<span class="sd">    especially on hardware that supports binary operations. It provides a foundation</span>
+<span class="sd">    for implementing various types of binary linear operations, including fully connected</span>
+<span class="sd">    layers and convolutional layers with binary weights.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bits_binary_word (int): Number of bits in a binary word, default is 8.</span>
+<span class="sd">        input_features (int): Dimension of input features after bit-packing.</span>
+<span class="sd">        output_features (int): Dimension of output features or hidden states.</span>
+<span class="sd">        weight (nn.Parameter): Floating-point weights, used for training and initialization.</span>
+<span class="sd">        qweight (nn.Parameter): Quantized weights, used for inference when training is False.</span>
+<span class="sd">        device (torch.device): Device on which the layer&#39;s tensors will be allocated.</span>
+<span class="sd">        dtype (torch.dtype): Data type of the layer&#39;s floating-point weights.</span>
+<span class="sd">        symmetric (bool): Indicates if the quantization should be symmetric around 0.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        reset_parameters: Initializes or resets the layer&#39;s parameters.</span>
+<span class="sd">        set_weight_data: Sets the layer&#39;s floating-point weights from an external tensor.</span>
+<span class="sd">        set_quantized_weight_data: Sets the layer&#39;s quantized weights from an external tensor.</span>
+<span class="sd">        generate_quantized_weight: Converts the floating-point weights to quantized format.</span>
+<span class="sd">        _check_forward: Validates the compatibility of input tensor and weights before forward pass.</span>
+<span class="sd">        opt_weight (property): Returns the optimal weights for the current mode (training or inference).</span>
+<span class="sd">        set_bits_binary_word: Sets the number of bits used in a binary word for quantization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BinaryLinearBase.__init__">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">input_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">symmetric</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the BinaryLinearBase class with specified configurations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_features (int): Dimension of input features after bit-packing.</span>
+<span class="sd">            out_features (int): Dimension of output features or hidden states.</span>
+<span class="sd">            device (torch.device, optional): Device on which to allocate tensors. Defaults to None.</span>
+<span class="sd">            dtype (torch.dtype, optional): Data type for floating-point weights. Defaults to torch.float.</span>
+<span class="sd">            symmetric (bool, optional): If True, quantization is symmetric around 0. Defaults to True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bits_binary_word</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_features</span> <span class="o">=</span> <span class="n">input_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_features</span> <span class="o">=</span> <span class="n">out_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symmetric</span> <span class="o">=</span> <span class="n">symmetric</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearBase.reset_parameters">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.reset_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes or resets the floating-point weight parameters using Kaiming uniform initialization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_features</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">kaiming_uniform_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearBase.set_weight_data">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_weight_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_weight_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the floating-point weight parameter from an external tensor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): A tensor containing the new weight data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> \
+            <span class="s2">&quot;dtype mismatch. Expected: &#39;</span><span class="si">{}</span><span class="s2">&#39;, but &#39;</span><span class="si">{}</span><span class="s2">&#39; found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearBase.prepare_params">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.prepare_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares and initializes the model parameters for training.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method MUST be called after model initialization and before training starts to ensure the weights are</span>
+<span class="sd">            properly prepared for efficient computation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this method.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearBase.set_quantized_weight_data">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_quantized_weight_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_quantized_weight_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the quantized weight parameter from an external tensor, disabling gradient computation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): A tensor containing the new quantized weight data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearBase.generate_quantized_weight">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.generate_quantized_weight">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_quantized_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qweight_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the floating-point weights to a quantized format through bit-packing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight_only (bool, optional): If True, only updates the qweight without modifying the floating-point weight. Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this method.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BinaryLinearBase._check_forward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase._check_forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">_check_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validates the compatibility of the input tensor and weights before the forward pass.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): The input tensor for the forward pass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">bits_binary_word</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="p">),</span> <span class="s2">&quot;Input tensor dimension (</span><span class="si">{}</span><span class="s2">) must be divisible by </span><span class="si">{}</span><span class="s2">.&quot;</span>\
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bits_binary_word</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bits_condt</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">uint8</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">bits_binary_word</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span><span class="o">.</span><span class="n">nelement</span><span class="p">()</span>
+                <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_features</span> <span class="o">/</span> <span class="n">bits_condt</span>
+            <span class="p">),</span> <span class="s2">&quot;Weight and input tensor mismatch. </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span><span class="o">.</span><span class="n">nelement</span><span class="p">(),</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_features</span> <span class="o">/</span> <span class="n">bits_condt</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bits_binary_word</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> \
+                    <span class="s2">&quot;Weight and input tensor mismatch.&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> \
+                    <span class="s2">&quot;Weight and input tensor mismatch.&quot;</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">opt_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the optimal weight parameter for the current mode (training or inference).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            nn.Parameter: The floating-point weights during training or the quantized weights during inference.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generate_quantized_weight</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span>
+
+<div class="viewcode-block" id="BinaryLinearBase.set_bits_binary_word">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.html#bitorch_engine.layers.qlinear.binary.layer.BinaryLinearBase.set_bits_binary_word">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_bits_binary_word</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_bit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the number of bits used in a binary word for the purpose of quantization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            num_bit (int): The number of bits to use in a binary word.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bits_binary_word</span> <span class="o">=</span> <span class="n">num_bit</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

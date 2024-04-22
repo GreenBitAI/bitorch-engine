@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qlinear.binary.cutlass.layer.BinaryMatMul
+================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary.cutlass.layer
+
+.. autoclass:: BinaryMatMul
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryMatMul.__init__
+        ~BinaryMatMul.forward
+        ~BinaryMatMul.set_activation_scale
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~BinaryMatMul.training
+   
+   

@@ -1,0 +1,33 @@
+bitorch\_engine.optim
+=====================
+
+.. automodule:: bitorch_engine.optim
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: module.rst
+   :recursive:
+
+   bitorch_engine.optim.diode_beta
+   bitorch_engine.optim.galore_projector
+

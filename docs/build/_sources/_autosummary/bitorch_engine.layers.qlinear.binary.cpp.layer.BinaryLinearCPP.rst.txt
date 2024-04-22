@@ -1,0 +1,34 @@
+bitorch\_engine.layers.qlinear.binary.cpp.layer.BinaryLinearCPP
+===============================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.binary.cpp.layer
+
+.. autoclass:: BinaryLinearCPP
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryLinearCPP.__init__
+        ~BinaryLinearCPP.create_clone_from
+        ~BinaryLinearCPP.forward
+        ~BinaryLinearCPP.generate_quantized_weight
+        ~BinaryLinearCPP.prepare_params
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~BinaryLinearCPP.training
+   
+   

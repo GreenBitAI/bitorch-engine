@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.layers.qembedding.binary.layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.layers.qembedding.binary.layer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.layers.qembedding.binary.layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch.nn.parameter</span> <span class="kn">import</span> <span class="n">Parameter</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Function</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.model_helper</span> <span class="kn">import</span> <span class="n">pad_embedding_dim</span><span class="p">,</span> <span class="n">qweight_update_fn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">bitorch_engine.functions.cuda</span> <span class="kn">import</span> <span class="n">tensor_to_packed_uint8</span><span class="p">,</span> <span class="n">unpack_uint8_tensor</span>
+
+
+<div class="viewcode-block" id="BinaryEmbeddingParameter">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingParameter.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingParameter">[docs]</a>
+<span class="k">class</span> <span class="nc">BinaryEmbeddingParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A custom parameter class for binary embeddings, extending torch.nn.Parameter.</span>
+
+<span class="sd">    This class is designed to support binary embedding layers, particularly useful</span>
+<span class="sd">    in models requiring efficient memory usage and specialized optimization techniques.</span>
+<span class="sd">    It extends the standard PyTorch Parameter by allowing the specification of active</span>
+<span class="sd">    indices, which can be used to perform sparse updates only on certain parts of the</span>
+<span class="sd">    parameter tensor, enhancing performance and efficiency during training.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        active_indices (torch.Tensor): A tensor specifying the indices of the parameter</span>
+<span class="sd">                                       that should be considered for updates. This allows</span>
+<span class="sd">                                       for sparse updates, focusing on parts of the parameter</span>
+<span class="sd">                                       that are actively used in the current context.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (torch.Tensor, optional): The initial data for the parameter. Defaults to None.</span>
+<span class="sd">        requires_grad (bool, optional): Flag indicating whether gradients should be computed</span>
+<span class="sd">                                        for this parameter in the backward pass. Defaults to True.</span>
+<span class="sd">        active_indices (torch.Tensor, optional): Specifies the active indices for sparse updates.</span>
+<span class="sd">                                                 Defaults to None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">active_indices</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">active_indices</span> <span class="o">=</span> <span class="n">active_indices</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BinaryEmbeddingParameter.update">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingParameter.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingParameter.update">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">qweight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">step</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">beta1</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+                      <span class="n">beta2</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.9999</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">half</span><span class="p">,</span> <span class="n">correct_bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">grad</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method defines how to update quantized weights with quantized gradients.</span>
+<span class="sd">        It may involve operations such as applying momentum or adjusting weights based on some optimization algorithm.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qweight (torch.nn.Parameter): The current quantized weight parameter to be updated.</span>
+<span class="sd">            exp_avg_s (torch.Tensor, optional): Exponential moving average of squared gradients. Used in optimization algorithms like Adam.</span>
+<span class="sd">            exp_avg_l (torch.Tensor, optional): Exponential moving average of the gradients. Also used in optimizers like Adam.</span>
+<span class="sd">            step (torch.Tensor, optional): The current step or iteration in the optimization process. Can be used to adjust learning rate or for other conditional operations in the update process.</span>
+<span class="sd">            lr (float, optional): Learning rate. A hyperparameter that determines the step size at each iteration while moving toward a minimum of a loss function.</span>
+<span class="sd">            weight_decay (float, optional): Weight decay (L2 penalty). A regularization term that helps to prevent overfitting by penalizing large weights.</span>
+<span class="sd">            beta1 (float, optional): The exponential decay rate for the first moment estimates. A hyperparameter for optimizers like Adam.</span>
+<span class="sd">            beta2 (float, optional): The exponential decay rate for the second-moment estimates. Another hyperparameter for Adam-like optimizers.</span>
+<span class="sd">            eps (float, optional): A small constant for numerical stability.</span>
+<span class="sd">            dtype (torch.dtype, optional): The data type to be used for computations.</span>
+<span class="sd">            correct_bias (optional): Whether to apply bias correction (specific to certain models like BERT).</span>
+<span class="sd">            projector (optinal): Whether use a gradient projector.</span>
+<span class="sd">            grad (optional): gradient tensor will be used if projector used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None: The function is expected to update the `qweight` in-place and does not return anything.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Indicates that the function has not yet been implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Apply XOR operation directly on qweight to update, only for indexes in active_indices</span>
+        <span class="c1"># bool_grad_weight (torch.Tensor): Binarized gradient, Boolean or uint8 type.</span>
+        <span class="c1"># active_indices (torch.Tensor): The actual embedded index used by the current batch.</span>
+        <span class="c1"># We usually direct use input (batch_size, seq_length).</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">BinaryEmbeddingParameter</span><span class="p">),</span> <span class="s1">&#39;Error: the type of qweight must be &#39;</span> \
+                                                              <span class="s1">&#39;BinaryEmbeddingParameter. &#39;</span>
+        <span class="n">qweight_update_fn</span><span class="p">(</span><span class="n">qweight</span><span class="o">=</span><span class="n">qweight</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="o">=</span><span class="n">exp_avg_s</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="o">=</span><span class="n">exp_avg_l</span><span class="p">,</span>
+                          <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="n">weight_decay</span><span class="p">,</span> <span class="n">beta1</span><span class="o">=</span><span class="n">beta1</span><span class="p">,</span> <span class="n">beta2</span><span class="o">=</span><span class="n">beta2</span><span class="p">,</span>
+                          <span class="n">correct_bias</span><span class="o">=</span><span class="n">correct_bias</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="n">projector</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="n">grad</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BinaryEmbeddingForward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingForward.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingForward">[docs]</a>
+<span class="k">class</span> <span class="nc">BinaryEmbeddingForward</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Experimental class for forward pass of binary embeddings.</span>
+<span class="sd">    Note: This class is experimental and may not always work as expected.</span>
+<span class="sd">    Due to the use of uint8 type for weight parameters (qweight), which are bit-packed binary weights,</span>
+<span class="sd">    a custom optimizer is necessary for training.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input (torch.Tensor): Input tensor with shape (batch_size, seq_length).</span>
+<span class="sd">        weight (torch.Tensor): The embedding weight matrix, bit-packed.</span>
+<span class="sd">        embed_scale (torch.Tensor): Scaling factor for the embeddings.</span>
+<span class="sd">        ori_embedding_dim (int): Original embedding dimension before packing.</span>
+<span class="sd">        is_train (bool): Flag indicating if the operation is in training mode.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: The resulting tensor after applying embedding lookup and unpacking.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BinaryEmbeddingForward.forward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingForward.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingForward.forward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span>
+                <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">qweight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">embed_scale</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">ori_embedding_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                <span class="n">is_train</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for binary embedding lookup.</span>
+
+<span class="sd">        This function performs embedding lookup for each index in the input tensor,</span>
+<span class="sd">        using bit-packed binary weights. It supports dynamic scaling and unpacking</span>
+<span class="sd">        of the weights to retrieve the original embeddings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx: Context object for backward pass.</span>
+<span class="sd">            input (torch.Tensor): Input tensor containing indices, with shape (batch_size, seq_length).</span>
+<span class="sd">            qweight (torch.Tensor): Bit-packed binary weights tensor for embeddings.</span>
+<span class="sd">            embed_scale (torch.Tensor): Scaling factors for the embeddings, to be applied after unpacking.</span>
+<span class="sd">            ori_embedding_dim (int): Original embedding dimension before packing.</span>
+<span class="sd">            is_train (bool): Flag indicating whether the operation is in training mode.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The resulting embedding tensor after lookup and scaling, with shape</span>
+<span class="sd">            (batch_size, seq_length, original_embedding_dim).</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This function saves necessary tensors for backward pass if in training mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># input shape (batch_size, seq_length)</span>
+        <span class="c1"># emd has shape (batch_size, seq_length, packed_embedding_dim)</span>
+        <span class="c1"># scl has shape (batch_size, seq_length, 1)</span>
+        <span class="n">emd</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">index_select</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">scl</span> <span class="o">=</span> <span class="n">embed_scale</span><span class="o">.</span><span class="n">index_select</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">qweight</span><span class="p">,</span> <span class="n">scl</span><span class="p">)</span>
+
+        <span class="c1"># r has shape (batch_size, seq_length, packed_embedding_dim * 8)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">unpack_uint8_tensor</span><span class="p">(</span><span class="n">emd</span><span class="p">,</span> <span class="n">scl</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">embed_scale</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># convert back to the original embedding_dim if padded</span>
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">ori_embedding_dim</span><span class="p">:</span>
+            <span class="n">num_cols_to_truncate</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">ori_embedding_dim</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="o">-</span><span class="n">num_cols_to_truncate</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">r</span></div>
+
+
+<div class="viewcode-block" id="BinaryEmbeddingForward.backward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingForward.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingForward.backward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">BackwardCFunction</span><span class="p">,</span>
+                 <span class="n">output_gradient</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backward pass for the BinaryEmbeddingForward function, providing gradients for the input and packed weights.</span>
+
+<span class="sd">        This method is designed to handle the gradient flow for bit-packed parameters, specifically for binary embeddings,</span>
+<span class="sd">        ensuring the correct update behavior in conjunction with a custom optimizer designed for such data types.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx (torch.autograd.function.BackwardCFunction): The context object where saved tensors are retrieved.</span>
+<span class="sd">            output_gradient (torch.Tensor): The gradient of the loss with respect to the output of the forward pass.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            typing.Tuple: A tuple containing gradients for the inputs used in the forward pass. Most elements are `None`</span>
+<span class="sd">                          as only specific parameters require gradients.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The optimizer update behavior suggested for this setup involves a specialized approach. Here is an example</span>
+<span class="sd">            of how to perform the necessary operations:</span>
+
+<span class="sd">            - Perform XOR operation: apply XOR between qweight and grad_weight</span>
+<span class="sd">            - Create a mask identifying non-zero positions in grad_weight</span>
+<span class="sd">            - Update qweight only at positions where grad_weight is non-zero, keeping the original qweight values elsewhere</span>
+
+<span class="sd">            This process is essential due to the binary and packed nature of the weights, requiring careful manipulation</span>
+<span class="sd">            to ensure correct updates during training.</span>
+
+<span class="sd">            &quot;sparse_update_embedding_qweight&quot; method can be used for qweight-update in an optimizer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">input</span><span class="p">,</span> <span class="n">qweight</span><span class="p">,</span> <span class="n">embed_scale</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+
+        <span class="c1"># Gradient for the input is not computed as it&#39;s not required for the embedding layer.</span>
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Compute gradients for the embedding weight matrix, adjusting for the packed and scaled format.</span>
+        <span class="c1"># Initialize a tensor for unpacked gradients with the correct shape and type.</span>
+        <span class="c1"># The grad_output tensor has shape (batch_size, seq_length, embedding_dim)</span>
+        <span class="n">w_unpacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">qweight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">qweight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                            <span class="n">device</span><span class="o">=</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># Adjust gradients if necessary to match the unpacked weight shape.</span>
+        <span class="k">if</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">w_unpacked</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">pad_size</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">w_unpacked</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+            <span class="n">output_gradient</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">output_gradient</span><span class="p">,</span> <span class="n">pad_size</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Apply scaling to the output gradient before accumulation.</span>
+        <span class="n">output_gradient</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">embed_scale</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">output_gradient</span><span class="p">))</span>
+
+        <span class="c1"># Accumulate gradients into the unpacked weight tensor.</span>
+        <span class="n">w_unpacked</span><span class="o">.</span><span class="n">index_add_</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                              <span class="n">index</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                              <span class="n">source</span><span class="o">=</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">w_unpacked</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+                              <span class="p">)</span>
+
+        <span class="c1"># The grad_weight tensor has shape (vocab_size, embedding_dim / 8)</span>
+        <span class="c1"># w_unpacked binarized and bit-packed into uint8 tensor.</span>
+        <span class="n">grad_weight</span> <span class="o">=</span> <span class="n">tensor_to_packed_uint8</span><span class="p">(</span><span class="n">w_unpacked</span><span class="p">)</span>
+
+        <span class="c1"># active_indices: only operate on the indexes contained in active_indices.</span>
+        <span class="c1"># In this way, we ensure that only the weights related to the current input are updated,</span>
+        <span class="c1"># consistent with the sparsity of the weight update pattern of the Embedding layer.</span>
+        <span class="c1"># &quot;sparse_update_embedding_qweight&quot; method can be used for update qweight in optimizer</span>
+        <span class="n">qweight</span><span class="o">.</span><span class="n">active_indices</span> <span class="o">=</span> <span class="nb">input</span>
+
+        <span class="k">return</span> <span class="n">grad_input</span><span class="p">,</span> <span class="n">grad_weight</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BinaryEmbeddingCuda">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda">[docs]</a>
+<span class="k">class</span> <span class="nc">BinaryEmbeddingCuda</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Binarized version of embedding layer, currently in experimental stage.</span>
+<span class="sd">    Note: This class is experimental and may not always work as expected.</span>
+<span class="sd">    It supports uint8 type weight parameters (qweight) that are bit-packed, requiring a custom optimizer for training.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_embeddings (int): Size of the dictionary of embeddings.</span>
+<span class="sd">        embedding_dim (int): The size of each embedding vector.</span>
+<span class="sd">        padding_idx (Optional[int]): Specifies a padding index. Embeddings at this index will be initialized with zeros.</span>
+<span class="sd">        dtype (torch.dtype): Data type of the embeddings.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        weight (Parameter): The original floating-point weights, not used during forward passes but necessary for initializing qweight.</span>
+<span class="sd">        qweight (Parameter): The quantized, bit-packed weights used for embeddings.</span>
+<span class="sd">        scale_w (torch.Tensor): Row-wise scaling factor for the embedding dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BinaryEmbeddingCuda.__init__">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_embeddings</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="c1"># dict size</span>
+        <span class="n">embedding_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>  <span class="c1"># vector length</span>
+        <span class="n">padding_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">padding_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">padding_idx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">padding_idx</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_embeddings</span><span class="p">,</span> <span class="s1">&#39;Padding_idx must be within num_embeddings&#39;</span>
+            <span class="k">elif</span> <span class="n">padding_idx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">padding_idx</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">num_embeddings</span><span class="p">,</span> <span class="s1">&#39;Padding_idx must be within num_embeddings&#39;</span>
+                <span class="n">padding_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_embeddings</span> <span class="o">+</span> <span class="n">padding_idx</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span> <span class="o">=</span> <span class="n">padding_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_dim</span> <span class="o">=</span> <span class="n">embedding_dim</span> <span class="c1"># vector size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_embeddings</span> <span class="o">=</span> <span class="n">num_embeddings</span> <span class="c1"># dictionary size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_weight</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BinaryEmbeddingCuda.init_weight">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.init_weight">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes weight parameters. This includes the floating-point weights (for initial setup),</span>
+<span class="sd">        the quantized and bit-packed weights (qweight), and the scaling factor (scale_w).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">num_embeddings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_dim</span><span class="p">)),</span>
+            <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+
+        <span class="n">w_shape</span> <span class="o">=</span> <span class="n">pad_embedding_dim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="n">BinaryEmbeddingParameter</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">w_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">w_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">8</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># row-wise scaling factor for the embbeding dictionary, will be set while initializing weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s1">&#39;scale_w&#39;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">w_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BinaryEmbeddingCuda.prepare_params">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.prepare_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares and initializes the binary weight (qweight) and scale factor (scale_w) for the embedding.</span>
+<span class="sd">        Must be called after model initialization and checkpoint loading.</span>
+
+<span class="sd">        One can use &quot;prepare_bie_layers&quot; method from project_root.utils.model_helper to call this function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># self.qweight has not been modified or has not been loaded from a checkpoint.</span>
+        <span class="c1"># we will initialize qweight and scale_w</span>
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+
+            <span class="c1"># pad embedding_dim if required</span>
+            <span class="c1"># pads its embedding dimension to the smallest multiple of 8 that is greater than</span>
+            <span class="c1"># or equal to the current embedding dimension.</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">pad_embedding_dim</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+
+            <span class="c1"># bitpacking uses unsigned int as container</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">tensor_to_packed_uint8</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+
+            <span class="k">assert</span> <span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> \
+                <span class="s1">&#39;binary embedding weight has incorrect dtype </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">nelement</span><span class="p">()</span> <span class="o">==</span> <span class="n">weight</span><span class="o">.</span><span class="n">nelement</span><span class="p">()</span><span class="o">/</span><span class="mi">8</span><span class="p">),</span> \
+                <span class="s1">&#39;The size of packed weight should be &quot;</span><span class="si">{}</span><span class="s1">&quot;, but got &quot;</span><span class="si">{}</span><span class="s1">&quot;.&#39;</span>\
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">nelement</span><span class="p">()</span><span class="o">/</span><span class="mi">8</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">nelement</span><span class="p">())</span>
+
+            <span class="c1"># initialize weight-scaling</span>
+            <span class="n">w_f</span> <span class="o">=</span> <span class="n">weight</span>
+            <span class="k">if</span> <span class="n">weight</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">:</span>
+                <span class="n">w_f</span> <span class="o">=</span> <span class="n">w_f</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span> <span class="o">=</span> <span class="n">w_f</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+                              <span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">w_f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">nelement</span><span class="p">())</span>\
+                              <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">w_f</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+            <span class="c1"># NOTE:</span>
+            <span class="c1"># Random initialize the weight with torch.uint8 type</span>
+            <span class="c1"># two special changes need to be done if we want to train this layer:</span>
+            <span class="c1"># 1. a special pytorch version supporting non-float back-propagation</span>
+            <span class="c1"># 2. a special optimizer supporting torch.uint8 weight and grad_weight update.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span> <span class="o">=</span> <span class="n">BinaryEmbeddingParameter</span><span class="p">(</span>
+                <span class="n">w</span><span class="p">,</span>
+                <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># qweight has been loaded successfully</span>
+            <span class="k">pass</span>
+
+        <span class="c1"># release</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span>
+        <span class="c1"># Manually trigger PyTorch&#39;s garbage collector</span>
+        <span class="kn">import</span> <span class="nn">gc</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="BinaryEmbeddingCuda.reset_parameters">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.reset_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets parameters, including filling the padding index with zeros if specified.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            weight (torch.Tensor): The weight tensor to reset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fill_padding_idx_with_zero</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_fill_padding_idx_with_zero</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="n">weight</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span><span class="p">]</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BinaryEmbeddingCuda.forward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingCuda.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass to generate embeddings for input indices.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input (Tensor): Tensor of indices for which embeddings are to be generated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: The resulting embeddings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">BinaryEmbeddingForward</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">qweight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BinaryEmbeddingBagForward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBagForward.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBagForward">[docs]</a>
+<span class="k">class</span> <span class="nc">BinaryEmbeddingBagForward</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An experimental PyTorch function for forward pass of binary embedding bag.</span>
+
+<span class="sd">    This class represents a custom autograd function for a binary embedding bag,</span>
+<span class="sd">    designed to work with boolean weight parameters. Specialized optimizers are</span>
+<span class="sd">    required for training due to the boolean nature of weights and their gradients.</span>
+
+<span class="sd">    The forward pass performs an embedding lookup and binarizes the output based</span>
+<span class="sd">    on the majority of ones in the sliced embeddings.</span>
+
+<span class="sd">    Note: This class is experimental and may not be error-free or always functional.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input (Tensor): Input tensor containing indices for embedding lookup.</span>
+<span class="sd">        weight (Tensor): Boolean weight tensor for embeddings.</span>
+<span class="sd">        is_train (bool): Flag indicating if the forward pass is for training.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor: The result tensor after applying binary embedding logic.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BinaryEmbeddingBagForward.forward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBagForward.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBagForward.forward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">is_train</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The forward pass performs an embedding lookup and binarizes the output based</span>
+<span class="sd">        on the majority of ones in the sliced embeddings.</span>
+
+<span class="sd">        Note: This class is experimental and may not be error-free or always functional.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input (Tensor): Input tensor containing indices for embedding lookup.</span>
+<span class="sd">            weight (Tensor): Boolean weight tensor for embeddings.</span>
+<span class="sd">            is_train (bool): Flag indicating if the forward pass is for training.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: The result tensor after applying binary embedding logic.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
+        <span class="c1"># Lookup the embedding for each index in the input tensor</span>
+        <span class="c1"># The input tensor has shape (batch_size, seq_length)</span>
+        <span class="c1"># The output tensor has shape (batch_size, embedding_dim)</span>
+        <span class="n">bag_of_words</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">index_select</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">ones</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">bag_of_words</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">ones</span><span class="o">.</span><span class="n">ge</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># Convert to binary representation (1., -1.)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">r</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">r</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span></div>
+
+
+<div class="viewcode-block" id="BinaryEmbeddingBagForward.backward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBagForward.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBagForward.backward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">BackwardCFunction</span><span class="p">,</span>
+                 <span class="n">output_gradient</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements the backward pass for the binary embedding bag function.</span>
+
+<span class="sd">        This method simply passes the output gradient unchanged as the input gradient,</span>
+<span class="sd">        which is a placeholder for future implementations of gradient calculations</span>
+<span class="sd">        for boolean weights.</span>
+
+<span class="sd">        Note on Optimizer Requirements for Boolean Weights:</span>
+
+<span class="sd">        When both weights and their gradients are of boolean type, the optimizer must employ a specialized</span>
+<span class="sd">        update mechanism. Traditional gradient descent methods cannot be directly applied since boolean</span>
+<span class="sd">        values do not support the typical arithmetic operations involved in weight updates. Instead, the</span>
+<span class="sd">        optimizer should implement logic that decides the binary state of weights based on certain criteria</span>
+<span class="sd">        or rules derived from the boolean gradients. This might involve strategies like flipping the state</span>
+<span class="sd">        of a weight based on the presence or absence of a gradient, or using a voting system across multiple</span>
+<span class="sd">        training steps to determine the change. The development of such an optimizer requires careful</span>
+<span class="sd">        consideration to effectively train models with binary weights while adhering to the limitations</span>
+<span class="sd">        and characteristics of boolean algebra.</span>
+<span class="sd">        &quot;sparse_update_embedding_qweight&quot; method can be used for qweight-update in an optimizer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ctx (Any): Autograd context saving input and weight tensors for backward computation.</span>
+<span class="sd">            output_gradient (torch.Tensor): Gradient of the loss with respect to the output of the forward pass.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[None, torch.Tensor, None]: A tuple containing gradients for each input argument. Currently,</span>
+<span class="sd">            only the gradient with respect to the weight tensor is calculated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">input</span><span class="p">,</span> <span class="n">qweight</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Calculate the gradient of the loss with respect to the embedding weight matrix</span>
+        <span class="c1"># The grad_output tensor has shape (batch_size, embedding_dim)</span>
+        <span class="c1"># The grad_weight tensor has shape (vocab_size, embedding_dim)</span>
+        <span class="n">grad_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">grad_weight</span> <span class="o">=</span> <span class="n">grad_weight</span><span class="o">.</span><span class="n">index_add_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">input</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Directly binarize the gradient and convert it to Boolean type</span>
+        <span class="n">bool_grad_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">grad_weight</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                                       <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">output_gradient</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+
+        <span class="c1"># active_indices: only operate on the indexes contained in active_indices.</span>
+        <span class="c1"># In this way, we ensure that only the weights related to the current input are updated,</span>
+        <span class="c1"># consistent with the sparsity of the weight update pattern of the EmbeddingBag layer.</span>
+        <span class="c1"># &quot;sparse_update_embedding_qweight&quot; method can be used for update qweight in optimizer</span>
+        <span class="n">qweight</span><span class="o">.</span><span class="n">active_indices</span> <span class="o">=</span> <span class="nb">input</span>
+
+        <span class="k">return</span> <span class="n">grad_input</span><span class="p">,</span> <span class="n">bool_grad_weight</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BinaryEmbeddingBag">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBag.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBag">[docs]</a>
+<span class="k">class</span> <span class="nc">BinaryEmbeddingBag</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An binary embedding bag implementation.</span>
+
+<span class="sd">    This module implements a binarized version of the standard embedding layer,</span>
+<span class="sd">    utilizing boolean weights for embeddings. It is specifically designed for scenarios</span>
+<span class="sd">    requiring binary weight parameters and includes an experimental optimizer for training.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        This module is EXPERIMENTAL and not guaranteed to be error-free or always operational.</span>
+<span class="sd">    Training requires a custom optimizer due to the boolean nature of weight parameters and gradients.</span>
+
+<span class="sd">    Note on Boolean Weight Representation in PyTorch:</span>
+
+<span class="sd">    PyTorch represents boolean (bool) type tensors using the Char type, which occupies 8 bits per value.</span>
+<span class="sd">    Thus, despite being boolean in nature, the weights in this implementation are not truly 1-bit weights,</span>
+<span class="sd">    as each boolean value is stored in an 8-bit format. This is important to consider when evaluating</span>
+<span class="sd">    the memory efficiency and computational performance of models using these binary weights.</span>
+
+<span class="sd">    The boolean weight.shape = (num_embeddings, embedding_dim), which is as same as the standard embedding layers,</span>
+<span class="sd">    with 4x memory reduction by using Char tensor type.</span>
+
+<span class="sd">    Note on Optimizer Requirements for Boolean Weights:</span>
+
+<span class="sd">    When both weights and their gradients are of boolean type, the optimizer must employ a specialized</span>
+<span class="sd">    update mechanism. Traditional gradient descent methods cannot be directly applied since boolean</span>
+<span class="sd">    values do not support the typical arithmetic operations involved in weight updates. Instead, the</span>
+<span class="sd">    optimizer should implement logic that decides the binary state of weights based on certain criteria</span>
+<span class="sd">    or rules derived from the boolean gradients. This might involve strategies like flipping the state</span>
+<span class="sd">    of a weight based on the presence or absence of a gradient, or using a voting system across multiple</span>
+<span class="sd">    training steps to determine the change. The development of such an optimizer requires careful</span>
+<span class="sd">    consideration to effectively train models with binary weights while adhering to the limitations</span>
+<span class="sd">    and characteristics of boolean algebra.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_embeddings (int): Size of the dictionary of embeddings.</span>
+<span class="sd">        embedding_dim (int): The size of each embedding vector.</span>
+<span class="sd">        padding_idx (Optional[int]): Specifies a padding index. Embeddings at this index will be zeroed out.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BinaryEmbeddingBag.__init__">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBag.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBag.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_embeddings</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="c1"># dict size</span>
+        <span class="n">embedding_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>  <span class="c1"># vector length</span>
+        <span class="n">padding_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">padding_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">padding_idx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">padding_idx</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_embeddings</span><span class="p">,</span> <span class="s1">&#39;Padding_idx must be within num_embeddings&#39;</span>
+            <span class="k">elif</span> <span class="n">padding_idx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">padding_idx</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">num_embeddings</span><span class="p">,</span> <span class="s1">&#39;Padding_idx must be within num_embeddings&#39;</span>
+                <span class="n">padding_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_embeddings</span> <span class="o">+</span> <span class="n">padding_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span> <span class="o">=</span> <span class="n">padding_idx</span>
+
+        <span class="c1"># NOTE:</span>
+        <span class="c1"># Random initialize the weight with torch.bool type</span>
+        <span class="c1"># two special changes need to be done if we want to train this layer:</span>
+        <span class="c1"># 1. a special pytorch version supporting non-float backpropagation</span>
+        <span class="c1"># 2. a special optimizer supporting boolean weight and boolean grad_weight update.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">BinaryEmbeddingParameter</span><span class="p">(</span>
+                        <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="n">num_embeddings</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">,</span>
+                        <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span>
+                     <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BinaryEmbeddingBag.reset_parameters">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBag.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBag.reset_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets parameters by zeroing out the padding index if specified.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fill_padding_idx_with_zero</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_fill_padding_idx_with_zero</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Zeroes out the embedding at the padding index, if it&#39;s specified.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span><span class="p">]</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BinaryEmbeddingBag.forward">
+<a class="viewcode-back" href="../../../../../_autosummary/bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBag.html#bitorch_engine.layers.qembedding.binary.layer.BinaryEmbeddingBag.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the binary embedding bag for given input indices.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input (Tensor): Tensor of indices to fetch embeddings for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: The resulting tensor after applying binary embedding bag logic.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># It first gets the input size and shape, then flattens the input tensor.</span>
+        <span class="k">return</span> <span class="n">BinaryEmbeddingBagForward</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

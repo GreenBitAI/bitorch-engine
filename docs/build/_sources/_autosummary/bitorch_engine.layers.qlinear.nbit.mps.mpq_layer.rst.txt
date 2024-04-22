@@ -1,0 +1,32 @@
+bitorch\_engine.layers.qlinear.nbit.mps.mpq\_layer
+==================================================
+
+.. automodule:: bitorch_engine.layers.qlinear.nbit.mps.mpq_layer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :template: class.rst
+      :toctree:
+   
+      MPQLinearMlx
+      MPQLinearMlxFunction
+   
+   
+
+   
+   
+   
+
+
+

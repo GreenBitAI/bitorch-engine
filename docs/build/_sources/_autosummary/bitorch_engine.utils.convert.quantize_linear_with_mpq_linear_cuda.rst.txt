@@ -1,0 +1,6 @@
+bitorch\_engine.utils.convert.quantize\_linear\_with\_mpq\_linear\_cuda
+=======================================================================
+
+.. currentmodule:: bitorch_engine.utils.convert
+
+.. autofunction:: quantize_linear_with_mpq_linear_cuda

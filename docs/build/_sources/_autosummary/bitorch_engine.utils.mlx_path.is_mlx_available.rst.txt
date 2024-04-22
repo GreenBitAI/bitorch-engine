@@ -1,0 +1,6 @@
+bitorch\_engine.utils.mlx\_path.is\_mlx\_available
+==================================================
+
+.. currentmodule:: bitorch_engine.utils.mlx_path
+
+.. autofunction:: is_mlx_available

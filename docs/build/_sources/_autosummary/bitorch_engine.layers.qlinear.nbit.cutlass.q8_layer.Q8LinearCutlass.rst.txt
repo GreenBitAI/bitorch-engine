@@ -1,0 +1,34 @@
+bitorch\_engine.layers.qlinear.nbit.cutlass.q8\_layer.Q8LinearCutlass
+=====================================================================
+
+.. currentmodule:: bitorch_engine.layers.qlinear.nbit.cutlass.q8_layer
+
+.. autoclass:: Q8LinearCutlass
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~Q8LinearCutlass.__init__
+        ~Q8LinearCutlass.forward
+        ~Q8LinearCutlass.generate_quantized_weight
+        ~Q8LinearCutlass.prepare_params
+        ~Q8LinearCutlass.set_activation
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+        ~Q8LinearCutlass.training
+   
+   

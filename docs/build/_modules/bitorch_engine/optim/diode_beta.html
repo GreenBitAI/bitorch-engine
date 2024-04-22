@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bitorch_engine.optim.diode_beta &mdash; Bitorch Engine 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Bitorch Engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build_options.html">Build options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../documentation.html">Full Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Bitorch Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bitorch_engine.optim.diode_beta</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bitorch_engine.optim.diode_beta</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+
+<span class="kn">from</span> <span class="nn">bitorch_engine.layers.qembedding.binary</span> <span class="kn">import</span> <span class="n">BinaryEmbeddingParameter</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.binary</span> <span class="kn">import</span> <span class="n">BinaryLinearParameter</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.layers.qlinear.nbit</span> <span class="kn">import</span> <span class="n">nBitLinearParameter</span><span class="p">,</span> <span class="n">MPQWeightParameter</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.layers.qconv.binary</span> <span class="kn">import</span> <span class="n">BinaryConvParameter</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.layers.qconv.nbit</span> <span class="kn">import</span> <span class="n">nBitConvParameter</span>
+
+<span class="kn">from</span> <span class="nn">packaging</span> <span class="kn">import</span> <span class="n">version</span>
+
+<span class="kn">from</span> <span class="nn">.galore_projector</span> <span class="kn">import</span> <span class="n">GaLoreProjector</span>
+
+
+<div class="viewcode-block" id="check_pytorch_version">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.optim.diode_beta.check_pytorch_version.html#bitorch_engine.optim.diode_beta.check_pytorch_version">[docs]</a>
+<span class="k">def</span> <span class="nf">check_pytorch_version</span><span class="p">(</span><span class="n">required_version</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if the current PyTorch version meets the specified minimum version requirement.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        required_version (str): The minimum version of PyTorch required.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: If the current PyTorch version is below the required minimum version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get the current version of PyTorch</span>
+    <span class="n">current_version</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span>
+
+    <span class="c1"># Compare the current version with the required minimum version</span>
+    <span class="k">if</span> <span class="n">version</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">current_version</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">version</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">required_version</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current PyTorch version </span><span class="si">{</span><span class="n">current_version</span><span class="si">}</span><span class="s2"> is below the required minimum version </span><span class="si">{</span><span class="n">required_version</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DiodeMix">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.optim.diode_beta.DiodeMix.html#bitorch_engine.optim.diode_beta.DiodeMix">[docs]</a>
+<span class="k">class</span> <span class="nc">DiodeMix</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    DiodeMix is a custom optimizer designed for efficient optimization, leveraging</span>
+<span class="sd">    adaptive learning rates and momentum. It is particularly suited for deep learning</span>
+<span class="sd">    tasks involving parameters with binary, n-bit, or standard floating-point values.</span>
+<span class="sd">    This implementation is based on &quot;Diode: Reinventing Binary Neural Networks Training</span>
+<span class="sd">    with Sign Descent Optimization&quot; Guo, Nianhui et al., 2024.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        params (Iterable[nn.parameter.Parameter]): Iterable of parameters to optimize</span>
+<span class="sd">        lr (float, optional): Learning rate. Defaults to 1e-4.</span>
+<span class="sd">        betas (Tuple[float, float], optional): Coefficients used for computing</span>
+<span class="sd">            running averages of gradient and its square. Defaults to (0.99, 0.9999).</span>
+<span class="sd">        eps (float, optional): Term added to the denominator to improve numerical stability.</span>
+<span class="sd">            Defaults to 1e-6.</span>
+<span class="sd">        weight_decay (float, optional): Weight decay (L2 penalty). Defaults to 0.0.</span>
+<span class="sd">        correct_bias (bool, optional): Whether to correct bias in adaptive learning rate.</span>
+<span class="sd">            Defaults to True.</span>
+<span class="sd">        dtype (torch.dtype): data type will be used in qweight update computation</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        __init__(): Initializes the optimizer with the given parameters and options.</span>
+<span class="sd">        step(closure=None): Performs a single optimization step.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If any of the parameters (learning rate, betas, epsilon) are out of their expected range.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        This optimizer includes checks to ensure the learning rate and beta values are within</span>
+<span class="sd">        valid ranges, raising ValueError if not. It supports sparse gradients with a specific</span>
+<span class="sd">        error message guiding the user towards using SparseAdam instead if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DiodeMix.__init__">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.optim.diode_beta.DiodeMix.html#bitorch_engine.optim.diode_beta.DiodeMix.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">parameter</span><span class="o">.</span><span class="n">Parameter</span><span class="p">],</span>
+        <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+        <span class="n">betas</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">),</span>
+        <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+        <span class="n">weight_decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">correct_bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span>
+    <span class="p">):</span>
+        <span class="n">check_pytorch_version</span><span class="p">(</span><span class="s2">&quot;1.5.0&quot;</span><span class="p">)</span>  <span class="c1"># add_ with alpha</span>
+
+        <span class="k">if</span> <span class="n">lr</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid learning rate: </span><span class="si">{</span><span class="n">lr</span><span class="si">}</span><span class="s2"> - should be &gt;= 0.0&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mf">0.0</span> <span class="o">&lt;=</span> <span class="n">betas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid beta parameter: </span><span class="si">{</span><span class="n">betas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> - should be in [0.0, 1.0)&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mf">0.0</span> <span class="o">&lt;=</span> <span class="n">betas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid beta parameter: </span><span class="si">{</span><span class="n">betas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> - should be in [0.0, 1.0)&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mf">0.0</span> <span class="o">&lt;=</span> <span class="n">eps</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid epsilon value: </span><span class="si">{</span><span class="n">eps</span><span class="si">}</span><span class="s2"> - should be &gt;= 0.0&quot;</span><span class="p">)</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">lr</span><span class="p">,</span> <span class="s2">&quot;betas&quot;</span><span class="p">:</span> <span class="n">betas</span><span class="p">,</span> <span class="s2">&quot;eps&quot;</span><span class="p">:</span> <span class="n">eps</span><span class="p">,</span> <span class="s2">&quot;weight_decay&quot;</span><span class="p">:</span> <span class="n">weight_decay</span><span class="p">,</span> <span class="s2">&quot;correct_bias&quot;</span><span class="p">:</span> <span class="n">correct_bias</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DiodeMix.step">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.optim.diode_beta.DiodeMix.html#bitorch_engine.optim.diode_beta.DiodeMix.step">[docs]</a>
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs a single optimization step.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            closure (Callable, optional): A closure that reevaluates the model and returns the loss.</span>
+<span class="sd">                Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The loss from the closure call, if any.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method updates the weights of the parameters based on the gradients. It handles</span>
+<span class="sd">            different types of parameters (binary, n-bit, or floating-point) differently to optimize</span>
+<span class="sd">            their weights efficiently. For binary and n-bit parameters, it updates quantized weights</span>
+<span class="sd">            directly. For standard floating-point parameters, it applies Adam-like updates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">closure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">enable_grad</span><span class="p">():</span>
+                <span class="n">loss</span> <span class="o">=</span> <span class="n">closure</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">grad</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">w</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="n">wd</span><span class="p">,</span> <span class="n">beta1</span><span class="p">,</span> <span class="n">beta2</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">correct_bias</span> <span class="o">=</span> <span class="n">p</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;weight_decay&#39;</span><span class="p">],</span> \
+                                                       <span class="o">*</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;betas&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="s2">&quot;eps&quot;</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="s2">&quot;correct_bias&quot;</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">MPQWeightParameter</span><span class="p">):</span>
+                    <span class="n">grad</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">privileged_grad</span>
+
+                <span class="k">if</span> <span class="n">grad</span><span class="o">.</span><span class="n">is_sparse</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Adam does not support sparse gradients, please consider SparseAdam instead&quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="s2">&quot;step&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
+                    <span class="n">state</span><span class="p">[</span><span class="s1">&#39;step&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># init GaLore Projection</span>
+                <span class="n">projector</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="s2">&quot;rank&quot;</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;projector&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
+                        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;projector&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">GaLoreProjector</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s2">&quot;rank&quot;</span><span class="p">],</span> <span class="n">update_proj_gap</span><span class="o">=</span><span class="n">group</span><span class="p">[</span><span class="s2">&quot;update_proj_gap&quot;</span><span class="p">],</span> <span class="n">scale</span><span class="o">=</span><span class="n">group</span><span class="p">[</span><span class="s2">&quot;scale&quot;</span><span class="p">],</span> <span class="n">proj_type</span><span class="o">=</span><span class="n">group</span><span class="p">[</span><span class="s2">&quot;proj_type&quot;</span><span class="p">])</span>
+                    <span class="n">projector</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;projector&quot;</span><span class="p">]</span>
+                    <span class="n">grad</span> <span class="o">=</span> <span class="n">projector</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">grad</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+
+                <span class="c1"># exp_avg initialization</span>
+                <span class="k">if</span> <span class="s2">&quot;exp_avg_s&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
+                    <span class="n">delta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="mf">1e-3</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">BinaryEmbeddingParameter</span><span class="p">):</span>
+                        <span class="n">state</span><span class="p">[</span><span class="s1">&#39;exp_avg_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">sign_</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">delta</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="p">(</span><span class="n">BinaryLinearParameter</span><span class="p">,</span> <span class="n">BinaryConvParameter</span><span class="p">)):</span>
+                        <span class="n">state</span><span class="p">[</span><span class="s1">&#39;exp_avg_l&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                        <span class="n">state</span><span class="p">[</span><span class="s1">&#39;exp_avg_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">sign_</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">delta</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">state</span><span class="p">[</span><span class="s1">&#39;exp_avg_l&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                        <span class="n">state</span><span class="p">[</span><span class="s1">&#39;exp_avg_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+                <span class="c1"># q-layers update</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="p">(</span><span class="n">BinaryLinearParameter</span><span class="p">,</span> <span class="n">BinaryConvParameter</span><span class="p">,</span> <span class="n">BinaryEmbeddingParameter</span><span class="p">,</span>
+                                  <span class="n">nBitLinearParameter</span><span class="p">,</span> <span class="n">nBitConvParameter</span><span class="p">,</span> <span class="n">MPQWeightParameter</span><span class="p">)):</span>
+                    <span class="n">p_class</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+                    <span class="n">p_class</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">qweight</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;exp_avg_s&quot;</span><span class="p">],</span> <span class="n">exp_avg_l</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;exp_avg_l&quot;</span><span class="p">],</span>
+                       <span class="n">step</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="n">wd</span><span class="p">,</span> <span class="n">beta1</span><span class="o">=</span><span class="n">beta1</span><span class="p">,</span> <span class="n">beta2</span><span class="o">=</span><span class="n">beta2</span><span class="p">,</span> <span class="n">correct_bias</span><span class="o">=</span><span class="n">correct_bias</span><span class="p">,</span>
+                       <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">projector</span><span class="o">=</span><span class="n">projector</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="n">grad</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># print(&#39;use standard adamw&#39;)</span>
+                    <span class="n">exp_avg</span><span class="p">,</span> <span class="n">exp_avg_sq</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;exp_avg_l&quot;</span><span class="p">],</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;exp_avg_s&quot;</span><span class="p">],</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">]</span>
+                    <span class="n">step</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="c1"># Decay the first and second moment running average coefficient</span>
+                    <span class="c1"># In-place operations to update the averages at the same time</span>
+                    <span class="n">exp_avg</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">beta1</span><span class="p">)</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta1</span><span class="p">))</span>
+                    <span class="n">exp_avg_sq</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">beta2</span><span class="p">)</span><span class="o">.</span><span class="n">addcmul_</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta2</span><span class="p">)</span>
+                    <span class="n">denom</span> <span class="o">=</span> <span class="n">exp_avg_sq</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+
+                    <span class="n">step_size</span> <span class="o">=</span> <span class="n">lr</span>
+                    <span class="k">if</span> <span class="n">correct_bias</span><span class="p">:</span>  <span class="c1"># No bias correction for Bert</span>
+                        <span class="n">bias_correction1</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta1</span> <span class="o">**</span> <span class="n">step</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="n">bias_correction2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">beta2</span> <span class="o">**</span> <span class="n">step</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="n">step_size</span> <span class="o">=</span> <span class="n">step_size</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">bias_correction2</span><span class="p">)</span> <span class="o">/</span> <span class="n">bias_correction1</span>
+
+                    <span class="c1"># compute norm gradient</span>
+                    <span class="n">norm_grad</span> <span class="o">=</span> <span class="n">exp_avg</span> <span class="o">/</span> <span class="n">denom</span>
+
+                    <span class="c1"># GaLore Projection Back</span>
+                    <span class="k">if</span> <span class="s2">&quot;rank&quot;</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                        <span class="n">norm_grad</span> <span class="o">=</span> <span class="n">projector</span><span class="o">.</span><span class="n">project_back</span><span class="p">(</span><span class="n">norm_grad</span><span class="p">)</span>
+
+                    <span class="n">w</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">norm_grad</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=-</span><span class="n">step_size</span><span class="p">)</span>
+
+                    <span class="c1"># Just adding the square of the weights to the loss function is *not*</span>
+                    <span class="c1"># the correct way of using L2 regularization/weight decay with Adam,</span>
+                    <span class="c1"># since that will interact with the m and v parameters in strange ways.</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># Instead we want to decay the weights in a manner that doesn&#39;t interact</span>
+                    <span class="c1"># with the m/v parameters. This is equivalent to adding the square</span>
+                    <span class="c1"># of the weights to the loss with plain (non-momentum) SGD.</span>
+                    <span class="c1"># Add weight decay at the end (fixed version)</span>
+                    <span class="k">if</span> <span class="n">group</span><span class="p">[</span><span class="s2">&quot;weight_decay&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                        <span class="n">w</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">lr</span> <span class="o">*</span> <span class="n">group</span><span class="p">[</span><span class="s2">&quot;weight_decay&quot;</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">loss</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Haojin Yang, Joseph Bethge, Nianhui Guo, Maximilian Schulze, Hong Guo, Paul Mattes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

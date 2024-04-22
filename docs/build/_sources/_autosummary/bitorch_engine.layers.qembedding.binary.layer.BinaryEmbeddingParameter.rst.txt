@@ -1,0 +1,29 @@
+bitorch\_engine.layers.qembedding.binary.layer.BinaryEmbeddingParameter
+=======================================================================
+
+.. currentmodule:: bitorch_engine.layers.qembedding.binary.layer
+
+.. autoclass:: BinaryEmbeddingParameter
+   :members:
+   :no-inherited-members:
+   :special-members: __call__, __add__, __mul__, forward, __init__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+        ~BinaryEmbeddingParameter.update
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+   
+   
