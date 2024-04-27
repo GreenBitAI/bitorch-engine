@@ -15,8 +15,8 @@ Building on the foundational strengths of Bitorch Engine, the technology has bee
 push the boundaries of neural network training and inference.
 For instance:
 
-- [green-bit-llm-trainer](https://github.com/GreenBitAI/green-bit-llm/tree/main/sft): In this project, BIE represents a significant leap in the field of Large Language Model (LLM) fine-tuning. Unlike traditional approaches that either quantize a fully trained model or introduce a few additional trainable parameters for [LoRA](https://github.com/microsoft/LoRA) style fine-tuning, this project innovates by directly fine-tuning the quantized parameters of LLMs. This paradigm shift allows for the full-scale quantization fine-tuning of LLMs, ensuring that the training process tightly integrates with the quantization schema from the outset.
-- [green-bit-llm-inference](https://github.com/GreenBitAI/green-bit-llm/tree/main/inference) also showcase the BIE's adeptness at supporting inference for models quantized from 4 to 2-bits without any significant loss in accuracy compared to the original 32 or 16-bits models. It stands as a testament to BIE's capability to maintain the delicate balance between model size, computational efficiency, and accuracy, addressing one of the key challenges in deploying sophisticated neural networks in resource-constrained environments.
+- [green-bit-llm-trainer](https://github.com/GreenBitAI/green-bit-llm/tree/main/green_bit_llm/sft): In this project, BIE represents a significant leap in the field of Large Language Model (LLM) fine-tuning. Unlike traditional approaches that either quantize a fully trained model or introduce a few additional trainable parameters for [LoRA](https://github.com/microsoft/LoRA) style fine-tuning, this project innovates by directly fine-tuning the quantized parameters of LLMs. This paradigm shift allows for the full-scale quantization fine-tuning of LLMs, ensuring that the training process tightly integrates with the quantization schema from the outset.
+- [green-bit-llm-inference](https://github.com/GreenBitAI/green-bit-llm/tree/main/green_bit_llm/inference) also showcase the BIE's adeptness at supporting inference for models quantized from 4 to 2-bits without any significant loss in accuracy compared to the original 32 or 16-bits models. It stands as a testament to BIE's capability to maintain the delicate balance between model size, computational efficiency, and accuracy, addressing one of the key challenges in deploying sophisticated neural networks in resource-constrained environments.
 
 These projects exemplify the practical applications of Bitorch Engine and underscore its flexibility and efficiency for modern AI research and development.
 However, keep in mind that BIE is still in an early beta stage, see our roadmap below. 
@@ -219,8 +219,8 @@ Check out the [Documentation](https://greenbitai.github.io/bitorch-engine) for A
 ## Examples
 
 - Basic example scripts can be found directly in [examples](examples).
-- [green-bit-llm-trainer](https://github.com/GreenBitAI/green-bit-llm/tree/main/sft) showcases the fine-tuning training of LLMs with quantized parameters.
-- [green-bit-llm-inference](https://github.com/GreenBitAI/green-bit-llm/tree/main/inference) showcases the BIE's adeptness at supporting fast inference for 4 to 2-bits LLMs.
+- [green-bit-llm-trainer](https://github.com/GreenBitAI/green-bit-llm/tree/main/green_bit_llm/sft) showcases the fine-tuning training of LLMs with quantized parameters.
+- [green-bit-llm-inference](https://github.com/GreenBitAI/green-bit-llm/tree/main/green_bit_llm/inference) showcases the BIE's adeptness at supporting fast inference for 4 to 2-bits LLMs.
 
 ## Contributors
 
