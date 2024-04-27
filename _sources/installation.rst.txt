@@ -12,7 +12,7 @@ The requirements are:
 For more detailed information, you can check the `requirements of
 PyTorch <https://github.com/pytorch/pytorch?tab=readme-ov-file#prerequisites>`__.
 
-Currently, the engine needs to be built from source. We provide
+Currently, the engine **needs to be built from source**. We provide
 instructions how to install Python/PyTorch (and CUDA/MLX) for:
 
 -  Conda + Linux (with CUDA)
@@ -137,7 +137,7 @@ Conda on MacOS (with MLX)
    conda activate bitorch-engine
 
 2. Download `customized Torch for
-   arm <https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing>`__
+   MacOS/arm <https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing>`__
    (it allows gradients on INT tensors, built for Python 3.9 and CUDA
    11.8) and install it with pip:
 
