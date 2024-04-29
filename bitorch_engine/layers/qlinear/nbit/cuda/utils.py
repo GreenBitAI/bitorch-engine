@@ -107,8 +107,9 @@ def pack_fp_weight(weight: torch.Tensor, qweight: MPQWeightParameter) -> torch.T
                 # Adjust scales and zeros for symmetric quantization without group index
                 scales = scales.unsqueeze(1).repeat(1, weight.size(0)//scales.size(0), 1).view(-1, scales.size(-1))
                 zeros = zeros.unsqueeze(1).repeat(1, weight.size(0) // zeros.size(0), 1).view(-1, zeros.size(-1))
-                q_perm = qweight.q_perm.unsqueeze(1).repeat(1, weight.size(1)).long()
-                weight = torch.gather(weight, dim=0, index=q_perm)
+                if hasattr(qweight, "q_perm") and qweight.q_perm is not None:
+                    q_perm = qweight.q_perm.unsqueeze(1).repeat(1, weight.size(1)).long()
+                    weight = torch.gather(weight, dim=0, index=q_perm)
 
                 intweight = torch.round((weight + zeros) / scales).to(torch.int32).clamp(0, 2 ** w_bit - 1)
             else:

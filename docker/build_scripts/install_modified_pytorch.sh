@@ -17,24 +17,14 @@ file="custom_torch.whl"
 ## adding them here individually is tedious, but we need to build them manually and ensure compatibility anyway
 
 if [ "${from_image}" == "pytorch/pytorch:2.2.0-cuda11.8-cudnn8-devel" ]; then
-    gdrive_id="1sS3LS_8wEm2CJ-oCHZAWYeuXjJHXPINP"
+    gdrive_id="1PoVor85-RF3s0KpOP19mFV5hNUnHERa1"
     file="torch-2.2.2-cp310-cp310-linux_x86_64.whl"
-    checksum="1a7e8f1c315d3aefcc65b0a6676857b9cde4877737a134cf1423a048d8938985"
+    checksum="6646519e5e7b4af8f99b79eb9be3e6460b0d05c4695bbf86de02568f37ff3fea"
 fi
 if [ "${from_image}" == "pytorch/pytorch:2.2.0-cuda12.1-cudnn8-devel" ]; then
-    gdrive_id="18DP0P9MJ4U211HR5-1ss6NogFPcIOJDR"
+    gdrive_id="1LjFNImboq8QeFSompMS2gPjBRYtP2Dsz"
     file="torch-2.2.2-cp310-cp310-linux_x86_64.whl"
-    checksum="5f89163d910e1e1ee6010e4ea5d478756c021abab1e248be9716d3bee729b9e7"
-fi
-if [ "${from_image}" == "pytorch/pytorch:2.1.0-cuda11.8-cudnn8-devel" ]; then
-    gdrive_id="1QK_QqlPubFNgitiOkSABZ3AZyg7M0ezc"
-    file="torch-2.1.0-cp39-cp39-linux_x86_64.whl"
-    checksum="6600c130395b66bd047ca01b077f702703924eb3eaab2d3d04d9eb51154d9080"
-fi
-if [ "${from_image}" == "pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel" ]; then
-    gdrive_id="1fguT0jRJwRE1126rPpEvL9G6F246CLar"
-    file="torch-2.1.0-cp39-cp39-linux_x86_64.whl"
-    checksum="10b95aaca45558f3b80ee331677ddd925f3891ef542ab419ae68dd57641b9a12"
+    checksum="2a5953dab7be6c1640112e38ae7519ad88180d9fa79faab6c86dbee6b1cc210e"
 fi
 #if [ "${from_image}" == "pytorch/pytorch:X.X.X-cudaXX.X-cudnn8-devel" ]; then
 #    gdrive_id="xxx"

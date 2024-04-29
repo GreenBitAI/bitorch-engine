@@ -40,15 +40,20 @@ The requirements are:
 - A compiler that fully supports C++17, such as clang or gcc (gcc 9.4.0 or newer is required, but gcc 12.x is not supported yet)
 - Python 3.9 or later
 - PyTorch 1.8 or later
-- CUDA Toolkit 11.8 or 12.1 (optional, for CUDA accelerated layers)
 
-For more detailed information, you can check the [requirements of PyTorch](https://github.com/pytorch/pytorch?tab=readme-ov-file#prerequisites).
+Please check your operating system's options for the C++ compiler.
+For more detailed information, you can check the [requirements to build PyTorch from source](https://github.com/pytorch/pytorch?tab=readme-ov-file#prerequisites).
+In addition, for layers to speed up on specific hardware (such as CUDA devices, or MacOS M1/2/3 chips), we recommend installing:
+
+- CUDA Toolkit 11.8 or 12.1 for CUDA accelerated layers
+- **[MLX](https://github.com/ml-explore/mlx)** for mlx-based layers on MacOS
+- **[CUTLASS](https://github.com/NVIDIA/cutlass)** for cutlass-based layers
 
 Currently, the engine **needs to be built from source**.
-We provide instructions how to install Python/PyTorch (and CUDA/MLX) for:
+We provide instructions for the following options:
 
-- Conda + Linux (with CUDA)
-- Docker (with CUDA)
+- Conda + Linux (with CUDA and cutlass)
+- Docker (with CUDA and cutlass)
 - Conda + MacOS (with MLX)
 
 We recommend managing your BITorch Engine installation in a conda environment (otherwise you should adapt/remove certain variables, e.g. `CUDA_HOME`).
@@ -56,6 +61,8 @@ You may want to keep everything (environment, code, etc.) in one directory or us
 You may wish to adapt the CUDA version to 12.1 where applicable.
 
 ### Conda on Linux (with CUDA)
+
+To use these instructions, you need to have [conda](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html) and a suitable C++ compiler installed.
 
 1. Create Environment for Python 3.9 and activate it:
 ```bash
@@ -72,8 +79,22 @@ pip install torch-2.1.0-cp39-cp39-linux_x86_64.whl
 # optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
 pip install "torchvision==0.16.0" --index-url https://download.pytorch.org/whl/cu118
 ```
+4. To use cutlass layers, you should also install CUTLASS 2.8.0 (from source), adjust `CUTLASS_HOME` (this is where we clone and install cutlass)
+(if you have older or newer GPUs you may need to add your [CUDA compute capability](https://developer.nvidia.com/cuda-gpus) in `CUTLASS_NVCC_ARCHS`):
+```bash
+export CUTLASS_HOME="/some/path"
+mkdir -p "${CUTLASS_HOME}"
+git clone --depth 1 --branch "v2.8.0" "https://github.com/NVIDIA/cutlass.git" --recursive ${CUTLASS_HOME}/source
+mkdir -p "${CUTLASS_HOME}/build" && mkdir -p "${CUTLASS_HOME}/install"
+cd "${CUTLASS_HOME}/build"
+cmake ../source -DCMAKE_INSTALL_PREFIX="${CUTLASS_HOME}/install" -DCUTLASS_ENABLE_TESTS=OFF -DCUTLASS_ENABLE_EXAMPLES=OFF -DCUTLASS_NVCC_ARCHS='75;80;86'
+make -j 4
+cmake --install .
+```
+If you have difficulties installing cutlass, you can check the [official documentation](https://github.com/NVIDIA/cutlass/tree/v2.8.0),
+use the other layers without installing it or try the docker installation.
 
-Alternatively, you can also save the environment and clone the repository within the same directory.
+As an alternative to the instructions above, you can also store the environment and clone all repositories within one "root" directory.
 
 <details><summary>Click to here to expand the instructions for this.</summary>
 
@@ -99,17 +120,33 @@ pip install torch-2.1.0-cp39-cp39-linux_x86_64.whl
 # optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
 pip install "torchvision==0.16.0" --index-url https://download.pytorch.org/whl/cu118
 ```
+4. To use cutlass layers, you should also install CUTLASS 2.8.0
+(if you have older or newer GPUs you may need to add your [CUDA compute capability](https://developer.nvidia.com/cuda-gpus) in `CUTLASS_NVCC_ARCHS`):
+```bash
+export CUTLASS_HOME="${BITORCH_WORKSPACE}/cutlass"
+mkdir -p "${CUTLASS_HOME}"
+git clone --depth 1 --branch "v2.8.0" "https://github.com/NVIDIA/cutlass.git" --recursive ${CUTLASS_HOME}/source
+mkdir -p "${CUTLASS_HOME}/build" && mkdir -p "${CUTLASS_HOME}/install"
+cd "${CUTLASS_HOME}/build"
+cmake ../source -DCMAKE_INSTALL_PREFIX="${CUTLASS_HOME}/install" -DCUTLASS_ENABLE_TESTS=OFF -DCUTLASS_ENABLE_EXAMPLES=OFF -DCUTLASS_NVCC_ARCHS='75;80;86'
+make -j 4
+cmake --install .
+cd "${BITORCH_WORKSPACE}"
+```
+If you have difficulties installing cutlass, you can check the [official documentation](https://github.com/NVIDIA/cutlass/tree/v2.8.0),
+use the other layers without installing it or try the docker installation.
 </details>
 
 After setting up the environment, clone the code and build with pip (to hide the build output remove `-v`):
 
 ```bash
+# make sure you are in a suitable directory, e.g. your bitorch workspace
 git clone --recursive https://github.com/GreenBitAI/bitorch-engine
 cd bitorch-engine
 # only gcc versions 9.x, 10.x, 11.x are supported
 # to select the correct gcc, use:
 # export CC=gcc-11 CPP=g++-11 CXX=g++-11
-CUDA_HOME="${CONDA_PREFIX}" pip install -e . -v
+CPATH="${CUTLASS_HOME}/install/include" CUDA_HOME="${CONDA_PREFIX}" pip install -e . -v
 ```
 
 ### Docker (with CUDA) 

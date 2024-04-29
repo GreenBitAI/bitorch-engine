@@ -7,10 +7,10 @@ RUN apt-get update && \
   apt-get install -y git && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
-  git clone --depth 1 --branch "v${CUTLASS_VERSION}" "https://github.com/NVIDIA/cutlass.git" --recursive /cutlass && \
+  git clone --depth 1 --branch "v${CUTLASS_VERSION}" "https://github.com/NVIDIA/cutlass.git" --recursive /cutlass/source && \
   mkdir /cutlass/build && \
   cd /cutlass/build && \
-  cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -DBUILD_TESTING=OFF -DCUTLASS_NVCC_ARCHS='75;80;86' && \
+  cmake ../source -DCMAKE_INSTALL_PREFIX=/cutlass/install -DCUTLASS_ENABLE_TESTS=OFF -DCUTLASS_ENABLE_EXAMPLES=OFF -DCUTLASS_NVCC_ARCHS='75;80;86' && \
   make -j `$(nproc)` && \
   cmake --install .
 
@@ -32,7 +32,7 @@ RUN git clone \
     "${GIT_URL}" \
     /bitorch-engine && \
   cd /bitorch-engine && \
-  BIE_FORCE_CUDA="true" pip install -e ${BUILD_TARGET} -v && \
+  BIE_FORCE_CUDA="true" CPATH="/cutlass/install/include" pip install -e ${BUILD_TARGET} -v && \
   rm -rf build/ bitorch_engine.egg-info/
 
 FROM no-examples as example-ready
