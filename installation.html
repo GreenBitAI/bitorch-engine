@@ -89,15 +89,25 @@
 or newer is required, but gcc 12.x is not supported yet)</p></li>
 <li><p>Python 3.9 or later</p></li>
 <li><p>PyTorch 1.8 or later</p></li>
-<li><p>CUDA Toolkit 11.8 or 12.1 (optional, for CUDA accelerated layers)</p></li>
 </ul>
-<p>For more detailed information, you can check the <a class="reference external" href="https://github.com/pytorch/pytorch?tab=readme-ov-file#prerequisites">requirements of
-PyTorch</a>.</p>
-<p>Currently, the engine <strong>needs to be built from source</strong>. We provide
-instructions how to install Python/PyTorch (and CUDA/MLX) for:</p>
+<p>Please check your operating system’s options for the C++ compiler. For
+more detailed information, you can check the <a class="reference external" href="https://github.com/pytorch/pytorch?tab=readme-ov-file#prerequisites">requirements to build
+PyTorch from
+source</a>.
+In addition, for layers to speed up on specific hardware (such as CUDA
+devices, or MacOS M1/2/3 chips), we recommend installing:</p>
 <ul class="simple">
-<li><p>Conda + Linux (with CUDA)</p></li>
-<li><p>Docker (with CUDA)</p></li>
+<li><p>CUDA Toolkit 11.8 or 12.1 for CUDA accelerated layers</p></li>
+<li><p><a class="reference external" href="https://github.com/ml-explore/mlx">MLX</a> for mlx-based layers on
+MacOS</p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA/cutlass">CUTLASS</a> for cutlass-based
+layers</p></li>
+</ul>
+<p>Currently, the engine <strong>needs to be built from source</strong>. We provide
+instructions for the following options:</p>
+<ul class="simple">
+<li><p>Conda + Linux (with CUDA and cutlass)</p></li>
+<li><p>Docker (with CUDA and cutlass)</p></li>
 <li><p>Conda + MacOS (with MLX)</p></li>
 </ul>
 <p>We recommend managing your BITorch Engine installation in a conda
@@ -108,6 +118,9 @@ environments. You may wish to adapt the CUDA version to 12.1 where
 applicable.</p>
 <section id="conda-on-linux-with-cuda">
 <h2>Conda on Linux (with CUDA)<a class="headerlink" href="#conda-on-linux-with-cuda" title="Link to this heading"></a></h2>
+<p>To use these instructions, you need to have
+<a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/getting-started.html">conda</a>
+and a suitable C++ compiler installed.</p>
 <ol class="arabic simple">
 <li><p>Create Environment for Python 3.9 and activate it:</p></li>
 </ol>
@@ -132,8 +145,28 @@ conda<span class="w"> </span>activate<span class="w"> </span>bitorch-engine
 pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.16.0&quot;</span><span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
 </pre></div>
 </div>
-<p>Alternatively, you can also save the environment and clone the
-repository within the same directory.</p>
+<ol class="arabic simple" start="4">
+<li><p>To use cutlass layers, you should also install CUTLASS 2.8.0 (from
+source), adjust <code class="docutils literal notranslate"><span class="pre">CUTLASS_HOME</span></code> (this is where we clone and install
+cutlass) (if you have older or newer GPUs you may need to add your
+<a class="reference external" href="https://developer.nvidia.com/cuda-gpus">CUDA compute capability</a>
+in <code class="docutils literal notranslate"><span class="pre">CUTLASS_NVCC_ARCHS</span></code>):</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CUTLASS_HOME</span><span class="o">=</span><span class="s2">&quot;/some/path&quot;</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">&quot;</span>
+git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="w"> </span><span class="m">1</span><span class="w"> </span>--branch<span class="w"> </span><span class="s2">&quot;v2.8.0&quot;</span><span class="w"> </span><span class="s2">&quot;https://github.com/NVIDIA/cutlass.git&quot;</span><span class="w"> </span>--recursive<span class="w"> </span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span>/source
+mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">/build&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">/install&quot;</span>
+<span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">/build&quot;</span>
+cmake<span class="w"> </span>../source<span class="w"> </span>-DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">/install&quot;</span><span class="w"> </span>-DCUTLASS_ENABLE_TESTS<span class="o">=</span>OFF<span class="w"> </span>-DCUTLASS_ENABLE_EXAMPLES<span class="o">=</span>OFF<span class="w"> </span>-DCUTLASS_NVCC_ARCHS<span class="o">=</span><span class="s1">&#39;75;80;86&#39;</span>
+make<span class="w"> </span>-j<span class="w"> </span><span class="m">4</span>
+cmake<span class="w"> </span>--install<span class="w"> </span>.
+</pre></div>
+</div>
+<p>If you have difficulties installing cutlass, you can check the <a class="reference external" href="https://github.com/NVIDIA/cutlass/tree/v2.8.0">official
+documentation</a>, use
+the other layers without installing it or try the docker installation.</p>
+<p>As an alternative to the instructions above, you can also store the
+environment and clone all repositories within one “root” directory.</p>
 <details class="summary-click-to-here-to-expand-the-instructions-for-this">
 <summary>Click to here to expand the instructions for this.</summary><ol class="arabic simple" start="0">
 <li><p>Set workspace dir (use an absolute path!):</p></li>
@@ -167,14 +200,35 @@ previous step (it allows gradients on INT tensors, built for Python
 pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.16.0&quot;</span><span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
 </pre></div>
 </div>
+<ol class="arabic simple" start="4">
+<li><p>To use cutlass layers, you should also install CUTLASS 2.8.0 (if you
+have older or newer GPUs you may need to add your <a class="reference external" href="https://developer.nvidia.com/cuda-gpus">CUDA compute
+capability</a> in
+<code class="docutils literal notranslate"><span class="pre">CUTLASS_NVCC_ARCHS</span></code>):</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CUTLASS_HOME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">/cutlass&quot;</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">&quot;</span>
+git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="w"> </span><span class="m">1</span><span class="w"> </span>--branch<span class="w"> </span><span class="s2">&quot;v2.8.0&quot;</span><span class="w"> </span><span class="s2">&quot;https://github.com/NVIDIA/cutlass.git&quot;</span><span class="w"> </span>--recursive<span class="w"> </span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span>/source
+mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">/build&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">/install&quot;</span>
+<span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">/build&quot;</span>
+cmake<span class="w"> </span>../source<span class="w"> </span>-DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">/install&quot;</span><span class="w"> </span>-DCUTLASS_ENABLE_TESTS<span class="o">=</span>OFF<span class="w"> </span>-DCUTLASS_ENABLE_EXAMPLES<span class="o">=</span>OFF<span class="w"> </span>-DCUTLASS_NVCC_ARCHS<span class="o">=</span><span class="s1">&#39;75;80;86&#39;</span>
+make<span class="w"> </span>-j<span class="w"> </span><span class="m">4</span>
+cmake<span class="w"> </span>--install<span class="w"> </span>.
+<span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+<p>If you have difficulties installing cutlass, you can check the <a class="reference external" href="https://github.com/NVIDIA/cutlass/tree/v2.8.0">official
+documentation</a>, use
+the other layers without installing it or try the docker installation.</p>
 </details><p>After setting up the environment, clone the code and build with pip (to
 hide the build output remove <code class="docutils literal notranslate"><span class="pre">-v</span></code>):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/GreenBitAI/bitorch-engine
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure you are in a suitable directory, e.g. your bitorch workspace</span>
+git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/GreenBitAI/bitorch-engine
 <span class="nb">cd</span><span class="w"> </span>bitorch-engine
 <span class="c1"># only gcc versions 9.x, 10.x, 11.x are supported</span>
 <span class="c1"># to select the correct gcc, use:</span>
 <span class="c1"># export CC=gcc-11 CPP=g++-11 CXX=g++-11</span>
-<span class="nv">CUDA_HOME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CONDA_PREFIX</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>-v
+<span class="nv">CPATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUTLASS_HOME</span><span class="si">}</span><span class="s2">/install/include&quot;</span><span class="w"> </span><span class="nv">CUDA_HOME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CONDA_PREFIX</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>-v
 </pre></div>
 </div>
 </section>
