@@ -749,6 +749,8 @@ torch::Tensor mbwq_linear_q4_forward_cuda(
     int bits
 ){
     const at::cuda::OptionalCUDAGuard device_guard(device_of(x));
+    cublasHandle_t cublas_handle = at::cuda::getCurrentCUDABlasHandle();
+
     TORCH_CHECK(x.dtype() == torch::kHalf);
     TORCH_CHECK(x.size(1) == qweight.size(0) * (32 / bits));
 
@@ -760,50 +762,72 @@ torch::Tensor mbwq_linear_q4_forward_cuda(
 	auto option_output = torch::TensorOptions().dtype(x.dtype()).device(x.device());
 	auto out = torch::zeros({size_m, size_n}, option_output);
 
-	bool is_q_perm_all_zeros = torch::all(q_perm == 0).item<bool>();
-	auto perm_value = is_q_perm_all_zeros ? nullptr : reinterpret_cast<uint16_t *>(q_perm.data_ptr());
+	if (size_m > MAX_Q_GEMM_ROWS){
+        // Reconstruct FP16 matrix and using cuBLAS for gemm
+        auto fp_w = mbwq_linear_q42fp_weight_cuda(qweight,
+									               scales,
+									               zeros,
+									               group_size,
+									               bits,
+									               q_perm);
 
-    dim3 blockDim, gridDim;
-    blockDim.x = GPTQ_BLOCK_KN_SIZE;
-    blockDim.y = 1;
-    blockDim.z = 1;
-    gridDim.x = DIVIDE(size_n, GPTQ_BLOCK_KN_SIZE * 4);
-    gridDim.y = DIVIDE(size_m, GPTQ_BLOCK_M_SIZE_MAX);
-    gridDim.z = DIVIDE(size_k, GPTQ_BLOCK_KN_SIZE);
+        const half alpha = __float2half(1.0f);
+        const half beta = __float2half(0.0f);
+        cublasHgemm(cublas_handle,
+                    CUBLAS_OP_N,
+                    CUBLAS_OP_N,
+                    size_n, size_m,                                    size_k,
+                    &alpha, reinterpret_cast<half *>(fp_w.data_ptr()), size_n,
+                            reinterpret_cast<half *>(x.data_ptr()),    size_k,
+                    &beta,  reinterpret_cast<half *>(out.data_ptr()),  size_n);
 
-    if (bits == 4){
-	    gemm_half_q4_half_gptq_kernel<GPTQ_BLOCK_M_SIZE_MAX><<<gridDim, blockDim>>>(
-	        reinterpret_cast<half *>(x.data_ptr()),
-	        reinterpret_cast<uint32_t *>(qweight.data_ptr()),
-	        reinterpret_cast<half *>(zeros.data_ptr()),
-	        reinterpret_cast<half *>(scales.data_ptr()),
-	        reinterpret_cast<half *>(out.data_ptr()),
-	        size_m,
-	        size_n,
-	        size_k,
-	        groups,
-	        group_size,
-	        true,
-	        perm_value
-	    );
-	} else if (bits == 2){
-	    gemm_half_q2_half_gptq_kernel<GPTQ_BLOCK_M_SIZE_MAX><<<gridDim, blockDim>>>(
-	        reinterpret_cast<half *>(x.data_ptr()),
-	        reinterpret_cast<uint32_t *>(qweight.data_ptr()),
-	        reinterpret_cast<half *>(zeros.data_ptr()),
-	        reinterpret_cast<half *>(scales.data_ptr()),
-	        reinterpret_cast<half *>(out.data_ptr()),
-	        size_m,
-	        size_n,
-	        size_k,
-	        groups,
-	        group_size,
-	        true,
-	        perm_value
-	    );
-	} else {
-        std::cerr << "Error: weight bit width:"<< bits <<" has not been supported yet!" << std::endl;
-        exit(EXIT_FAILURE);
+	}else{
+
+		bool is_q_perm_all_zeros = torch::all(q_perm == 0).item<bool>();
+		auto perm_value = is_q_perm_all_zeros ? nullptr : reinterpret_cast<uint16_t *>(q_perm.data_ptr());
+
+	    dim3 blockDim, gridDim;
+	    blockDim.x = GPTQ_BLOCK_KN_SIZE;
+	    blockDim.y = 1;
+	    blockDim.z = 1;
+	    gridDim.x = DIVIDE(size_n, GPTQ_BLOCK_KN_SIZE * 4);
+	    gridDim.y = DIVIDE(size_m, GPTQ_BLOCK_M_SIZE_MAX);
+	    gridDim.z = DIVIDE(size_k, GPTQ_BLOCK_KN_SIZE);
+
+	    if (bits == 4){
+		    gemm_half_q4_half_gptq_kernel<GPTQ_BLOCK_M_SIZE_MAX><<<gridDim, blockDim>>>(
+		        reinterpret_cast<half *>(x.data_ptr()),
+		        reinterpret_cast<uint32_t *>(qweight.data_ptr()),
+		        reinterpret_cast<half *>(zeros.data_ptr()),
+		        reinterpret_cast<half *>(scales.data_ptr()),
+		        reinterpret_cast<half *>(out.data_ptr()),
+		        size_m,
+		        size_n,
+		        size_k,
+		        groups,
+		        group_size,
+		        true,
+		        perm_value
+		    );
+		} else if (bits == 2){
+		    gemm_half_q2_half_gptq_kernel<GPTQ_BLOCK_M_SIZE_MAX><<<gridDim, blockDim>>>(
+		        reinterpret_cast<half *>(x.data_ptr()),
+		        reinterpret_cast<uint32_t *>(qweight.data_ptr()),
+		        reinterpret_cast<half *>(zeros.data_ptr()),
+		        reinterpret_cast<half *>(scales.data_ptr()),
+		        reinterpret_cast<half *>(out.data_ptr()),
+		        size_m,
+		        size_n,
+		        size_k,
+		        groups,
+		        group_size,
+		        true,
+		        perm_value
+		    );
+		} else {
+	        std::cerr << "Error: weight bit width:"<< bits <<" has not been supported yet!" << std::endl;
+	        exit(EXIT_FAILURE);
+		}
 	}
 
     return out;

@@ -362,7 +362,7 @@ def test_mbwq_linear_q4_cuda(num_input_features, num_hidden_fc, batch_size, grou
                                              mbwq_linear_layer.zeros, group_size, mbwq_linear_layer.w_bit, mbwq_linear_layer.q_perm)
     result1_pt = torch.matmul(input_data_cuda, fp_weights)
 
-    assert torch.all(torch.isclose(result1, result1_pt, rtol=10, atol=10, equal_nan=False))
+    assert torch.mean(torch.abs(result1 - result1_pt)).item() < 2
 
     mpq_linear_layer = MPQLinearCuda(in_channels=num_input_features,
                                       out_channels=num_hidden_fc,
@@ -401,5 +401,5 @@ def test_mbwq_linear_q4_cuda(num_input_features, num_hidden_fc, batch_size, grou
     time_engine = time.time() - start_time
     print("bitorch-engine mpq_linear forward (CUDA) run time: %.6f s" % (time_engine/num_runs))
 
-    assert torch.all(torch.isclose(result1, result2, rtol=10, atol=10, equal_nan=False))
+    assert torch.mean(torch.abs(result1 - result2)).item() < 3
 
