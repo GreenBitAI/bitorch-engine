@@ -109,9 +109,8 @@ class MBWQLinearCudaFunction(Function):
         grad_input = output_gradient.mm(weights.t()) # (m, n)*(n, k) = (m, k)
         #======================================================================================================#
 
-        # (n, m) * (m, k) = (n, k)
         if qweight.requires_grad: # This additional check is required by peft training.
-            qweight.privileged_grad = output_gradient.t().mm(input).t()  # (k, n)
+            qweight.privileged_grad = input.t().mm(output_gradient)  # (k, m) * (m, n) = (k, n)
 
         grad_input = unflatten_x(grad_input, shape)
 
