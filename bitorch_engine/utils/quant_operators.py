@@ -1,4 +1,5 @@
 from typing import Tuple
+import math
 
 import torch
 
@@ -306,7 +307,7 @@ def q4_quantization(input: torch.Tensor, scale_a: torch.Tensor=None, eps: torch.
         return (input / scale_a).round().clamp(Qn, Qp)
 
 
-def gptq_stype_unpacking(qweight) -> torch.Tensor:
+def gptq_style_unpacking(qweight) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Reconstructs the fp16 weight tensor from the input quantized weight parameter in GPTQ style.
 
@@ -341,4 +342,27 @@ def gptq_stype_unpacking(qweight) -> torch.Tensor:
         else:
             weights = weight * qweight.scales[qweight.g_idx.long()] - qweight.zeros[qweight.g_idx.long()]
 
-    return weights
+    return weights, zeros
+
+
+def gptq_style_zeros_packing(zeros: torch.Tensor, w_bit: int, out_features: int, group_size: int) -> torch.Tensor:
+    """
+    Packs the zeros tensor in GPTQ style for efficient storage and computation.
+
+    Args:
+        zeros (torch.Tensor): Input tensor containing zeros.
+        w_bit (int): Number of bits for weight quantization.
+        out_features (int): Number of output features.
+        group_size (int): Size of the group for packing.
+
+    Returns:
+        torch.Tensor: Packed tensor with reduced storage.
+    """
+    
+    zeros = zeros.reshape(zeros.shape[0], math.ceil(out_features // 32 * w_bit), 32//w_bit).to(torch.int32)
+    zeros_pack = zeros - 1
+    wf = torch.arange(0, 32, w_bit, device=zeros.device, dtype=torch.int32)
+    zeros_pack = torch.bitwise_and(zeros_pack, (2 ** w_bit) - 1)
+    zeros_pack = torch.bitwise_left_shift(zeros_pack.to(torch.int32), wf.unsqueeze(0).unsqueeze(1))
+    zeros_pack = zeros_pack.sum(dim=-1).to(torch.int32)
+    return zeros_pack

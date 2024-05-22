@@ -3,7 +3,7 @@ import math
 
 import torch
 import torch.nn.functional as F
-from bitorch_engine.utils.quant_operators import nv_tensor_quant, gptq_stype_unpacking
+from bitorch_engine.utils.quant_operators import nv_tensor_quant, gptq_style_unpacking, gptq_style_zeros_packing
 from bitorch_engine.functions.cuda import tensor_to_packed_uint8, unpack_uint8_tensor
 
 
@@ -327,6 +327,39 @@ def init_weight(weight: torch.Tensor, cls: Type[torch.nn.Parameter]=torch.nn.Par
     return weight, scale_w
 
 
+def update_zeros(qweight, w, norm_grad, step_size, z_unpacked=None):
+    """
+    Updates the zeros attribute of the qweight object based on its layer type.
+
+    Args:
+        qweight: An object containing quantization parameters, including the zeros attribute.
+        w: Weight tensor.
+        norm_grad: Normalized gradient tensor.
+        step_size: Step size for updating zeros.
+        z_unpacked: Optional unpacked zeros tensor for specific layer types.
+    """
+    if qweight.layer_type == 2:  # MBWQ-layer
+        q_perm = qweight.q_perm.unsqueeze(1).repeat(1, w.size(1)).long()
+        zeros_grad = torch.gather(norm_grad, dim=0, index=q_perm)
+        qweight.zeros.add_(
+            step_size * zeros_grad.view(-1, w.size(0) // qweight.scales.size(0), qweight.scales.size(-1)).mean(1)
+        )
+        del zeros_grad
+    elif qweight.layer_type == 1 and qweight.g_idx is not None:  # MPQ-layer & GPTQ
+        zeros_unpack = z_unpacked[qweight.g_idx.long()]
+        zeros_unpack.add_(step_size * norm_grad)
+
+        g_idx = qweight.g_idx.long()
+        perm = torch.argsort(g_idx, dim=0)
+        zeros = zeros_unpack[perm, :].view(-1, w.size(0) // qweight.scales.size(0), qweight.scales.size(-1)).mean(1)
+        
+        # pack to qzeros
+        qweight.zeros = gptq_style_zeros_packing(zeros, qweight.w_bit, zeros.size(-1), qweight.group_size)
+    else:
+        raise NotImplementedError(
+            "qweight.layer_type: '{}' has not been supported yet.".format(str(qweight.layer_type)))
+
+
 def qweight_update_fn(qweight: torch.nn.Parameter, exp_avg_s: torch.Tensor=None, exp_avg_l: torch.Tensor=None,
                        step: torch.Tensor=None, lr:float=1e-4, weight_decay:float=0.0, beta1:float=0.99,
                       beta2:float=0.9999, eps: float = 1e-6, dtype=torch.half, correct_bias=None, projector=None,
@@ -452,7 +485,9 @@ def qweight_update_fn(qweight: torch.nn.Parameter, exp_avg_s: torch.Tensor=None,
     elif isinstance(qweight, MPQWeightParameter):
 
         # unpack qweight
-        w = gptq_stype_unpacking(qweight).to(dtype)
+        w, z_unpacked = gptq_style_unpacking(qweight)
+        w = w.to(dtype)
+        z_unpacked = z_unpacked.to(dtype)
 
         # Decay the first and second moment running average coefficient
         # In-place operations to update the averages at the same time
@@ -475,11 +510,19 @@ def qweight_update_fn(qweight: torch.nn.Parameter, exp_avg_s: torch.Tensor=None,
 
         w.add_(norm_grad, alpha=-step_size)
 
-        if weight_decay > 0.0:
-            w.add_(w, alpha=(-lr * weight_decay))
+        # ===== update zeros ===== #
+        # We are not performing the gradient update for 'zeros' in the conventional way.
+        # Instead, we are making a special handling here because, although 'zeros' is of fp data type,
+        # in our optimization scenario, it is tied to the updates of 'qweight'.
+        # Moreover, 'zeros' is not always updated but interacts with 'qweight' at a relatively sparse frequency.
+        # If we were to update 'zeros' as a regular fp-parameter, it might not allow us the flexibility
+        # to design these interactions conveniently.
+        # Considering this is a beta version, future updates and adjustments might be possible.
+        if step % 5 == 0:
+            update_zeros(qweight, w, norm_grad, step_size, z_unpacked)
 
         # pack fp weight back to Q-weight and update qweight data
-        qweight.data = pack_fp_weight(w, qweight)
+        qweight.data = pack_fp_weight(w, qweight, z_unpacked)
 
         # manually empty cuda cache.
         del w

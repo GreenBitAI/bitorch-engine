@@ -6,6 +6,7 @@ import math
 from bitorch_engine.layers.qlinear.nbit import MPQLinearBase
 from bitorch_engine.utils.safe_import import import_extension
 from bitorch_engine.utils.model_helper import flatten_x, unflatten_x
+from bitorch_engine.layers.qlinear.nbit.cuda.utils import unpack_qweight
 
 
 q_linear_cuda = import_extension("q_linear_cuda")
@@ -47,19 +48,33 @@ class MPQLinearCudaFunction(Function):
         Returns:
            torch.Tensor: The result of the quantized linear operation.
        """
-        x, shape = flatten_x(x)
-        output = q_linear_cuda.mpq_forward(x, qweight, scales, zeros, g_idx, a_bit, w_bit, asym)
-        if is_training:
+        def setup_qweight():
             qweight.scales = scales
             qweight.zeros = zeros
             qweight.g_idx = g_idx
             qweight.w_bit = w_bit
-            qweight.privileged_grad = privileged_grad
             qweight.asym = asym
             qweight.layer_type = 1
+
+        x, original_shape = flatten_x(x)
+
+        if x.size(0) > 32: # use pytorch api
+            setup_qweight()
+            # Reconstruct the floating-point weight
+            fp_weight = unpack_qweight(qweight)
+            output = torch.matmul(x, fp_weight)
+        else:
+            output = q_linear_cuda.mpq_forward(x, qweight, scales, zeros, g_idx, a_bit, w_bit, asym)
+
+        if is_training:
+            qweight.privileged_grad = privileged_grad
+            if qweight.scales is None:
+                setup_qweight()
             ctx.a_bit = a_bit
             ctx.save_for_backward(x, qweight)
-        output = unflatten_x(output, shape)
+
+        output = unflatten_x(output, original_shape)
+
         return output
 
     @staticmethod
