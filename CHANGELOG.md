@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.2.4] - 2024/05/23
+
+### Added
+
+- Tuned the hyperparameters of DiodeMix optimizer for sft.
+- Added sft-support for the classical gptq-style models.
+- Implemented qzeros update in finetuning process.
+
+### Updated
+
+- Extended pack_fp_weight function.
+- Enhanced the performance of MPQLinearCUDA layer.
+
+### Fixed
+
+- Fixed various errors in DiodeMix update function.
+
 ## [0.2.3] - 2024/05/01
 
 ### Updated

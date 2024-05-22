@@ -749,7 +749,6 @@ torch::Tensor mbwq_linear_q4_forward_cuda(
     int bits
 ){
     const at::cuda::OptionalCUDAGuard device_guard(device_of(x));
-    cublasHandle_t cublas_handle = at::cuda::getCurrentCUDABlasHandle();
 
     TORCH_CHECK(x.dtype() == torch::kHalf);
     TORCH_CHECK(x.size(1) == qweight.size(0) * (32 / bits));
@@ -770,16 +769,8 @@ torch::Tensor mbwq_linear_q4_forward_cuda(
 									               group_size,
 									               bits,
 									               q_perm);
-
-        const half alpha = __float2half(1.0f);
-        const half beta = __float2half(0.0f);
-        cublasHgemm(cublas_handle,
-                    CUBLAS_OP_N,
-                    CUBLAS_OP_N,
-                    size_n, size_m,                                    size_k,
-                    &alpha, reinterpret_cast<half *>(fp_w.data_ptr()), size_n,
-                            reinterpret_cast<half *>(x.data_ptr()),    size_k,
-                    &beta,  reinterpret_cast<half *>(out.data_ptr()),  size_n);
+		// indirectly use cublas through torch matmul api
+        out = torch::matmul(x, fp_w.to(option_output));
 
 	}else{
 
@@ -943,7 +934,6 @@ torch::Tensor mbwq_linear_exl2_forward_cuda(
     bool use_cublas
 ){
     const at::cuda::OptionalCUDAGuard device_guard(device_of(x));
-    cublasHandle_t cublas_handle = at::cuda::getCurrentCUDABlasHandle();
     TORCH_CHECK(x.dtype() == torch::kHalf);
 
 	int size_m = x.size(0);       // m
@@ -963,15 +953,8 @@ torch::Tensor mbwq_linear_exl2_forward_cuda(
 									               qgroup_map,
 									               rows);
 
-        const half alpha = __float2half(1.0f);
-        const half beta = __float2half(0.0f);
-        cublasHgemm(cublas_handle,
-                    CUBLAS_OP_N,
-                    CUBLAS_OP_N,
-                    size_n, size_m,                                    size_k,
-                    &alpha, reinterpret_cast<half *>(fp_w.data_ptr()), size_n,
-                            reinterpret_cast<half *>(x.data_ptr()),    size_k,
-                    &beta,  reinterpret_cast<half *>(out.data_ptr()),  size_n);
+        // indirectly use cublas through torch matmul api
+        out = torch::matmul(x, fp_w.to(option_output));
 
 	}else{
 	    int rows_8 = rows[0];

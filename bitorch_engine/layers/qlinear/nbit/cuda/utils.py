@@ -69,7 +69,7 @@ def unpack_qweight(qweight: MPQWeightParameter) -> torch.Tensor:
     return weights
 
 
-def pack_fp_weight(weight: torch.Tensor, qweight: MPQWeightParameter) -> torch.Tensor:
+def pack_fp_weight(weight: torch.Tensor, qweight: MPQWeightParameter, unpacked_zeros: torch.Tensor = None) -> torch.Tensor:
     """Packs the fp16 weight into a quantized weight format using the attributes defined in the QweightParameter.
 
     This function handles three main scenarios:
@@ -100,8 +100,22 @@ def pack_fp_weight(weight: torch.Tensor, qweight: MPQWeightParameter) -> torch.T
 
     # Process based on layer_type and existence of q_perm for quantization
     if layer_type == 1 or (layer_type == 2 and qweight.q_group_map is None): # MPQLinear or MBWQLinear-q4
-        if asym:
-            intweight = torch.round(weight / scales[g_idx] + zeros[g_idx]).to(torch.int32).clamp(0, 2**w_bit-1)
+        if asym: # this if-branch is for classical GPTQ-style models
+            if unpacked_zeros is not None:
+                zeros = unpacked_zeros
+            elif zeros.dtype == torch.int32:
+                wf = torch.tensor(list(range(0, 32, w_bit)), dtype=torch.int32,
+                                  device=qweight.device).unsqueeze(0)
+                zeros_unpack = torch.bitwise_right_shift(
+                    torch.unsqueeze(zeros, 2).expand(-1, -1, 32 // w_bit),
+                    wf.unsqueeze(0)).to(torch.int16 if w_bit == 8 else torch.int8)
+                torch.bitwise_and(zeros_unpack, (2 ** w_bit) - 1, out=zeros_unpack)
+                zeros_unpack = zeros_unpack + 1
+                zeros = zeros_unpack.reshape(-1, qweight.size(-1))
+            else:
+                raise ValueError(f"Error: Got invalid dtype of qweight.zeros while packing fp weight.")
+
+            intweight = torch.round(weight / scales[g_idx.long()] + zeros[g_idx.long()]).to(torch.int32).clamp(0, 2**w_bit-1)
         else:
             if g_idx is None:
                 # Adjust scales and zeros for symmetric quantization without group index
@@ -114,8 +128,7 @@ def pack_fp_weight(weight: torch.Tensor, qweight: MPQWeightParameter) -> torch.T
                 intweight = torch.round((weight + zeros) / scales).to(torch.int32).clamp(0, 2 ** w_bit - 1)
             else:
                 # Calculate integer weights for symmetric quantization with group index
-                # TODO: recalculate scales and zeros?
-                intweight = torch.round((weight + zeros[g_idx]) / scales[g_idx]).to(torch.int32).clamp(0, 2**w_bit-1)
+                intweight = torch.round((weight + zeros[g_idx.long()]) / scales[g_idx.long()]).to(torch.int32).clamp(0, 2**w_bit-1)
 
         # Perform parallel bitpacking
         wf = torch.tensor(list(range(0, 32, w_bit)), dtype=torch.int32, device=qweight.device).unsqueeze(0)
@@ -128,8 +141,8 @@ def pack_fp_weight(weight: torch.Tensor, qweight: MPQWeightParameter) -> torch.T
             dtype=torch.int32
         )
     else:
-        # TODO: Placeholder for mixed-bit-width quantization method
-        raise NotImplementedError("Error: pack_fp_weight for MBWQLinear using mixed-bit-width not supported yet.")
+        # TODO: Placeholder for channel-mix quantization method
+        raise NotImplementedError("Error: pack_fp_weight for MBWQLinear using channel-mix quantization not supported yet.")
 
     return intweight.to(torch.int32)
 

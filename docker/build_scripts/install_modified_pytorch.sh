@@ -24,7 +24,7 @@ fi
 if [ "${from_image}" == "pytorch/pytorch:2.2.0-cuda12.1-cudnn8-devel" ]; then
     gdrive_id="1LjFNImboq8QeFSompMS2gPjBRYtP2Dsz"
     file="torch-2.2.2-cp310-cp310-linux_x86_64.whl"
-    checksum="2a5953dab7be6c1640112e38ae7519ad88180d9fa79faab6c86dbee6b1cc210e"
+    checksum="bcc0ba7f121ee2f42ed0a59f01d4e3d70f82a8981be0be25c5e0fe0635a54b2d"
 fi
 #if [ "${from_image}" == "pytorch/pytorch:X.X.X-cudaXX.X-cudnn8-devel" ]; then
 #    gdrive_id="xxx"

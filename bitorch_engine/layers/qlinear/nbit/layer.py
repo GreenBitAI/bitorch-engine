@@ -403,7 +403,8 @@ class MPQLinearBase(nn.Module):
         """
         self.register_buffer('qzeros', torch.zeros((math.ceil(self.in_channels / self.group_size),
                                                     self.out_channels // 32 * self.w_bit), dtype=torch.int32))
-        self.scales = torch.ones((math.ceil(self.in_channels / self.group_size), self.out_channels), dtype=self.dtype)
+        self.register_buffer('scales', torch.ones((math.ceil(self.in_channels / self.group_size),
+                                                   self.out_channels), dtype=self.dtype))
         self.asym = True
 
     def init_gba(self) -> None:
