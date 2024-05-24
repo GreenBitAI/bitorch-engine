@@ -8,7 +8,6 @@ from bitorch_engine.utils.safe_import import import_extension
 from bitorch_engine.utils.model_helper import flatten_x, unflatten_x
 from bitorch_engine.layers.qlinear.nbit.cuda.utils import unpack_qweight
 
-
 q_linear_cuda = import_extension("q_linear_cuda")
 
 
@@ -55,7 +54,6 @@ class MPQLinearCudaFunction(Function):
             qweight.w_bit = w_bit
             qweight.asym = asym
             qweight.layer_type = 1
-
         x, original_shape = flatten_x(x)
 
         if x.size(0) > 32: # use pytorch api
@@ -74,7 +72,6 @@ class MPQLinearCudaFunction(Function):
             ctx.save_for_backward(x, qweight)
 
         output = unflatten_x(output, original_shape)
-
         return output
 
     @staticmethod

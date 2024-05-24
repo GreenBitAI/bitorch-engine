@@ -8,6 +8,7 @@ from typing import Union, List
 
 import setuptools
 from setuptools.extension import Extension
+from setuptools.dist import Distribution
 
 
 root_path = Path(__file__).resolve().parent
@@ -37,10 +38,16 @@ ALL_EXTENSIONS = [
 ]
 
 
+built_extensions = list(filter(lambda p: Path(p).is_file(), ALL_EXTENSIONS))
+print("Extensions built:", built_extensions)
+
+
 def get_requirements(file_path: Union[Path, str]):
     requires = []
     for requirement in (root_path / file_path).open().readlines():
         requires.append(requirement)
+    if "BIE_TORCH_REQUIREMENT" in os.environ:
+        requires.append(os.environ["BIE_TORCH_REQUIREMENT"])
     return requires
 
 
@@ -106,7 +113,8 @@ def get_ext_modules() -> List[Extension]:
 cmdclass = {'clean': CustomClean}
 ext_modules = []
 
-if "develop" not in sys.argv:
+build_keywords = ["develop", "bdist_wheel"]
+if not any(k in sys.argv for k in build_keywords) or os.environ.get("BIE_SKIP_BUILD", "false") == "true":
     print("Bitorch Engine: Not loading extension build commands.")
 else:
     print("Bitorch Engine: Loading extension build commands.")
@@ -135,6 +143,12 @@ with open("README.md", "r", encoding="utf-8") as handle:
     readme_content = handle.read()
 
 
+# make a binary distribution to fix python version and platform
+class BinaryDistribution(Distribution):
+    def has_ext_modules(self):
+        return True
+
+
 setuptools.setup(
     name="bitorch_engine",
     url="https://github.com/hpi-xnor/bitorch-inference-engine",
@@ -144,7 +158,8 @@ setuptools.setup(
     description="A package for building and training quantized and binary neural networks with Pytorch",
     long_description=readme_content,
     long_description_content_type="text/markdown",
-    packages=setuptools.find_packages(exclude='tests'),
+    packages=setuptools.find_packages(exclude=["tests*", "examples*"]),
+    package_data={"bitorch_engine.extensions": ["*.so"]},
     install_requires=dependencies,
     extras_require={
         "dev": get_requirements("requirements-dev.txt"),
@@ -152,12 +167,14 @@ setuptools.setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     data_files=[
         ('.', [
             'version.txt',
@@ -167,4 +184,5 @@ setuptools.setup(
     ],
     ext_modules=ext_modules,
     cmdclass=cmdclass,  # type: ignore
+    distclass=BinaryDistribution,
 )

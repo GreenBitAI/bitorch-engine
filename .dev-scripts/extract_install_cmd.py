@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("custom_pytorch_path", help="Path to custom PyTorch wheel")
 args = parser.parse_args()
 
-BLOCK_HEADER_START = "### Conda on Linux"
+BLOCK_HEADER_START = "#### Conda on Linux"
 
 with open("README.md") as infile:
     content = infile.readlines()
@@ -22,18 +22,10 @@ instruction_type = ""
 
 FILE_INTRO = """#!/usr/bin/env bash
 
-function check_error() {
-    # shows and then runs a command. if the exit code is not zero, aborts the script
-    # usage: check_error mv foo bar
+trap exit INT
+set -o errexit
+set -o xtrace
 
-    echo + $@
-    "$@"
-    local exit_code=$?
-    if [ "${exit_code}" -ne 0 ]; then
-        echo "! > An error occured, aborting."
-        exit 1
-    fi
-}
 """
 EXTRA_CONDA_INSTRUCTION = """# extra step for bash script (not required in a proper command line):
 eval "$(conda shell.bash hook)"
@@ -71,14 +63,14 @@ for line in content:
 
     # replace some line contents and add some lines
     if "conda activate" in line:
-        line = EXTRA_CONDA_INSTRUCTION + "check_error " + line
+        line = EXTRA_CONDA_INSTRUCTION + line
     if "export BITORCH_WORKSPACE" in line:
         line = line.replace("${HOME}", "$(pwd)")
     if line.startswith("pip install torch-"):
         line = "pip install {}\n".format(args.custom_pytorch_path)
 
     # decide how to write line
-    line_format = "check_error {line}"
+    line_format = "{line}"
     if line.startswith("#"):
         line_format = "{line}"
     if insert_block_pause:

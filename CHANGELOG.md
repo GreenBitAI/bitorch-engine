@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.2.5] - 2024/05/24
+
+### Added
+
+- Development scripts for preparing binary releases
+
+### Changed
+
+- Updated build instructions to clarify torchvision installation
+- Adapted `setup.py` logic for preparing binary releases
+
+### Fixed
+
+- Broken build process by setting setuptools version
+
 ## [0.2.4] - 2024/05/23
 
 ### Added

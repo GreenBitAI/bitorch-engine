@@ -49,7 +49,14 @@ In addition, for layers to speed up on specific hardware (such as CUDA devices, 
 - **[MLX](https://github.com/ml-explore/mlx)** for mlx-based layers on MacOS
 - **[CUTLASS](https://github.com/NVIDIA/cutlass)** for cutlass-based layers
 
-Currently, the engine **needs to be built from source**.
+### Binary Releases (coming soon)
+
+We are currently preparing experimental binary releases.
+Their installation will be documented in this section.
+For now, please follow the guide below to build from source.
+
+### Build From Source
+
 We provide instructions for the following options:
 
 - Conda + Linux (with CUDA and cutlass)
@@ -60,7 +67,7 @@ We recommend managing your BITorch Engine installation in a conda environment (o
 You may want to keep everything (environment, code, etc.) in one directory or use the default directory for conda environments.
 You may wish to adapt the CUDA version to 12.1 where applicable.
 
-### Conda on Linux (with CUDA)
+#### Conda on Linux (with CUDA)
 
 To use these instructions, you need to have [conda](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html) and a suitable C++ compiler installed.
 
@@ -73,11 +80,12 @@ conda activate bitorch-engine
 ```bash
 conda install -y -c "nvidia/label/cuda-11.8.0" cuda-toolkit
 ```
-3. [Download customized Torch 2.1.0](https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing) (it allows gradients on INT tensors, built for Python 3.9 and CUDA 11.8) and install it with pip:
+3. Download our customized torch for CUDA 11.8 and Python 3.9, it allows gradients on INT tensors and install it with pip (you can find other versions [here](https://packages.greenbit.ai/whl/)):
 ```bash
-pip install torch-2.1.0-cp39-cp39-linux_x86_64.whl
-# optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
+pip install "https://packages.greenbit.ai/whl/cu118/torch/torch-2.1.0-cp39-cp39-linux_x86_64.whl"
+# as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)
 pip install "torchvision==0.16.0" --index-url https://download.pytorch.org/whl/cu118
+# (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
 ```
 4. To use cutlass layers, you should also install CUTLASS 2.8.0 (from source), adjust `CUTLASS_HOME` (this is where we clone and install cutlass)
 (if you have older or newer GPUs you may need to add your [CUDA compute capability](https://developer.nvidia.com/cuda-gpus) in `CUTLASS_NVCC_ARCHS`):
@@ -112,13 +120,12 @@ conda activate ./conda-env
 ```bash
 conda install -y -c "nvidia/label/cuda-11.8.0" cuda-toolkit
 ```
-3. [Download customized Torch 2.1.0](https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing),
-select the package fit for the cuda version you installed in the previous step
-(it allows gradients on INT tensors, built for Python 3.9 and CUDA 11.8) and install it with pip:
+3. Download our customized torch for CUDA 11.8 and Python 3.9, it allows gradients on INT tensors and install it with pip (you can find other versions [here](https://packages.greenbit.ai/whl/)):
 ```bash
-pip install torch-2.1.0-cp39-cp39-linux_x86_64.whl
-# optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
+pip install "https://packages.greenbit.ai/whl/cu118/torch/torch-2.1.0-cp39-cp39-linux_x86_64.whl"
+# as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)
 pip install "torchvision==0.16.0" --index-url https://download.pytorch.org/whl/cu118
+# (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
 ```
 4. To use cutlass layers, you should also install CUTLASS 2.8.0
 (if you have older or newer GPUs you may need to add your [CUDA compute capability](https://developer.nvidia.com/cuda-gpus) in `CUTLASS_NVCC_ARCHS`):
@@ -149,7 +156,7 @@ cd bitorch-engine
 CPATH="${CUTLASS_HOME}/install/include" CUDA_HOME="${CONDA_PREFIX}" pip install -e . -v
 ```
 
-### Docker (with CUDA) 
+#### Docker (with CUDA) 
 
 You can also use our prepared Dockerfile to build a docker image (which includes building the engine under `/bitorch-engine`):
 
@@ -161,7 +168,7 @@ docker run -it --rm --gpus all --volume "/path/to/your/project":"/workspace" bit
 
 Check the [docker readme](docker/README.md) for options and more details.
 
-### Conda on MacOS (with MLX)
+#### Conda on MacOS (with MLX)
 
 1. We recommend to create a virtual environment for and activate it. In the following example we use a conda environment for python 3.9, 
 but virtualenv should work as well.
@@ -171,9 +178,11 @@ conda activate bitorch-engine
 ```
 2. Download [customized Torch for MacOS/arm](https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing) (it allows gradients on INT tensors, built for Python 3.9 and CUDA 11.8) and install it with pip:
 ```bash
-pip install path/to/torch-2.2.1-cp39-none-macosx_11_0_arm64.whl
-# optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
+pip install "https://packages.greenbit.ai/whl/macosx/torch/torch-2.2.1-cp39-none-macosx_11_0_arm64.whl"
+# as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)
 pip install "torchvision==0.17.1"
+# (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
+
 ```
 3. For MacOS users and to use OpenMP acceleration, install OpenMP with Homebrew and configure the environment:
 ```bash
@@ -223,6 +232,14 @@ you can still build the extensions that depend on CUDA, by setting `BIE_FORCE_CU
 ```bash
 BIE_FORCE_CUDA="true" pip install -e . -v
 ```
+
+### Skip Library File Building
+
+If you just want to avoid rebuilding any files, you can set `BIE_SKIP_BUILD`:
+```bash
+BIE_SKIP_BUILD="true" python3 -m build --no-isolation --wheel
+```
+This would create a wheel and package `.so` files without trying to rebuild them.
 
 ## Development
 
