@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bitorch_engine.layers.qlinear.nbit.cuda.mbwq_layer &mdash; Bitorch Engine 0.2.0 documentation</title>
+  <title>bitorch_engine.layers.qlinear.nbit.cuda.mbwq_layer &mdash; Bitorch Engine 0.2.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../../../../_static/sphinx-toolbox-code.css" />
@@ -15,7 +15,7 @@
   
         <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../../../_static/documentation_options.js?v=cb850272"></script>
         <script src="../../../../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../../../_static/js/theme.js"></script>
@@ -192,9 +192,8 @@
         <span class="n">grad_input</span> <span class="o">=</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">t</span><span class="p">())</span> <span class="c1"># (m, n)*(n, k) = (m, k)</span>
         <span class="c1">#======================================================================================================#</span>
 
-        <span class="c1"># (n, m) * (m, k) = (n, k)</span>
         <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">:</span> <span class="c1"># This additional check is required by peft training.</span>
-            <span class="n">qweight</span><span class="o">.</span><span class="n">privileged_grad</span> <span class="o">=</span> <span class="n">output_gradient</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>  <span class="c1"># (k, n)</span>
+            <span class="n">qweight</span><span class="o">.</span><span class="n">privileged_grad</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">output_gradient</span><span class="p">)</span>  <span class="c1"># (k, m) * (m, n) = (k, n)</span>
 
         <span class="n">grad_input</span> <span class="o">=</span> <span class="n">unflatten_x</span><span class="p">(</span><span class="n">grad_input</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
 

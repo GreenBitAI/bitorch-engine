@@ -1,0 +1,6 @@
+bitorch\_engine.utils.quant\_operators.gptq\_style\_zeros\_packing
+==================================================================
+
+.. currentmodule:: bitorch_engine.utils.quant_operators
+
+.. autofunction:: gptq_style_zeros_packing

@@ -35,3 +35,16 @@ setting ``BIE_FORCE_CUDA="true"``:
 
    BIE_FORCE_CUDA="true" pip install -e . -v
 
+Skip Library File Building
+--------------------------
+
+If you just want to avoid rebuilding any files, you can set
+``BIE_SKIP_BUILD``:
+
+.. code:: bash
+
+   BIE_SKIP_BUILD="true" python3 -m build --no-isolation --wheel
+
+This would create a wheel and package ``.so`` files without trying to
+rebuild them.
+

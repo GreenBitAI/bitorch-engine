@@ -4,10 +4,10 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; Bitorch Engine 0.2.0 documentation</title>
+  <title>Installation &mdash; Bitorch Engine 0.2.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="_static/sphinx-toolbox-code.css" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-toolbox-code.css?v=4ee5d529" />
 
   
   <!--[if lt IE 9]>
@@ -16,7 +16,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="_static/documentation_options.js?v=cb850272"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -48,9 +48,13 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#conda-on-linux-with-cuda">Conda on Linux (with CUDA)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#docker-with-cuda">Docker (with CUDA)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#conda-on-macos-with-mlx">Conda on MacOS (with MLX)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#binary-releases-coming-soon">Binary Releases (coming soon)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-from-source">Build From Source</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#conda-on-linux-with-cuda">Conda on Linux (with CUDA)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#docker-with-cuda">Docker (with CUDA)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conda-on-macos-with-mlx">Conda on MacOS (with MLX)</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="build_options.html">Build options</a></li>
@@ -103,12 +107,19 @@ MacOS</p></li>
 <li><p><a class="reference external" href="https://github.com/NVIDIA/cutlass">CUTLASS</a> for cutlass-based
 layers</p></li>
 </ul>
-<p>Currently, the engine <strong>needs to be built from source</strong>. We provide
-instructions for the following options:</p>
+<section id="binary-releases-coming-soon">
+<h2>Binary Releases (coming soon)<a class="headerlink" href="#binary-releases-coming-soon" title="Link to this heading"></a></h2>
+<p>We are currently preparing experimental binary releases. Their
+installation will be documented in this section. For now, please follow
+the guide below to build from source.</p>
+</section>
+<section id="build-from-source">
+<h2>Build From Source<a class="headerlink" href="#build-from-source" title="Link to this heading"></a></h2>
+<p>We provide instructions for the following options:</p>
 <ul class="simple">
-<li><p>Conda + Linux (with CUDA and cutlass)</p></li>
-<li><p>Docker (with CUDA and cutlass)</p></li>
-<li><p>Conda + MacOS (with MLX)</p></li>
+<li><p><a class="reference external" href="#conda-on-linux-with-cuda">Conda + Linux</a> (with CUDA and cutlass)</p></li>
+<li><p><a class="reference external" href="#docker-with-cuda">Docker</a> (with CUDA and cutlass)</p></li>
+<li><p><a class="reference external" href="#conda-on-macos-with-mlx">Conda + MacOS</a> (with MLX)</p></li>
 </ul>
 <p>We recommend managing your BITorch Engine installation in a conda
 environment (otherwise you should adapt/remove certain variables,
@@ -117,7 +128,7 @@ etc.) in one directory or use the default directory for conda
 environments. You may wish to adapt the CUDA version to 12.1 where
 applicable.</p>
 <section id="conda-on-linux-with-cuda">
-<h2>Conda on Linux (with CUDA)<a class="headerlink" href="#conda-on-linux-with-cuda" title="Link to this heading"></a></h2>
+<h3>Conda on Linux (with CUDA)<a class="headerlink" href="#conda-on-linux-with-cuda" title="Link to this heading"></a></h3>
 <p>To use these instructions, you need to have
 <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/getting-started.html">conda</a>
 and a suitable C++ compiler installed.</p>
@@ -135,14 +146,14 @@ conda<span class="w"> </span>activate<span class="w"> </span>bitorch-engine
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
-<li><p><a class="reference external" href="https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing">Download customized Torch
-2.1.0</a>
-(it allows gradients on INT tensors, built for Python 3.9 and CUDA
-11.8) and install it with pip:</p></li>
+<li><p>Download our customized torch for CUDA 11.8 and Python 3.9, it allows
+gradients on INT tensors and install it with pip (you can find other
+versions <a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>):</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch-2.1.0-cp39-cp39-linux_x86_64.whl
-<span class="c1"># optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;https://packages.greenbit.ai/whl/cu118/torch/torch-2.1.0-cp39-cp39-linux_x86_64.whl&quot;</span>
+<span class="c1"># as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)</span>
 pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.16.0&quot;</span><span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
+<span class="c1"># (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
@@ -189,15 +200,14 @@ conda<span class="w"> </span>activate<span class="w"> </span>./conda-env
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
-<li><p><a class="reference external" href="https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing">Download customized Torch
-2.1.0</a>,
-select the package fit for the cuda version you installed in the
-previous step (it allows gradients on INT tensors, built for Python
-3.9 and CUDA 11.8) and install it with pip:</p></li>
+<li><p>Download our customized torch for CUDA 11.8 and Python 3.9, it allows
+gradients on INT tensors and install it with pip (you can find other
+versions <a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>):</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch-2.1.0-cp39-cp39-linux_x86_64.whl
-<span class="c1"># optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;https://packages.greenbit.ai/whl/cu118/torch/torch-2.1.0-cp39-cp39-linux_x86_64.whl&quot;</span>
+<span class="c1"># as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)</span>
 pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.16.0&quot;</span><span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
+<span class="c1"># (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
@@ -233,7 +243,7 @@ git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="
 </div>
 </section>
 <section id="docker-with-cuda">
-<h2>Docker (with CUDA)<a class="headerlink" href="#docker-with-cuda" title="Link to this heading"></a></h2>
+<h3>Docker (with CUDA)<a class="headerlink" href="#docker-with-cuda" title="Link to this heading"></a></h3>
 <p>You can also use our prepared Dockerfile to build a docker image (which
 includes building the engine under <code class="docutils literal notranslate"><span class="pre">/bitorch-engine</span></code>):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>docker
@@ -245,7 +255,7 @@ docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </s
 details.</p>
 </section>
 <section id="conda-on-macos-with-mlx">
-<h2>Conda on MacOS (with MLX)<a class="headerlink" href="#conda-on-macos-with-mlx" title="Link to this heading"></a></h2>
+<h3>Conda on MacOS (with MLX)<a class="headerlink" href="#conda-on-macos-with-mlx" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
 <li><p>We recommend to create a virtual environment for and activate it. In
 the following example we use a conda environment for python 3.9, but
@@ -261,9 +271,10 @@ MacOS/arm</a>
 (it allows gradients on INT tensors, built for Python 3.9 and CUDA
 11.8) and install it with pip:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>path/to/torch-2.2.1-cp39-none-macosx_11_0_arm64.whl
-<span class="c1"># optional: install corresponding torchvision (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;https://packages.greenbit.ai/whl/macosx/torch/torch-2.2.1-cp39-none-macosx_11_0_arm64.whl&quot;</span>
+<span class="c1"># as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)</span>
 pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.17.1&quot;</span>
+<span class="c1"># (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -295,6 +306,7 @@ You should now be able to build with:</p>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>-v
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 

@@ -18,7 +18,8 @@ bitorch\_engine.utils.quant\_operators
       bit_set
       get_binary_col
       get_binary_row
-      gptq_stype_unpacking
+      gptq_style_unpacking
+      gptq_style_zeros_packing
       nv_tensor_quant
       q4_quantization
       q8_quantization

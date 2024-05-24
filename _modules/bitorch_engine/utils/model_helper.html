@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bitorch_engine.utils.model_helper &mdash; Bitorch Engine 0.2.0 documentation</title>
+  <title>bitorch_engine.utils.model_helper &mdash; Bitorch Engine 0.2.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
@@ -15,7 +15,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../_static/documentation_options.js?v=cb850272"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -79,7 +79,7 @@
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
-<span class="kn">from</span> <span class="nn">bitorch_engine.utils.quant_operators</span> <span class="kn">import</span> <span class="n">nv_tensor_quant</span><span class="p">,</span> <span class="n">gptq_stype_unpacking</span>
+<span class="kn">from</span> <span class="nn">bitorch_engine.utils.quant_operators</span> <span class="kn">import</span> <span class="n">nv_tensor_quant</span><span class="p">,</span> <span class="n">gptq_style_unpacking</span><span class="p">,</span> <span class="n">gptq_style_zeros_packing</span>
 <span class="kn">from</span> <span class="nn">bitorch_engine.functions.cuda</span> <span class="kn">import</span> <span class="n">tensor_to_packed_uint8</span><span class="p">,</span> <span class="n">unpack_uint8_tensor</span>
 
 
@@ -433,6 +433,42 @@
 
 
 
+<div class="viewcode-block" id="update_zeros">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.update_zeros.html#bitorch_engine.utils.model_helper.update_zeros">[docs]</a>
+<span class="k">def</span> <span class="nf">update_zeros</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">norm_grad</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">z_unpacked</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updates the zeros attribute of the qweight object based on its layer type.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        qweight: An object containing quantization parameters, including the zeros attribute.</span>
+<span class="sd">        w: Weight tensor.</span>
+<span class="sd">        norm_grad: Normalized gradient tensor.</span>
+<span class="sd">        step_size: Step size for updating zeros.</span>
+<span class="sd">        z_unpacked: Optional unpacked zeros tensor for specific layer types.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">qweight</span><span class="o">.</span><span class="n">layer_type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># MBWQ-layer</span>
+        <span class="n">q_perm</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">q_perm</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+        <span class="n">zeros_grad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">norm_grad</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">q_perm</span><span class="p">)</span>
+        <span class="n">qweight</span><span class="o">.</span><span class="n">zeros</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span>
+            <span class="n">step_size</span> <span class="o">*</span> <span class="n">zeros_grad</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">//</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">del</span> <span class="n">zeros_grad</span>
+    <span class="k">elif</span> <span class="n">qweight</span><span class="o">.</span><span class="n">layer_type</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">qweight</span><span class="o">.</span><span class="n">g_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># MPQ-layer &amp; GPTQ</span>
+        <span class="n">zeros_unpack</span> <span class="o">=</span> <span class="n">z_unpacked</span><span class="p">[</span><span class="n">qweight</span><span class="o">.</span><span class="n">g_idx</span><span class="o">.</span><span class="n">long</span><span class="p">()]</span>
+        <span class="n">zeros_unpack</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">step_size</span> <span class="o">*</span> <span class="n">norm_grad</span><span class="p">)</span>
+
+        <span class="n">g_idx</span> <span class="o">=</span> <span class="n">qweight</span><span class="o">.</span><span class="n">g_idx</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+        <span class="n">perm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">g_idx</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">zeros</span> <span class="o">=</span> <span class="n">zeros_unpack</span><span class="p">[</span><span class="n">perm</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">//</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">qweight</span><span class="o">.</span><span class="n">scales</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="c1"># pack to qzeros</span>
+        <span class="n">qweight</span><span class="o">.</span><span class="n">zeros</span> <span class="o">=</span> <span class="n">gptq_style_zeros_packing</span><span class="p">(</span><span class="n">zeros</span><span class="p">,</span> <span class="n">qweight</span><span class="o">.</span><span class="n">w_bit</span><span class="p">,</span> <span class="n">zeros</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">qweight</span><span class="o">.</span><span class="n">group_size</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;qweight.layer_type: &#39;</span><span class="si">{}</span><span class="s2">&#39; has not been supported yet.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">qweight</span><span class="o">.</span><span class="n">layer_type</span><span class="p">)))</span></div>
+
+
+
 <div class="viewcode-block" id="qweight_update_fn">
 <a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.model_helper.qweight_update_fn.html#bitorch_engine.utils.model_helper.qweight_update_fn">[docs]</a>
 <span class="k">def</span> <span class="nf">qweight_update_fn</span><span class="p">(</span><span class="n">qweight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">exp_avg_s</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exp_avg_l</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -560,7 +596,9 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">MPQWeightParameter</span><span class="p">):</span>
 
         <span class="c1"># unpack qweight</span>
-        <span class="n">w</span> <span class="o">=</span> <span class="n">gptq_stype_unpacking</span><span class="p">(</span><span class="n">qweight</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">z_unpacked</span> <span class="o">=</span> <span class="n">gptq_style_unpacking</span><span class="p">(</span><span class="n">qweight</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">z_unpacked</span> <span class="o">=</span> <span class="n">z_unpacked</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 
         <span class="c1"># Decay the first and second moment running average coefficient</span>
         <span class="c1"># In-place operations to update the averages at the same time</span>
@@ -583,11 +621,19 @@
 
         <span class="n">w</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">norm_grad</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=-</span><span class="n">step_size</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">weight_decay</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">w</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">lr</span> <span class="o">*</span> <span class="n">weight_decay</span><span class="p">))</span>
+        <span class="c1"># ===== update zeros ===== #</span>
+        <span class="c1"># We are not performing the gradient update for &#39;zeros&#39; in the conventional way.</span>
+        <span class="c1"># Instead, we are making a special handling here because, although &#39;zeros&#39; is of fp data type,</span>
+        <span class="c1"># in our optimization scenario, it is tied to the updates of &#39;qweight&#39;.</span>
+        <span class="c1"># Moreover, &#39;zeros&#39; is not always updated but interacts with &#39;qweight&#39; at a relatively sparse frequency.</span>
+        <span class="c1"># If we were to update &#39;zeros&#39; as a regular fp-parameter, it might not allow us the flexibility</span>
+        <span class="c1"># to design these interactions conveniently.</span>
+        <span class="c1"># Considering this is a beta version, future updates and adjustments might be possible.</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">update_zeros</span><span class="p">(</span><span class="n">qweight</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">norm_grad</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">z_unpacked</span><span class="p">)</span>
 
         <span class="c1"># pack fp weight back to Q-weight and update qweight data</span>
-        <span class="n">qweight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pack_fp_weight</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">qweight</span><span class="p">)</span>
+        <span class="n">qweight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pack_fp_weight</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">qweight</span><span class="p">,</span> <span class="n">z_unpacked</span><span class="p">)</span>
 
         <span class="c1"># manually empty cuda cache.</span>
         <span class="k">del</span> <span class="n">w</span>

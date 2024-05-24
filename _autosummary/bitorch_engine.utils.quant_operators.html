@@ -4,10 +4,10 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bitorch_engine.utils.quant_operators &mdash; Bitorch Engine 0.2.0 documentation</title>
+  <title>bitorch_engine.utils.quant_operators &mdash; Bitorch Engine 0.2.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
 
   
   <!--[if lt IE 9]>
@@ -16,14 +16,14 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/documentation_options.js?v=cb850272"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="bitorch_engine.utils.quant_operators.bit_set" href="bitorch_engine.utils.quant_operators.bit_set.html" />
-    <link rel="prev" title="bitorch_engine.utils.model_helper.unflatten_x" href="bitorch_engine.utils.model_helper.unflatten_x.html" /> 
+    <link rel="prev" title="bitorch_engine.utils.model_helper.update_zeros" href="bitorch_engine.utils.model_helper.update_zeros.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -114,16 +114,19 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.get_binary_row.html#bitorch_engine.utils.quant_operators.get_binary_row" title="bitorch_engine.utils.quant_operators.get_binary_row"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_binary_row</span></code></a></p></td>
 <td><p>Binarizes an input NDArray (nd_row) into a binary representation (binary_row) based on the specified number of bits per binary word (bits_per_binary_word).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.gptq_stype_unpacking.html#bitorch_engine.utils.quant_operators.gptq_stype_unpacking" title="bitorch_engine.utils.quant_operators.gptq_stype_unpacking"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gptq_stype_unpacking</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.gptq_style_unpacking.html#bitorch_engine.utils.quant_operators.gptq_style_unpacking" title="bitorch_engine.utils.quant_operators.gptq_style_unpacking"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gptq_style_unpacking</span></code></a></p></td>
 <td><p>Reconstructs the fp16 weight tensor from the input quantized weight parameter in GPTQ style.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.nv_tensor_quant.html#bitorch_engine.utils.quant_operators.nv_tensor_quant" title="bitorch_engine.utils.quant_operators.nv_tensor_quant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nv_tensor_quant</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.gptq_style_zeros_packing.html#bitorch_engine.utils.quant_operators.gptq_style_zeros_packing" title="bitorch_engine.utils.quant_operators.gptq_style_zeros_packing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gptq_style_zeros_packing</span></code></a></p></td>
+<td><p>Packs the zeros tensor in GPTQ style for efficient storage and computation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.nv_tensor_quant.html#bitorch_engine.utils.quant_operators.nv_tensor_quant" title="bitorch_engine.utils.quant_operators.nv_tensor_quant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nv_tensor_quant</span></code></a></p></td>
 <td><p>Quantizes the given tensor using specified quantization parameters.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.q4_quantization.html#bitorch_engine.utils.quant_operators.q4_quantization" title="bitorch_engine.utils.quant_operators.q4_quantization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">q4_quantization</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.q4_quantization.html#bitorch_engine.utils.quant_operators.q4_quantization" title="bitorch_engine.utils.quant_operators.q4_quantization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">q4_quantization</span></code></a></p></td>
 <td><p>Quantizes an input tensor to 4-bit integers using uniform quantization.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.q8_quantization.html#bitorch_engine.utils.quant_operators.q8_quantization" title="bitorch_engine.utils.quant_operators.q8_quantization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">q8_quantization</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="bitorch_engine.utils.quant_operators.q8_quantization.html#bitorch_engine.utils.quant_operators.q8_quantization" title="bitorch_engine.utils.quant_operators.q8_quantization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">q8_quantization</span></code></a></p></td>
 <td><p>Quantizes an input tensor to 8-bit integers using uniform quantization.</p></td>
 </tr>
 </tbody>
@@ -134,7 +137,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="bitorch_engine.utils.model_helper.unflatten_x.html" class="btn btn-neutral float-left" title="bitorch_engine.utils.model_helper.unflatten_x" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bitorch_engine.utils.model_helper.update_zeros.html" class="btn btn-neutral float-left" title="bitorch_engine.utils.model_helper.update_zeros" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="bitorch_engine.utils.quant_operators.bit_set.html" class="btn btn-neutral float-right" title="bitorch_engine.utils.quant_operators.bit_set" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

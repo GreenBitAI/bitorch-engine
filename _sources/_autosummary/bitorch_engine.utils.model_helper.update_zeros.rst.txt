@@ -1,0 +1,6 @@
+bitorch\_engine.utils.model\_helper.update\_zeros
+=================================================
+
+.. currentmodule:: bitorch_engine.utils.model_helper
+
+.. autofunction:: update_zeros

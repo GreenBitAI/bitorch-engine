@@ -4,10 +4,10 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bitorch_engine.layers.qlinear.nbit.cuda.utils.pack_fp_weight &mdash; Bitorch Engine 0.2.0 documentation</title>
+  <title>bitorch_engine.layers.qlinear.nbit.cuda.utils.pack_fp_weight &mdash; Bitorch Engine 0.2.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
 
   
   <!--[if lt IE 9]>
@@ -16,7 +16,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../_static/documentation_options.js?v=cb850272"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -102,7 +102,7 @@
 <h1>bitorch_engine.layers.qlinear.nbit.cuda.utils.pack_fp_weight<a class="headerlink" href="#bitorch-engine-layers-qlinear-nbit-cuda-utils-pack-fp-weight" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="bitorch_engine.layers.qlinear.nbit.cuda.utils.pack_fp_weight">
-<span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qlinear.nbit.cuda.utils.</span></span><span class="sig-name descname"><span class="pre">pack_fp_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qweight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter.html#bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter" title="bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter"><span class="pre">MPQWeightParameter</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/cuda/utils.html#pack_fp_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.cuda.utils.pack_fp_weight" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">bitorch_engine.layers.qlinear.nbit.cuda.utils.</span></span><span class="sig-name descname"><span class="pre">pack_fp_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qweight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter.html#bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter" title="bitorch_engine.layers.qlinear.nbit.layer.MPQWeightParameter"><span class="pre">MPQWeightParameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unpacked_zeros</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/layers/qlinear/nbit/cuda/utils.html#pack_fp_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.layers.qlinear.nbit.cuda.utils.pack_fp_weight" title="Link to this definition"></a></dt>
 <dd><p>Packs the fp16 weight into a quantized weight format using the attributes defined in the QweightParameter.</p>
 <dl class="simple">
 <dt>This function handles three main scenarios:</dt><dd><ol class="arabic simple">
