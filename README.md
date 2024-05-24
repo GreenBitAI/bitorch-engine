@@ -59,9 +59,9 @@ For now, please follow the guide below to build from source.
 
 We provide instructions for the following options:
 
-- Conda + Linux (with CUDA and cutlass)
-- Docker (with CUDA and cutlass)
-- Conda + MacOS (with MLX)
+- [Conda + Linux](#conda-on-linux-with-cuda) (with CUDA and cutlass)
+- [Docker](#docker-with-cuda) (with CUDA and cutlass)
+- [Conda + MacOS](#conda-on-macos-with-mlx) (with MLX)
 
 We recommend managing your BITorch Engine installation in a conda environment (otherwise you should adapt/remove certain variables, e.g. `CUDA_HOME`).
 You may want to keep everything (environment, code, etc.) in one directory or use the default directory for conda environments.
@@ -156,7 +156,7 @@ cd bitorch-engine
 CPATH="${CUTLASS_HOME}/install/include" CUDA_HOME="${CONDA_PREFIX}" pip install -e . -v
 ```
 
-#### Docker (with CUDA) 
+#### Docker (with CUDA)
 
 You can also use our prepared Dockerfile to build a docker image (which includes building the engine under `/bitorch-engine`):
 
