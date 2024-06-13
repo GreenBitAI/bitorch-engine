@@ -76,6 +76,7 @@
   <h1>Source code for bitorch_engine.utils.cuda_extension</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
 
@@ -84,9 +85,24 @@
 <span class="kn">from</span> <span class="nn">bitorch_engine.extensions</span> <span class="kn">import</span> <span class="n">EXTENSION_PREFIX</span>
 
 
+<span class="n">SUPPORTED_CUDA_ARCHS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sm_80&quot;</span><span class="p">,</span> <span class="s2">&quot;sm_75&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="get_cuda_arch">
+<a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.cuda_extension.get_cuda_arch.html#bitorch_engine.utils.cuda_extension.get_cuda_arch">[docs]</a>
+<span class="k">def</span> <span class="nf">get_cuda_arch</span><span class="p">():</span>
+    <span class="n">cuda_arch</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BIE_CUDA_ARCH&quot;</span><span class="p">,</span> <span class="s2">&quot;sm_80&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cuda_arch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SUPPORTED_CUDA_ARCHS</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: BIE_CUDA_ARCH=</span><span class="si">{</span><span class="n">cuda_arch</span><span class="si">}</span><span class="s2"> may not be supported yet.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cuda_arch</span></div>
+
+
+
 <div class="viewcode-block" id="get_cuda_extension">
 <a class="viewcode-back" href="../../../_autosummary/bitorch_engine.utils.cuda_extension.get_cuda_extension.html#bitorch_engine.utils.cuda_extension.get_cuda_extension">[docs]</a>
 <span class="k">def</span> <span class="nf">get_cuda_extension</span><span class="p">(</span><span class="n">root_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">relative_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">relative_sources</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BIE_BUILD_SEPARATE_CUDA_ARCH&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span><span class="p">:</span>
+        <span class="n">relative_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">relative_name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">get_cuda_arch</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">CUDAExtension</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="n">EXTENSION_PREFIX</span> <span class="o">+</span> <span class="n">relative_name</span><span class="p">,</span>
         <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">root_path</span> <span class="o">/</span> <span class="n">rel_path</span><span class="p">)</span> <span class="k">for</span> <span class="n">rel_path</span> <span class="ow">in</span> <span class="n">relative_sources</span><span class="p">],</span>
@@ -149,22 +165,23 @@
     <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;extra_compile_args&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;cxx&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="s2">&quot;-Wno-deprecated-declarations&quot;</span><span class="p">,</span> <span class="c1"># Suppress warnings for deprecated declarations</span>
-                <span class="s2">&quot;-L/usr/lib/gcc/x86_64-pc-linux-gnu/10.3.0/libgomp.so&quot;</span><span class="p">,</span> <span class="c1"># Specify libgomp library path for OpenMP</span>
+                <span class="s2">&quot;-Wno-deprecated-declarations&quot;</span><span class="p">,</span>  <span class="c1"># Suppress warnings for deprecated declarations</span>
+                <span class="s2">&quot;-L/usr/lib/gcc/x86_64-pc-linux-gnu/10.3.0/libgomp.so&quot;</span><span class="p">,</span>  <span class="c1"># Specify libgomp library path for OpenMP</span>
                 <span class="s2">&quot;-fopenmp&quot;</span><span class="p">,</span> <span class="c1"># Enable OpenMP support</span>
             <span class="p">],</span>
             <span class="s2">&quot;nvcc&quot;</span><span class="p">:</span> <span class="p">[</span>
                 <span class="s2">&quot;-Xcompiler&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;-fopenmp&quot;</span><span class="p">,</span> <span class="c1"># Pass -fopenmp to the host compiler via nvcc</span>
-                <span class="sa">f</span><span class="s2">&quot;-arch=</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;BIE_CUDA_ARCH&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;sm_80&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="c1"># Set CUDA architecture, default to &#39;sm_80&#39;</span>
-                <span class="s2">&quot;-DARCH_SM_75&quot;</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;BIE_CUDA_ARCH&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;sm_75&#39;</span> <span class="k">else</span> <span class="s2">&quot;-DARCH_SM_80&quot;</span><span class="p">,</span> <span class="c1"># Define architecture macro based on BIE_CUDA_ARCH</span>
+                <span class="s2">&quot;-fopenmp&quot;</span><span class="p">,</span>  <span class="c1"># Pass -fopenmp to the host compiler via nvcc</span>
+                <span class="sa">f</span><span class="s2">&quot;-arch=</span><span class="si">{</span><span class="n">get_cuda_arch</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>  <span class="c1"># Set CUDA architecture, default to &#39;sm_80&#39;</span>
+                <span class="s2">&quot;-DARCH_SM_75&quot;</span> <span class="k">if</span> <span class="n">get_cuda_arch</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;sm_75&#39;</span> <span class="k">else</span> <span class="s2">&quot;-DARCH_SM_80&quot;</span><span class="p">,</span>  <span class="c1"># set architecture macro</span>
             <span class="p">],</span>
         <span class="p">},</span>
     <span class="p">}</span>
     <span class="c1"># If the GCC version is greater than 11, adjust the nvcc host compiler settings</span>
     <span class="k">if</span> <span class="n">major</span> <span class="o">&gt;</span> <span class="mi">11</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using GCC 11 host compiler for nvcc.&quot;</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;extra_compile_args&quot;</span><span class="p">][</span><span class="s2">&quot;nvcc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-ccbin=/usr/bin/gcc-11&quot;</span><span class="p">)</span> <span class="c1"># Specify GCC 11 as the host compiler for nvcc</span>
+        <span class="c1"># Specify GCC 11 as the host compiler for nvcc:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;extra_compile_args&quot;</span><span class="p">][</span><span class="s2">&quot;nvcc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-ccbin=/usr/bin/gcc-11&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">kwargs</span></div>
 
 </pre></div>

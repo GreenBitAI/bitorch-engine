@@ -1,0 +1,6 @@
+bitorch\_engine.utils.cuda\_extension.get\_cuda\_arch
+=====================================================
+
+.. currentmodule:: bitorch_engine.utils.cuda_extension
+
+.. autofunction:: get_cuda_arch

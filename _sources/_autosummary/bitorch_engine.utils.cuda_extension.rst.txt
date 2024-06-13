@@ -1,4 +1,4 @@
-bitorch\_engine.utils.cuda\_extension
+﻿bitorch\_engine.utils.cuda\_extension
 =====================================
 
 .. automodule:: bitorch_engine.utils.cuda_extension
@@ -16,6 +16,7 @@ bitorch\_engine.utils.cuda\_extension
       :nosignatures:
    
       gcc_version
+      get_cuda_arch
       get_cuda_extension
       get_kwargs
    

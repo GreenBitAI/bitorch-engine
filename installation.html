@@ -8,6 +8,7 @@
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/sphinx-toolbox-code.css?v=4ee5d529" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=87e54e7c" />
 
   
   <!--[if lt IE 9]>
@@ -19,6 +20,7 @@
         <script src="_static/documentation_options.js?v=cb850272"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -48,7 +50,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#binary-releases-coming-soon">Binary Releases (coming soon)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#binary-release">Binary Release</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#build-from-source">Build From Source</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#conda-on-linux-with-cuda">Conda on Linux (with CUDA)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#docker-with-cuda">Docker (with CUDA)</a></li>
@@ -107,11 +109,58 @@ MacOS</p></li>
 <li><p><a class="reference external" href="https://github.com/NVIDIA/cutlass">CUTLASS</a> for cutlass-based
 layers</p></li>
 </ul>
-<section id="binary-releases-coming-soon">
-<h2>Binary Releases (coming soon)<a class="headerlink" href="#binary-releases-coming-soon" title="Link to this heading"></a></h2>
-<p>We are currently preparing experimental binary releases. Their
-installation will be documented in this section. For now, please follow
-the guide below to build from source.</p>
+<section id="binary-release">
+<h2>Binary Release<a class="headerlink" href="#binary-release" title="Link to this heading"></a></h2>
+<p><strong>A first experimental binary release for Linux with CUDA 12.1 is
+ready.</strong> It only supports GPUs with CUDA compute capability with 8.6 or
+higher (<a class="reference external" href="https://developer.nvidia.com/cuda-gpus">check here</a>). For
+MacOS or lower compute capability, build the package from source
+(additional binary release options are planned in the future). We
+recommend to create a conda environment to manage the installed CUDA
+version and other packages:</p>
+<ol class="arabic simple">
+<li><p>Create Environment for Python 3.10 and activate it:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--name<span class="w"> </span>bitorch-engine<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
+conda<span class="w"> </span>activate<span class="w"> </span>bitorch-engine
+</pre></div>
+</div>
+<p>As an alternative, you can also store the environment in a relative
+path.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Click to here to expand the instructions for this.</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<ol class="arabic simple" start="0">
+<li><p class="sd-card-text">Set workspace dir (use an absolute path!):</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">BITORCH_WORKSPACE</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span><span class="s2">/bitorch-workspace&quot;</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p class="sd-card-text">Create Environment for Python 3.10 and activate it:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--prefix<span class="w"> </span>./conda-env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
+conda<span class="w"> </span>activate<span class="w"> </span>./conda-env
+</pre></div>
+</div>
+</div>
+</details><ol class="arabic simple" start="2">
+<li><p>Install CUDA (if it is not installed already on the system):</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;nvidia/label/cuda-12.1.0&quot;</span><span class="w"> </span>cuda-toolkit
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Install our customized torch that allows gradients on INT tensors and
+install it with pip (this URL is for CUDA 12.1 and Python 3.10 - you
+can find other versions
+<a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>):</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;https://packages.greenbit.ai/whl/cu121/torch/torch-2.3.0-cp310-cp310-linux_x86_64.whl&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span>bitorch_engine<span class="w">  </span><span class="c1"># pypi package currently only supports cuda 12.1 with compute capability 8.0 or higher</span>
+</pre></div>
+</div>
 </section>
 <section id="build-from-source">
 <h2>Build From Source<a class="headerlink" href="#build-from-source" title="Link to this heading"></a></h2>
@@ -146,14 +195,12 @@ conda<span class="w"> </span>activate<span class="w"> </span>bitorch-engine
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
-<li><p>Download our customized torch for CUDA 11.8 and Python 3.9, it allows
-gradients on INT tensors and install it with pip (you can find other
-versions <a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>):</p></li>
+<li><p>Install our customized torch that allows gradients on INT tensors and
+install it with pip (this URL is for CUDA 11.8 and Python 3.9 - you
+can find other versions
+<a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>):</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;https://packages.greenbit.ai/whl/cu118/torch/torch-2.1.0-cp39-cp39-linux_x86_64.whl&quot;</span>
-<span class="c1"># as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.16.0&quot;</span><span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
-<span class="c1"># (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
@@ -178,40 +225,40 @@ documentation</a>, use
 the other layers without installing it or try the docker installation.</p>
 <p>As an alternative to the instructions above, you can also store the
 environment and clone all repositories within one “root” directory.</p>
-<details class="summary-click-to-here-to-expand-the-instructions-for-this">
-<summary>Click to here to expand the instructions for this.</summary><ol class="arabic simple" start="0">
-<li><p>Set workspace dir (use an absolute path!):</p></li>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Click to here to expand the instructions for this.</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<ol class="arabic simple" start="0">
+<li><p class="sd-card-text">Set workspace dir (use an absolute path!):</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">BITORCH_WORKSPACE</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span><span class="s2">/bitorch-workspace&quot;</span>
 mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span>
 </pre></div>
 </div>
 <ol class="arabic simple">
-<li><p>Create Environment for Python 3.9 and activate it:</p></li>
+<li><p class="sd-card-text">Create Environment for Python 3.9 and activate it:</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--prefix<span class="w"> </span>./conda-env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9
 conda<span class="w"> </span>activate<span class="w"> </span>./conda-env
 </pre></div>
 </div>
 <ol class="arabic simple" start="2">
-<li><p>Install CUDA</p></li>
+<li><p class="sd-card-text">Install CUDA</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;nvidia/label/cuda-11.8.0&quot;</span><span class="w"> </span>cuda-toolkit
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
-<li><p>Download our customized torch for CUDA 11.8 and Python 3.9, it allows
-gradients on INT tensors and install it with pip (you can find other
-versions <a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>):</p></li>
+<li><p class="sd-card-text">Install our customized torch that allows gradients on INT tensors and
+install it with pip (this url is for CUDA 11.8 and Python 3.9 - you
+can find other versions
+<a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>):</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;https://packages.greenbit.ai/whl/cu118/torch/torch-2.1.0-cp39-cp39-linux_x86_64.whl&quot;</span>
-<span class="c1"># as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.16.0&quot;</span><span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
-<span class="c1"># (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
-<li><p>To use cutlass layers, you should also install CUTLASS 2.8.0 (if you
+<li><p class="sd-card-text">To use cutlass layers, you should also install CUTLASS 2.8.0 (if you
 have older or newer GPUs you may need to add your <a class="reference external" href="https://developer.nvidia.com/cuda-gpus">CUDA compute
 capability</a> in
 <code class="docutils literal notranslate"><span class="pre">CUTLASS_NVCC_ARCHS</span></code>):</p></li>
@@ -227,9 +274,10 @@ cmake<span class="w"> </span>--install<span class="w"> </span>.
 <span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span>
 </pre></div>
 </div>
-<p>If you have difficulties installing cutlass, you can check the <a class="reference external" href="https://github.com/NVIDIA/cutlass/tree/v2.8.0">official
+<p class="sd-card-text">If you have difficulties installing cutlass, you can check the <a class="reference external" href="https://github.com/NVIDIA/cutlass/tree/v2.8.0">official
 documentation</a>, use
 the other layers without installing it or try the docker installation.</p>
+</div>
 </details><p>After setting up the environment, clone the code and build with pip (to
 hide the build output remove <code class="docutils literal notranslate"><span class="pre">-v</span></code>):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure you are in a suitable directory, e.g. your bitorch workspace</span>
@@ -266,15 +314,11 @@ conda<span class="w"> </span>activate<span class="w"> </span>bitorch-engine
 </pre></div>
 </div>
 <ol class="arabic simple" start="2">
-<li><p>Download <a class="reference external" href="https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing">customized Torch for
-MacOS/arm</a>
-(it allows gradients on INT tensors, built for Python 3.9 and CUDA
-11.8) and install it with pip:</p></li>
+<li><p>Install our customized torch that allows gradients on INT tensors and
+install it with pip (this URL is for macOS with Python 3.9 - you can
+find other versions <a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>):</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;https://packages.greenbit.ai/whl/macosx/torch/torch-2.2.1-cp39-none-macosx_11_0_arm64.whl&quot;</span>
-<span class="c1"># as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torchvision==0.17.1&quot;</span>
-<span class="c1"># (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">

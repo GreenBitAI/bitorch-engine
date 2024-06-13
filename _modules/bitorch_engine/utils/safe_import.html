@@ -165,7 +165,7 @@
 <span class="k">def</span> <span class="nf">import_extension</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">not_yet_implemented</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Dynamically imports a Python extension module by name, providing a safe mechanism to handle cases</span>
-<span class="sd">    where the module is not available or not yet implemented. This function is particularly useful for</span>
+<span class="sd">    where the module is not yet built or not yet implemented. This function is particularly useful for</span>
 <span class="sd">    conditionally importing modules that provide optional functionality or are platform-specific.</span>
 
 <span class="sd">    If the module is marked as not yet implemented (not_yet_implemented=True), or if the module cannot be</span>

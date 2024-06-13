@@ -8,6 +8,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css?v=4ee5d529" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
 
   
   <!--[if lt IE 9]>
@@ -19,6 +20,7 @@
         <script src="../_static/documentation_options.js?v=cb850272"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -107,7 +109,7 @@
 <dt class="sig sig-object py" id="bitorch_engine.utils.safe_import.import_extension">
 <span class="sig-prename descclassname"><span class="pre">bitorch_engine.utils.safe_import.</span></span><span class="sig-name descname"><span class="pre">import_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">not_yet_implemented</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../_modules/bitorch_engine/utils/safe_import.html#import_extension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bitorch_engine.utils.safe_import.import_extension" title="Link to this definition"></a></dt>
 <dd><p>Dynamically imports a Python extension module by name, providing a safe mechanism to handle cases
-where the module is not available or not yet implemented. This function is particularly useful for
+where the module is not yet built or not yet implemented. This function is particularly useful for
 conditionally importing modules that provide optional functionality or are platform-specific.</p>
 <p>If the module is marked as not yet implemented (not_yet_implemented=True), or if the module cannot be
 found during import, the function returns a placeholder object instead of raising an ImportError. This
