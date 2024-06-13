@@ -49,17 +49,10 @@ path.
             
     
     
-    0. Set workspace dir (use an absolute path!):
-    
     .. code:: bash
     
        export BITORCH_WORKSPACE="${HOME}/bitorch-workspace"
        mkdir -p "${BITORCH_WORKSPACE}" && cd "${BITORCH_WORKSPACE}"
-    
-    1. Create Environment for Python 3.10 and activate it:
-    
-    .. code:: bash
-    
        conda create -y --prefix ./conda-env python=3.10
        conda activate ./conda-env
     
@@ -73,13 +66,14 @@ path.
 
 3. Install our customized torch that allows gradients on INT tensors and
    install it with pip (this URL is for CUDA 12.1 and Python 3.10 - you
-   can find other versions
-   `here <https://packages.greenbit.ai/whl/>`__):
+   can find other versions `here <https://packages.greenbit.ai/whl/>`__)
+   together with bitorch engine:
 
 .. code:: bash
 
-   pip install "https://packages.greenbit.ai/whl/cu121/torch/torch-2.3.0-cp310-cp310-linux_x86_64.whl"
-   pip install bitorch_engine  # pypi package currently only supports cuda 12.1 with compute capability 8.0 or higher
+   pip install \
+     "https://packages.greenbit.ai/whl/cu121/torch/torch-2.3.0-cp310-cp310-linux_x86_64.whl" \
+     "https://packages.greenbit.ai/whl/cu121/bitorch-engine/bitorch_engine-0.2.5-cp310-cp310-linux_x86_64.whl"
 
 Build From Source
 -----------------

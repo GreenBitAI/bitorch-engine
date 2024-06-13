@@ -130,17 +130,9 @@ path.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Click to here to expand the instructions for this.</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
-<ol class="arabic simple" start="0">
-<li><p class="sd-card-text">Set workspace dir (use an absolute path!):</p></li>
-</ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">BITORCH_WORKSPACE</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span><span class="s2">/bitorch-workspace&quot;</span>
 mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BITORCH_WORKSPACE</span><span class="si">}</span><span class="s2">&quot;</span>
-</pre></div>
-</div>
-<ol class="arabic simple">
-<li><p class="sd-card-text">Create Environment for Python 3.10 and activate it:</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--prefix<span class="w"> </span>./conda-env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
+conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>--prefix<span class="w"> </span>./conda-env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
 conda<span class="w"> </span>activate<span class="w"> </span>./conda-env
 </pre></div>
 </div>
@@ -154,11 +146,12 @@ conda<span class="w"> </span>activate<span class="w"> </span>./conda-env
 <ol class="arabic simple" start="3">
 <li><p>Install our customized torch that allows gradients on INT tensors and
 install it with pip (this URL is for CUDA 12.1 and Python 3.10 - you
-can find other versions
-<a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>):</p></li>
+can find other versions <a class="reference external" href="https://packages.greenbit.ai/whl/">here</a>)
+together with bitorch engine:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;https://packages.greenbit.ai/whl/cu121/torch/torch-2.3.0-cp310-cp310-linux_x86_64.whl&quot;</span>
-pip<span class="w"> </span>install<span class="w"> </span>bitorch_engine<span class="w">  </span><span class="c1"># pypi package currently only supports cuda 12.1 with compute capability 8.0 or higher</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;https://packages.greenbit.ai/whl/cu121/torch/torch-2.3.0-cp310-cp310-linux_x86_64.whl&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;https://packages.greenbit.ai/whl/cu121/bitorch-engine/bitorch_engine-0.2.5-cp310-cp310-linux_x86_64.whl&quot;</span>
 </pre></div>
 </div>
 </section>
