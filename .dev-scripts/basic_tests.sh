@@ -20,7 +20,7 @@ echo "Testing..."
     rm -rf bitorch_install_tmp_test_dir
     mkdir bitorch_install_tmp_test_dir
     cd bitorch_install_tmp_test_dir
-    git clone https://github.com/GreenBitAI/bitorch-engine.git --depth 1 --branch "v0.2.5" bitorch_engine_git
+    git clone https://github.com/GreenBitAI/bitorch-engine.git --depth 1 --branch "v0.2.6" bitorch_engine_git
     mv bitorch_engine_git/tests .
     pip install pytest numpy
     pytest tests/layers/test_nbit_linear.py

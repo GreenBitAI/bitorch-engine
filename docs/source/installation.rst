@@ -73,7 +73,7 @@ path.
 
    pip install \
      "https://packages.greenbit.ai/whl/cu121/torch/torch-2.3.0-cp310-cp310-linux_x86_64.whl" \
-     "https://packages.greenbit.ai/whl/cu121/bitorch-engine/bitorch_engine-0.2.5-cp310-cp310-linux_x86_64.whl"
+     "https://packages.greenbit.ai/whl/cu121/bitorch-engine/bitorch_engine-0.2.6-cp310-cp310-linux_x86_64.whl"
 
 Build From Source
 -----------------
