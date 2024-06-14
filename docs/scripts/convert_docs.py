@@ -1,7 +1,5 @@
 import argparse
 
-from markdown_it.rules_core import replacements
-
 
 class Converter:
     def __init__(self, verbose=False):
@@ -125,12 +123,11 @@ class SectionCollapseFixer(Converter):
             summary_line = line_num + 1
             while lines[summary_line].strip() == "":
                 summary_line += 1
-            self.replace_line(lines, line_num, ".. collapse:: " + lines[summary_line])
+            self.replace_line(lines, line_num, ".. dropdown:: " + lines[summary_line])
             for i in range(line_num + 1, summary_line + 1):
                 self.replace_line(lines, i, "")
             return
         self.replace_line(lines, line_num, "    " + lines[line_num])
-
 
 def main(args):
     # set build_options_separate=False to integrate build options into installation part:
@@ -143,7 +140,7 @@ def main(args):
     replacer = Replacer([
         [
             r"`docker readme <docker/README.md>`__",
-            r"`docker readme <https://github.com/GreenBitAI/bitorch-engine/blob/HEAD/docker/README.md>`__"
+            r"`docker readme <https://github.com/GreenBitAI/bitorch-engine/blob/HEAD/docker/README.md>`__",
         ],
     ], verbose=verbose)
 

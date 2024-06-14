@@ -43,6 +43,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_toolbox.code",
     "sphinx_toolbox.collapse",
+    "sphinx_design",
 ]
 
 # List of patterns, relative to source directory, that match files and

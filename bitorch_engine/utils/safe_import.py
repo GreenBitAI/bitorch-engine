@@ -75,7 +75,7 @@ class ExtensionModulePlaceholder:
 def import_extension(module_name: str, not_yet_implemented: bool = False) -> Any:
     """
     Dynamically imports a Python extension module by name, providing a safe mechanism to handle cases
-    where the module is not available or not yet implemented. This function is particularly useful for
+    where the module is not yet built or not yet implemented. This function is particularly useful for
     conditionally importing modules that provide optional functionality or are platform-specific.
 
     If the module is marked as not yet implemented (not_yet_implemented=True), or if the module cannot be

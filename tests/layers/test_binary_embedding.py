@@ -1,8 +1,6 @@
 import pytest
 import torch
 import time
-from bitorch.layers.qembedding import QEmbeddingBag as bitorch_qembag
-from bitorch.quantizations import Sign
 from bitorch_engine.layers.qembedding.binary import BinaryEmbeddingBag
 from tests.layers.util import get_cuda_test_device, to_device
 

@@ -49,11 +49,43 @@ In addition, for layers to speed up on specific hardware (such as CUDA devices, 
 - **[MLX](https://github.com/ml-explore/mlx)** for mlx-based layers on MacOS
 - **[CUTLASS](https://github.com/NVIDIA/cutlass)** for cutlass-based layers
 
-### Binary Releases (coming soon)
+### Binary Release
 
-We are currently preparing experimental binary releases.
-Their installation will be documented in this section.
-For now, please follow the guide below to build from source.
+**A first experimental binary release for Linux with CUDA 12.1 is ready.**
+It only supports GPUs with CUDA compute capability with 8.6 or higher ([check here](https://developer.nvidia.com/cuda-gpus)).
+For MacOS or lower compute capability, build the package from source (additional binary release options are planned in the future).
+We recommend to create a conda environment to manage the installed CUDA version and other packages:
+
+1. Create Environment for Python 3.10 and activate it:
+```bash
+conda create -y --name bitorch-engine python=3.10
+conda activate bitorch-engine
+```
+
+As an alternative, you can also store the environment in a relative path.
+
+<details><summary>Click to here to expand the instructions for this.</summary>
+
+```bash
+export BITORCH_WORKSPACE="${HOME}/bitorch-workspace"
+mkdir -p "${BITORCH_WORKSPACE}" && cd "${BITORCH_WORKSPACE}"
+conda create -y --prefix ./conda-env python=3.10
+conda activate ./conda-env
+```
+
+</details>
+
+2. Install CUDA (if it is not installed already on the system):
+```bash
+conda install -y -c "nvidia/label/cuda-12.1.0" cuda-toolkit
+```
+3. Install our customized torch that allows gradients on INT tensors and install it with pip (this URL is for CUDA 12.1
+and Python 3.10 - you can find other versions [here](https://packages.greenbit.ai/whl/)) together with bitorch engine:
+```bash
+pip install \
+  "https://packages.greenbit.ai/whl/cu121/torch/torch-2.3.0-cp310-cp310-linux_x86_64.whl" \
+  "https://packages.greenbit.ai/whl/cu121/bitorch-engine/bitorch_engine-0.2.5-cp310-cp310-linux_x86_64.whl"
+```
 
 ### Build From Source
 
@@ -80,12 +112,10 @@ conda activate bitorch-engine
 ```bash
 conda install -y -c "nvidia/label/cuda-11.8.0" cuda-toolkit
 ```
-3. Download our customized torch for CUDA 11.8 and Python 3.9, it allows gradients on INT tensors and install it with pip (you can find other versions [here](https://packages.greenbit.ai/whl/)):
+3. Install our customized torch that allows gradients on INT tensors and install it with pip (this URL is for CUDA 11.8
+and Python 3.9 - you can find other versions [here](https://packages.greenbit.ai/whl/)):
 ```bash
 pip install "https://packages.greenbit.ai/whl/cu118/torch/torch-2.1.0-cp39-cp39-linux_x86_64.whl"
-# as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)
-pip install "torchvision==0.16.0" --index-url https://download.pytorch.org/whl/cu118
-# (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
 ```
 4. To use cutlass layers, you should also install CUTLASS 2.8.0 (from source), adjust `CUTLASS_HOME` (this is where we clone and install cutlass)
 (if you have older or newer GPUs you may need to add your [CUDA compute capability](https://developer.nvidia.com/cuda-gpus) in `CUTLASS_NVCC_ARCHS`):
@@ -120,12 +150,10 @@ conda activate ./conda-env
 ```bash
 conda install -y -c "nvidia/label/cuda-11.8.0" cuda-toolkit
 ```
-3. Download our customized torch for CUDA 11.8 and Python 3.9, it allows gradients on INT tensors and install it with pip (you can find other versions [here](https://packages.greenbit.ai/whl/)):
+3. Install our customized torch that allows gradients on INT tensors and install it with pip (this url is for CUDA 11.8
+and Python 3.9 - you can find other versions [here](https://packages.greenbit.ai/whl/)):
 ```bash
 pip install "https://packages.greenbit.ai/whl/cu118/torch/torch-2.1.0-cp39-cp39-linux_x86_64.whl"
-# as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)
-pip install "torchvision==0.16.0" --index-url https://download.pytorch.org/whl/cu118
-# (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
 ```
 4. To use cutlass layers, you should also install CUTLASS 2.8.0
 (if you have older or newer GPUs you may need to add your [CUDA compute capability](https://developer.nvidia.com/cuda-gpus) in `CUTLASS_NVCC_ARCHS`):
@@ -176,13 +204,10 @@ but virtualenv should work as well.
 conda create -y --name bitorch-engine python=3.9
 conda activate bitorch-engine
 ```
-2. Download [customized Torch for MacOS/arm](https://drive.google.com/drive/folders/1T22b8JhN-E3xbn3h332rI1VjqXONZeB7?usp=sharing) (it allows gradients on INT tensors, built for Python 3.9 and CUDA 11.8) and install it with pip:
+2. Install our customized torch that allows gradients on INT tensors and install it with pip (this URL is for macOS
+with Python 3.9 - you can find other versions [here](https://packages.greenbit.ai/whl/)):
 ```bash
 pip install "https://packages.greenbit.ai/whl/macosx/torch/torch-2.2.1-cp39-none-macosx_11_0_arm64.whl"
-# as bitorch currently requires torchvision, we need to install a version for our correct CUDA (otherwise it will reinstall torch)
-pip install "torchvision==0.17.1"
-# (check https://github.com/pytorch/vision?tab=readme-ov-file#installation in the future)
-
 ```
 3. For MacOS users and to use OpenMP acceleration, install OpenMP with Homebrew and configure the environment:
 ```bash

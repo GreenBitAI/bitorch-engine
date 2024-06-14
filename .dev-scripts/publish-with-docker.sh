@@ -7,7 +7,7 @@ function usage() {
     echo "builds a package and publishes it to (test-)pypi"
     echo
     echo "BIE_VERSION must be a version string like 'v1.2.3'."
-    echo "optional: CUDA_VERSION can be either '11.8' (default) or '12.1'."
+    echo "optional: CUDA_VERSION can be either '11.8' (not yet supported) or '12.1'. (default)"
 }
 
 trap exit INT
@@ -18,7 +18,7 @@ if ! ((1 <= $# && $# <= 2)) || [ "${1}" = "-h" ]; then
 fi
 
 export PUBLISH_BIE_VERSION="${1}"
-CUDA_VERSION="${2:-11.8}"
+CUDA_VERSION="${2:-12.1}"
 
 if ! [[ "${PUBLISH_BIE_VERSION}" =~ ^v[0-9].[0-9].[0-9]$ ]]; then
     echo "Invalid BIE_VERSION '${PUBLISH_BIE_VERSION}' given."
@@ -28,18 +28,21 @@ if ! [[ "${PUBLISH_BIE_VERSION}" =~ ^v[0-9].[0-9].[0-9]$ ]]; then
 fi
 
 cuda_known="false"
-add_build_arg=""
+build_args=""
 cuda_abbrev="unknown"
+# TODO: check support for 11.8:
 if [ "${CUDA_VERSION}" = "11.8" ]; then
     cuda_known="true"
     cuda_abbrev="cu118"
-    torch_requirement="torch==2.2.2"
+    torch_requirement="torch==2.3.0"
+    build_args="${build_args} --build-arg FROM_IMAGE=pytorch/manylinux-builder:cuda11.8-2.3"
+    build_args="${build_args} --build-arg CUSTOM_TORCH_URL=https://packages.greenbit.ai/whl/cu118/torch/torch-2.3.0-cp310-cp310-linux_x86_64.whl"
+    build_args="${build_args} --build-arg TORCHVISION_INDEX_URL=https://download.pytorch.org/whl/cu118"
 fi
 if [ "${CUDA_VERSION}" = "12.1" ]; then
     cuda_known="true"
     cuda_abbrev="cu121"
-    add_build_arg="--build-arg FROM_IMAGE=pytorch/pytorch:2.2.0-cuda12.1-cudnn8-devel"
-    torch_requirement="torch==2.2.2"
+    torch_requirement="torch==2.3.0"
 fi
 if [ "${cuda_known}" = "false" ]; then
     echo "Unknown CUDA_VERSION '${CUDA_VERSION}' given."
@@ -57,8 +60,10 @@ output_folder="./dist/${cuda_abbrev}"
 
 # build/tag docker image
 pushd docker
-docker build --target no-examples ${add_build_arg} --build-arg GIT_BRANCH="${PUBLISH_BIE_VERSION}" -t "${bie_image_tag}" .
+docker build --target no-examples ${build_args} --build-arg GIT_BRANCH="${PUBLISH_BIE_VERSION}" -t "${bie_image_tag}" .
 popd
+
+mkdir -p "${output_folder}"
 
 docker container create -it \
     --rm \
@@ -68,6 +73,8 @@ docker container create -it \
     -e PUBLISH_BIE_VERSION \
     -e BIE_FORCE_CUDA="true" \
     -e BIE_SKIP_BUILD="true" \
+    -e USER_ID="$(id -u)" \
+    -e GROUP_ID="$(id -g)" \
     -e BIE_TORCH_REQUIREMENT="${torch_requirement}" \
     -e BIE_WHEEL_PLATFORM="linux_x86_64" \
     -w /bitorch-engine \

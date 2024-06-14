@@ -8,11 +8,16 @@ if ! [ -d "docs" ]; then
     exit 1
 fi
 
-pip freeze | grep pandoc &> /dev/null
-if ! [ $? == "0" ]; then
-    echo "Pandoc not found. Please install it, e.h. with 'pip install pandoc'."
-    exit 1
-fi
+function package_required() {
+    pip freeze | grep "${1}" &> /dev/null
+    if ! [ $? == "0" ]; then
+        echo "Package '${1}' not found. Please install it, e.g. with: $ pip install ${1}"
+        exit 1
+    fi
+}
+# check new packages are installed
+package_required pandoc
+package_required sphinx_design
 
 pandoc --from=markdown --to=rst --output=README.rst README.md
 python docs/scripts/convert_docs.py README.rst

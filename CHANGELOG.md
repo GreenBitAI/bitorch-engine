@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.2.6] - 2024/06/14
+
+### Added
+
+- Installation instructions for binary releases
+- Warning if non-customized PyTorch version is detected which can not calculate gradients for non-complex tensor types
+
+### Changed
+
+- Updated development scripts for binary releases
+  - Adjusting rpaths in .so files (based on PyTorch's implemented solution)
+  - Docker base image changed to manywheel builder image
+
 ## [0.2.5] - 2024/05/24
 
 ### Added

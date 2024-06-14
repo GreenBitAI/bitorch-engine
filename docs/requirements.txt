@@ -4,3 +4,4 @@ pandoc
 sphinx_rtd_theme
 sphinx_gallery
 sphinx_toolbox
+sphinx_design

@@ -5,15 +5,31 @@
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("custom_pytorch_path", help="Path to custom PyTorch wheel")
+parser.add_argument("custom_bitorch_engine_path", help="Path to built bitorch engine wheel file")
 args = parser.parse_args()
 
-BLOCK_HEADER_START = "#### Conda on Linux"
+BLOCK_HEADER_START_BINARY = "### Binary Release"
+BLOCK_HEADER_START_FROM_SOURCE = "#### Conda on Linux"
+BLOCK_END = "##########"
 
 with open("README.md") as infile:
     content = infile.readlines()
 
-local_install_instructions = []
-global_install_instructions = []
+with open(".dev-scripts/basic_tests.sh") as infile:
+    test_appendix = infile.readlines()
+
+
+def write_file(filepath, main_content):
+    with open(filepath, "w") as outfile:
+        outfile.write(FILE_INTRO)
+        outfile.writelines(main_content)
+        outfile.writelines(test_appendix)
+
+
+source_local_install_instructions = []
+source_global_install_instructions = []
+binary_local_install_instructions = []
+binary_global_install_instructions = []
 
 in_code_block = False
 reading_instructions = False
@@ -36,17 +52,29 @@ for line in content:
     if line.startswith("```"):
         in_code_block = not in_code_block
         continue
-    if line.startswith(BLOCK_HEADER_START):
+    if line.startswith(BLOCK_HEADER_START_FROM_SOURCE):
         reading_instructions = True
-        instruction_type = "global"
+        instruction_type = "source-global"
+        BLOCK_END = BLOCK_HEADER_START_FROM_SOURCE.split()[0]
+        continue
+    if line.startswith(BLOCK_HEADER_START_BINARY):
+        reading_instructions = True
+        instruction_type = "binary-global"
+        BLOCK_END = BLOCK_HEADER_START_BINARY.split()[0]
         continue
     if line.startswith("<details><summary>"):
-        instruction_type = "local"
+        if "source" in instruction_type:
+            instruction_type = "source-local"
+        if "binary" in instruction_type:
+            instruction_type = "binary-local"
         continue
     if line.startswith("</details>"):
-        instruction_type = "both"
+        if "source" in instruction_type:
+            instruction_type = "source-both"
+        if "binary" in instruction_type:
+            instruction_type = "binary-both"
         continue
-    if line.startswith(BLOCK_HEADER_START.split()[0]):
+    if line.startswith(BLOCK_END):
         reading_instructions = False
         continue
     if not reading_instructions:
@@ -68,6 +96,8 @@ for line in content:
         line = line.replace("${HOME}", "$(pwd)")
     if line.startswith("pip install torch-"):
         line = "pip install {}\n".format(args.custom_pytorch_path)
+    if line.startswith("pip install bitorch_engine"):
+        line = "pip install {}\n".format(args.custom_bitorch_engine_path)
 
     # decide how to write line
     line_format = "{line}"
@@ -78,14 +108,21 @@ for line in content:
         line_format = "\n" + line_format
 
     # write result line(s)
-    if instruction_type == "global" or instruction_type == "both":
-        global_install_instructions.append(line_format.format(line=line))
-    if instruction_type == "local" or instruction_type == "both":
-        local_install_instructions.append(line_format.format(line=line))
+    if instruction_type == "source-global" or instruction_type == "source-both":
+        source_global_install_instructions.append(line_format.format(line=line))
+    if instruction_type == "source-local" or instruction_type == "source-both":
+        source_local_install_instructions.append(line_format.format(line=line))
+    if instruction_type == "binary-global" or instruction_type == "binary-both":
+        binary_global_install_instructions.append(line_format.format(line=line))
+    if instruction_type == "binary-local" or instruction_type == "binary-both":
+        binary_local_install_instructions.append(line_format.format(line=line))
 
-with open(".dev-scripts/test_local_conda_install.sh", "w") as outfile:
-    outfile.write(FILE_INTRO)
-    outfile.writelines(local_install_instructions)
-with open(".dev-scripts/test_global_conda_install.sh", "w") as outfile:
-    outfile.write(FILE_INTRO)
-    outfile.writelines(global_install_instructions)
+write_file(".dev-scripts/test_source_local_conda_install.sh", source_local_install_instructions)
+write_file(".dev-scripts/test_source_global_conda_install.sh", source_global_install_instructions)
+write_file(".dev-scripts/test_binary_local_conda_install.sh", binary_local_install_instructions)
+write_file(".dev-scripts/test_binary_global_conda_install.sh", binary_global_install_instructions)
+
+binary_local_cu118 = [line.replace("cu121", "cu118").replace("cuda-12.1.0", "cuda-11.8.0") for line in binary_local_install_instructions]
+write_file(".dev-scripts/test_binary_local_conda_install_cu118.sh", binary_local_cu118)
+binary_local_no_cuda = filter(lambda x: "nvidia/label/cuda-12.1.0" not in x, binary_local_install_instructions)
+write_file(".dev-scripts/test_binary_local_conda_install_no_cuda.sh", binary_local_no_cuda)
