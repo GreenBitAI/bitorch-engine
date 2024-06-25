@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from torch.autograd import Function
 import typing
 import math
@@ -9,7 +10,6 @@ from bitorch_engine.utils.model_helper import flatten_x, unflatten_x
 from .utils import unpack_qweight, make_group_map
 
 q_linear_cuda = import_extension("q_linear_cuda")
-
 
 class MBWQLinearCudaFunction(Function):
     """
@@ -45,7 +45,7 @@ class MBWQLinearCudaFunction(Function):
             q_group_map (torch.Tensor, optional): Mapping tensor for group-wise quantization.
             rows (list, optional): Contains distribution and permutation information for weights in MBWQ mode.
             bits (int): q_weight's bitwidth.
-
+            backbend (str): forward implementation backbend
         Returns:
             torch.Tensor: The output tensor of the forward pass, after processing by the MBWQ Linear layer.
 
@@ -55,12 +55,33 @@ class MBWQLinearCudaFunction(Function):
             experimental and optimized for advanced use cases.
         """
         x, shape = flatten_x(x)
+                
+        if not use_mbw: 
+            if group_size <= 8:
+                wf = torch.tensor(list(range(0, 32, bits)), dtype=torch.int32).unsqueeze(0).unsqueeze(
+                -1).to(qweight.device)
+                weight_unpack_per_bits = torch.bitwise_right_shift(
+                    torch.unsqueeze(qweight, 1).expand(-1, 32 // bits, -1), wf).to(
+                    torch.int16 if bits == 8 else torch.int8).view(-1, qweight.size(-1))
+                torch.bitwise_and(weight_unpack_per_bits, torch.Tensor([2**bits-1]).to(device=x.device, dtype=torch.int16), out=weight_unpack_per_bits)
+            
+                ratio = group_size
 
-        if not use_mbw:
-            output = q_linear_cuda.mbwq_q4_forward(x, qweight, scales, zeros, group_size, q_perm, bits)
+                scale = scales.unsqueeze(1).repeat(1, ratio, 1).view(-1, qweight.size(-1))
+                zeros = zeros.unsqueeze(1).repeat(1, ratio, 1).view(-1, qweight.size(-1))
+    
+                weight = weight_unpack_per_bits.to(x.dtype).mul(scale.to(x.dtype)) - zeros.to(x.dtype)
+        
+                if q_perm is not None:
+                    q_perm = q_perm.unsqueeze(1).repeat(1, weight.size(1)).long()
+                    weight = weight.clone().scatter_(dim=0, index=q_perm, src=weight)
+                
+                output = torch.matmul(x, weight)
+            else:
+                output = q_linear_cuda.mbwq_q4_forward(x, qweight, scales, zeros, group_size, q_perm, bits)
         else:
             output = q_linear_cuda.mbwq_exl2_forward(x, qweight, scales, zeros, q_perm, q_group_map, rows, False) # set whether use_cublas
-
+        
         if is_train:
             qweight.scales = scales
             qweight.zeros = zeros
@@ -74,7 +95,7 @@ class MBWQLinearCudaFunction(Function):
             qweight.asym = False
             qweight.g_idx = None
             ctx.save_for_backward(x, qweight)
-
+        
         output = unflatten_x(output, shape)
         return output
 
@@ -122,7 +143,7 @@ class MBWQLinearCudaFunction(Function):
         return grad_input, qweight, None, None, None, None, None, None, None, None, None, None
 
 
-class MBWQLinearCuda(MPQLinearBase):
+class MBWQ_DQ_LinearCuda(MPQLinearBase):
     """
     Implements a Mixed-BitWidth Quantized (MBWQ) linear layer for CUDA devices. This layer extends the functionality of
     MPQLinearBase by supporting mixed bit-width quantization schemes to optimize model size and computational efficiency
@@ -157,7 +178,7 @@ class MBWQLinearCuda(MPQLinearBase):
             use_mbw (bool, optional): Specifies whether to use mixed-bitwidth quantization. Defaults to True.
             **kwargs: Arbitrary keyword arguments to be passed to the base class initializer.
         """
-        super(MBWQLinearCuda, self).__init__(*args, **kwargs)
+        super(MBWQ_DQ_LinearCuda, self).__init__(*args, **kwargs)
         self.qweight.layer_type = 2
         self.use_mbw = use_mbw
         self.groups = groups
@@ -178,12 +199,26 @@ class MBWQLinearCuda(MPQLinearBase):
         assert self.dtype == torch.half, f"The value of dtype ({self.dtype}) must be torch.half."
 
         self.register_buffer('q_perm', torch.zeros((self.in_channels), dtype=torch.short))
-        self.register_buffer('channel_scale', torch.ones((1, 1, self.in_channels), dtype=self.dtype))
+        buffer_shape = (
+            math.ceil(self.in_channels / self.group_size),
+            math.ceil(self.out_channels // 8)
+        )
+        
+        self.register_buffer('qscales', torch.ones((buffer_shape), dtype=torch.int32))
+        self.register_buffer('qzeros', torch.zeros((buffer_shape), dtype=torch.int32))
+        
+        self.qscales_scales = self.qscales_scales.squeeze(-1)
+        self.qscales_zeros = self.qscales_zeros.squeeze(-1)
 
+        self.qzeros_scales = self.qzeros_scales.squeeze(-1)
+        self.qzeros_zeros = self.qzeros_zeros.squeeze(-1)
+
+        self.channel_scale = nn.Parameter(torch.ones(1, 1, self.in_channels).to(dtype=self.dtype))
+        
         if not self.use_mbw: # only support 4-bit and 2-bit qweight
             # if use mixed-bitwidth quantized, otherwise only support a 4-bit and 2-bit kernel sofar
             assert self.w_bit in [2, 4], f"The value of w_bit ({self.w_bit}) must be 4 or 2."
-            assert self.group_size >8, f"The value of group_size ({self.group_size}) must >= 32."
+            #assert self.group_size >=32, f"The value of group_size ({self.group_size}) must >= 32."
         else: # mixed-bit width configuration
             sz_shape = (
                 math.ceil(self.groups),
@@ -217,7 +252,7 @@ class MBWQLinearCuda(MPQLinearBase):
                 if own_state[name].shape != param.shape:
                     # Handle shape mismatch situations
                     # we directly load and use the exl2 related parameters.
-                    if name in ['scales', 'zeros', 'q_perm', 'q_groups', 'q_group_map', 'qweight']:
+                    if name in ['qscales', 'qscales_scals', 'qscales_zeros', 'qzeros', 'qzeros_scals', 'qzeros_zeros', 'q_perm', 'q_groups', 'q_group_map', 'qweight']:
                         # Processing logic when shapes do not match
                         print(
                             f"Warning: Shape mismatch for: {name}, expected: {own_state[name].shape}, got: {param.shape}. "
@@ -265,12 +300,36 @@ class MBWQLinearCuda(MPQLinearBase):
         '''
         try:
             # set qweight attribute
+            if self.group_size <= 32:           #pre-dequantize scales and zeros for "q_linear_cuda.mbwq_q4_forward" cuda kernel reusing.
+                qscale_post = self.qscales
+                qzeros_post = self.qzeros
+
+                wf_scale_zeros = torch.tensor(list(range(0, 32, 4)), dtype=torch.int32).unsqueeze(0).unsqueeze(0).to(self.qweight.device)
+
+                qscale_post = torch.bitwise_right_shift(torch.unsqueeze(qscale_post, -1).repeat(1, 1, 8), wf_scale_zeros).to(torch.int16).view(qscale_post.size(0), -1)
+                torch.bitwise_and(qscale_post, torch.tensor([2**4-1]).to(dtype=torch.int16, device=qscale_post.device), out=qscale_post)
+ 
+                qzeros_post = torch.bitwise_right_shift(torch.unsqueeze(qzeros_post, -1).repeat(1, 1, 8), wf_scale_zeros).to(torch.int8).view(qzeros_post.size(0), -1)
+                torch.bitwise_and(qzeros_post, torch.tensor([2**4-1]).to(dtype=torch.int8, device=qzeros_post.device), out=qzeros_post)
+            
+                rows = qscale_post.size(0)
+                ratio = self.dq_group_size
+
+                qscales_zeros_post = self.qscales_zeros.unsqueeze(-1).repeat(1,1,ratio).view(rows,-1)
+                qscales_scales_post = self.qscales_scales.unsqueeze(-1).repeat(1,1,ratio).view(rows,-1)
+                self.scales = ((qscale_post.to(self.dtype) - qscales_zeros_post.to(self.dtype)) * qscales_scales_post.to(self.dtype)).view(rows, -1)
+   
+                qzeros_zeros_post = self.qzeros_zeros.unsqueeze(-1).repeat(1,1,ratio).view(rows,-1)
+                qzeros_scales_post = self.qzeros_scales.unsqueeze(-1).repeat(1,1,ratio).view(rows,-1)
+                self.zeros = ((qzeros_post.to(self.dtype) - qzeros_zeros_post.to(self.dtype)) * qzeros_scales_post.to(self.dtype)).view(rows, -1)
+
             self.qweight.scales = self.scales
             self.qweight.zeros = self.zeros
             self.qweight.q_perm = self.q_perm
 
             height = self.q_perm.size(0)
             groups = self.scales.size(0)
+            
             if self.use_mbw:
                 self.qweight.data, self.rows = q_linear_cuda.mbwq_trans_qweight(self.qweight, self.q_groups, True,
                                                                             height, groups, self.w_bit)
@@ -285,8 +344,10 @@ class MBWQLinearCuda(MPQLinearBase):
                 self.qweight.data, rows = q_linear_cuda.mbwq_trans_qweight(self.qweight, dummy_q_group, False,
                                                                             height, groups, self.w_bit)
             # release
+            del self.qzeros
             del self.qzeros_zeros
             del self.qzeros_scales
+            del self.qscales
             del self.qscales_zeros
             del self.qscales_scales
             del self.qstatistic
